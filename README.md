@@ -5,7 +5,7 @@
 ### whiteboard drawing function
 - [ ] convert line to proper curve 
 - [ ] tool selection bar 
-- [ ] undo and redo stack 
+- [x] ~~undo and redo stack~~ 
 - [ ] import and export whiteboard information
 - [ ] home page 
 - [ ] tooltips 

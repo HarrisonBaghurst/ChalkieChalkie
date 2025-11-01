@@ -15,19 +15,37 @@ const Board = () => {
     const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
     const [strokes, setStrokes] = useState<Point[][]>([]);
 
-    // dynamically set the size of the canvas to the container width
+    const [removedStrokes, setRemovedStrokes] = useState<Point[][]>([]);
+
     useEffect(() => {
+        // dynamically set the size of the canvas to the container width
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
-    }, [])
 
-    // update the canvas upon mouse up 
+        // add ctrl+z event listener 
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                event.preventDefault();
+                handleUndo();
+            }
+            else if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+                event.preventDefault();
+                handleRedo();
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+
+        // clean up on unmount 
+        return () => window.removeEventListener("keydown", handleKeyDown);
+
+    }, []);
+
+    // update canvas upon change to strokes array
     useEffect(() => {
-        console.log(strokes);
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
@@ -69,8 +87,29 @@ const Board = () => {
         setIsDrawing(false);    
         setStrokes((prev) => [...prev, currentStroke]);
         setCurrentStroke([]);
+        setRemovedStrokes([]);
     }
-    
+
+    const handleUndo = () => {
+        setStrokes((prev) => {
+            if (prev.length === 0) return prev;
+            const updatedStrokes = prev.slice(0, -1);
+            const lastStroke = prev[prev.length - 1];
+            setRemovedStrokes((rPrev) => [...rPrev, lastStroke]);
+            return updatedStrokes;
+        })
+    }
+
+    const handleRedo = () => {
+        setRemovedStrokes((rPrev) => {
+            if (rPrev.length === 0) return rPrev;
+            const updatedRemoved = rPrev.slice(0, -1);
+            const lastRemovedStroke = rPrev[rPrev.length - 1];
+            setStrokes((prev) => [...prev, lastRemovedStroke]);
+            return updatedRemoved;
+        })
+    }
+
     return (
         <canvas 
         ref={canvasRef}        
