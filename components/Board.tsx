@@ -66,10 +66,24 @@ const Board = () => {
         for (const stroke of strokes) {
             ctx.beginPath();
             ctx.strokeStyle = stroke.colour;
-            stroke.points.forEach((point, index) => {
-                if (index === 0) ctx.moveTo(point.x, point.y);
-                else ctx.lineTo(point.x, point.y);
-            });
+            if (stroke.points.length < 2) return;
+
+            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+
+            for (let i = 1; i < stroke.points.length - 2; i++) {
+            const xc = (stroke.points[i].x + stroke.points[i + 1].x) / 2;
+            const yc = (stroke.points[i].y + stroke.points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(stroke.points[i].x, stroke.points[i].y, xc, yc);
+            }
+
+            // connect the last two points
+            const last = stroke.points.length - 1;
+            ctx.quadraticCurveTo(
+            stroke.points[last - 1].x,
+            stroke.points[last - 1].y,
+            stroke.points[last].x,
+            stroke.points[last].y
+            );
             ctx.stroke();
         }
 
