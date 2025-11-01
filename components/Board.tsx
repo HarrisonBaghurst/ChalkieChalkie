@@ -63,7 +63,15 @@ const Board = () => {
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
 
-        for (const stroke of strokes) {
+        let allStrokes;
+        if (currentStroke) {
+            allStrokes = [...strokes, currentStroke];
+        }
+        else {
+            allStrokes = strokes
+        }
+
+        for (const stroke of allStrokes) {
             ctx.beginPath();
             ctx.strokeStyle = stroke.colour;
             if (stroke.points.length < 2) return;
@@ -87,7 +95,7 @@ const Board = () => {
             ctx.stroke();
         }
 
-    }, [strokes]); 
+    }, [strokes, currentStroke]); 
 
     const handleMouseDown = (e: React.MouseEvent) => {
         setIsDrawing(true);
