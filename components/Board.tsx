@@ -15,14 +15,27 @@ const Board = () => {
     const [currentStroke, setCurrentStroke] = useState<Point[]>([]);
     const [strokes, setStrokes] = useState<Point[][]>([]);
 
-    // dynamically set the size of the canvas to the container width
     useEffect(() => {
+        // dynamically set the size of the canvas to the container width
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
+
+        // add ctrl+z event listener 
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
+                event.preventDefault();
+                handleDelete();
+            }
+        }
+        window.addEventListener("keydown", handleKeyDown);
+
+        // clean up on unmount 
+        return () => window.removeEventListener("keydown", handleKeyDown);
+
     }, [])
 
     // update the canvas upon mouse up 
@@ -69,6 +82,10 @@ const Board = () => {
         setIsDrawing(false);    
         setStrokes((prev) => [...prev, currentStroke]);
         setCurrentStroke([]);
+    }
+
+    const handleDelete = () => {
+        setStrokes((prev) => prev.slice(0, -1));
     }
     
     return (
