@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ToolBar from './ToolBar';
+import hypo from '@/lib/numUtils';
 
 type Point = {
     x: number;
@@ -13,11 +14,14 @@ type Stroke = {
     colour: string;
 }
 
+type Tool = 'chalk' | 'eraser';
+
 const Board = () => {
     // persistant reference to canvas 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     
-    const [isDrawing, setIsDrawing] = useState(false);
+    const [isToolDown, setIsToolDown] = useState(false);
+    const [tool, setTool] = useState<Tool>('chalk');
     const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
     const [strokes, setStrokes] = useState<Stroke[]>([]);
     const [currentColour, setCurrentColour] = useState('hsl(44,53%,74%)');
@@ -98,30 +102,42 @@ const Board = () => {
     }, [strokes, currentStroke]); 
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        setIsDrawing(true);
-        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
-        setCurrentStroke({points:[point], colour:currentColour});
+        setIsToolDown(true);
+        if (tool === 'chalk') {
+            const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
+            setCurrentStroke({points:[point], colour:currentColour});
+        }
+        else if (tool === 'eraser') {
+            handleErase(e);
+        }
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDrawing) return; 
-        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
-        setCurrentStroke((prev) => {
-            if (!prev) return null;
-            return {...prev, points: [...prev.points, point] };
-        });
+        if (!isToolDown) return; 
+        if (tool === 'chalk') {
+            const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
+            setCurrentStroke((prev) => {
+                if (!prev) return null;
+                return {...prev, points: [...prev.points, point] };
+            });
+        }
+        else if (tool === 'eraser') {
+            handleErase(e);
+        }
     }
 
     const handleMouseUp = () => { 
-        if (!isDrawing) return; 
-        setIsDrawing(false);    
-        if (currentStroke) {
-            setStrokes((prev) => [...prev, currentStroke]);
+        if (!isToolDown) return; 
+        setIsToolDown(false);    
+        if (tool === 'chalk') {
+            if (currentStroke) {
+                setStrokes((prev) => [...prev, currentStroke]);
+            }
+            setCurrentStroke(null);
+            setRemovedStrokes([]);
         }
-        setCurrentStroke(null);
-        setRemovedStrokes([]);
     }
 
     const handleUndo = () => {
@@ -145,7 +161,26 @@ const Board = () => {
     }
 
     const handleChangeColour = (colour: string) => {
+        setTool('chalk');
         setCurrentColour(colour);
+    }
+
+    const handleSetEraser = () => {
+        setTool('eraser');
+    }
+
+    const handleErase = (e: React.MouseEvent) => {
+        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top}; 
+
+        setStrokes((prevStrokes) => {
+            const updated = prevStrokes.filter(stroke => {
+                return !stroke.points.some(p => hypo(point.x, point.y, p.x, p.y) < 20);
+            });
+            return updated;
+        });
+
+        setRemovedStrokes([]);
     }
 
     return (
@@ -154,6 +189,7 @@ const Board = () => {
             handleRedo={handleRedo}
             handleUndo={handleUndo}
             handleChangeColour={handleChangeColour}
+            handleSetEraser={handleSetEraser}
             />
             <canvas 
             ref={canvasRef}        
