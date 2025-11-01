@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ToolBar from './ToolBar';
+import { useParams } from 'next/navigation';
 
 type Point = {
     x: number;
@@ -23,6 +24,22 @@ const Board = () => {
     const [currentColour, setCurrentColour] = useState('hsl(44,53%,74%)');
 
     const [removedStrokes, setRemovedStrokes] = useState<Stroke[]>([]);
+
+    // SOCKET
+    const socket = new WebSocket("ws://localhost:8080");
+    let msg = {"type": "connect", "board": useParams()["slug"]}
+    socket.onopen = () => {
+        console.log("[client] SEND: Connected! eeee");
+        socket.send(JSON.stringify(msg));
+    };
+    socket.onmessage = (event: MessageEvent) => {
+        setStrokes(JSON.parse("[" + event.data + "]"))
+        console.log("[client] RERENDERED:", event.data);
+    };
+
+    socket.onclose = () => {
+        console.log("[client] DISCONNECTED");
+    };
 
     useEffect(() => {
         // dynamically set the size of the canvas to the container width
@@ -100,6 +117,7 @@ const Board = () => {
         }
         setCurrentStroke(null);
         setRemovedStrokes([]);
+        socket.send(strokes.toString())
     }
 
     const handleUndo = () => {
@@ -110,6 +128,7 @@ const Board = () => {
             setRemovedStrokes((rPrev) => [...rPrev, lastStroke]);
             return updatedStrokes;
         })
+        socket.send(strokes.toString())
     }
 
     const handleRedo = () => {
@@ -120,6 +139,7 @@ const Board = () => {
             setStrokes((prev) => [...prev, lastRemovedStroke]);
             return updatedRemoved;
         })
+        socket.send(strokes.toString())
     }
 
     const handleChangeColour = (colour: string) => {
