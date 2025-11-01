@@ -1,12 +1,23 @@
-import Board from '@/components/Board'
-import React from 'react'
+'use client'
 
-const page = () => {
+import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react'
+
+const Page = () => {
+
+    // this code is temporary - redirect user to random uuid
+    const router = useRouter();
+    const uuid = crypto.randomUUID();
+
+    useEffect(() => {
+        router.push(`/board/${uuid}`);
+    }, [])
+
     return (
         <div className='w-screen h-screen'>
-            <Board />
+            This is the home page
         </div>
     )
 }
 
-export default page
+export default Page
