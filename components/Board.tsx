@@ -59,7 +59,7 @@ const Board = () => {
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height) 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
 
@@ -141,7 +141,7 @@ const Board = () => {
     }
 
     return (
-        <>
+        <div className='graph-paper'>
             <ToolBar 
             handleRedo={handleRedo}
             handleUndo={handleUndo}
@@ -155,7 +155,7 @@ const Board = () => {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             />
-        </>
+        </div>
     )
 }
 
