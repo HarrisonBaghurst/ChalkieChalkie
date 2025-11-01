@@ -157,7 +157,7 @@ const Board = () => {
             />
             <canvas 
             ref={canvasRef}        
-            className='cursor-crosshair w-full h-full'
+            className='w-full h-full'
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}

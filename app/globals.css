@@ -39,17 +39,16 @@
 
   .graph-paper {
     background-image:
-      /* fine grid */
       linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      /* major grid every 5 cells */
+
       linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
     background-size: 
-      20px 20px, /* fine grid spacing */
-      20px 20px,
-      100px 100px, /* major grid spacing */
-      100px 100px;
+      10px 10px,
+      10px 10px,
+      50px 50px, 
+      50px 50px;
   }
 }
 
