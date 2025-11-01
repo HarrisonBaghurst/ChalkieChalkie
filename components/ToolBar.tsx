@@ -6,9 +6,10 @@ type ToolBarProps = {
     handleRedo: () => void;
     handleChangeColour: (colour: string) => void;
     handleSetEraser: () => void;
+    handleCopy: () => void;
 }
 
-const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser }: ToolBarProps) => {
+const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser, handleCopy }: ToolBarProps) => {
     const buttons = [
         {
             "text": "undo",
@@ -44,8 +45,12 @@ const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser }
             "text": "Eraser",
             "image": "/icons/eraser.svg",
             "onClick": handleSetEraser,
+        }, 
+        {
+            "text": "Copy",
+            "image": "/icons/copy.svg",
+            "onClick": handleCopy,
         }
-
     ]
 
     return (

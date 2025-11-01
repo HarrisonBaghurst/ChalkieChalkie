@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import ToolBar from './ToolBar';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import hypo from '@/lib/numUtils';
 
 type Point = {
@@ -33,10 +33,17 @@ const Board = () => {
 
     const [socket, setSocket] = useState<WebSocket | null>(null);
 
+    const [fullUrl, setFullUrl] = useState<string>('');
+
     const params = useParams();
 
+    const pathname = usePathname();
 
     useEffect(() => {
+        // set url
+        if (window) {
+            setFullUrl(`${window.location.origin}${pathname}`)
+        }
 
         // socket setup
         setSocket(new WebSocket("ws://10.247.34.160:8080"));
@@ -231,6 +238,10 @@ const Board = () => {
         setRemovedStrokes([]);
     }
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(fullUrl);
+    }
+
     return (
         <div className='graph-paper'>
             <ToolBar 
@@ -238,6 +249,7 @@ const Board = () => {
             handleUndo={handleUndo}
             handleChangeColour={handleChangeColour}
             handleSetEraser={handleSetEraser}
+            handleCopy={handleCopy}
             />
             <canvas 
             ref={canvasRef}        
