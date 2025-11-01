@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ToolBar from './ToolBar';
 import { useParams } from 'next/navigation';
+import hypo from '@/lib/numUtils';
 
 type Point = {
     x: number;
@@ -14,11 +15,14 @@ type Stroke = {
     colour: string;
 }
 
+type Tool = 'chalk' | 'eraser';
+
 const Board = () => {
     // persistant reference to canvas 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     
-    const [isDrawing, setIsDrawing] = useState(false);
+    const [isToolDown, setIsToolDown] = useState(false);
+    const [tool, setTool] = useState<Tool>('chalk');
     const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
     const [strokes, setStrokes] = useState<Stroke[]>([]);
     const [currentColour, setCurrentColour] = useState('hsl(44,53%,74%)');
@@ -96,56 +100,92 @@ const Board = () => {
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height) 
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
 
-        for (const stroke of strokes) {
+        let allStrokes;
+        if (currentStroke) {
+            allStrokes = [...strokes, currentStroke];
+        }
+        else {
+            allStrokes = strokes
+        }
+
+        for (const stroke of allStrokes) {
             ctx.beginPath();
             ctx.strokeStyle = stroke.colour;
-            stroke.points.forEach((point, index) => {
-                if (index === 0) ctx.moveTo(point.x, point.y);
-                else ctx.lineTo(point.x, point.y);
-            });
+            if (stroke.points.length < 2) return;
+
+            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+
+            for (let i = 1; i < stroke.points.length - 2; i++) {
+            const xc = (stroke.points[i].x + stroke.points[i + 1].x) / 2;
+            const yc = (stroke.points[i].y + stroke.points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(stroke.points[i].x, stroke.points[i].y, xc, yc);
+            }
+
+            // connect the last two points
+            const last = stroke.points.length - 1;
+            ctx.quadraticCurveTo(
+            stroke.points[last - 1].x,
+            stroke.points[last - 1].y,
+            stroke.points[last].x,
+            stroke.points[last].y
+            );
             ctx.stroke();
         }
 
-        if (recieveblocker) {
-            setRecieveBlocker(false)
-        } else {
-            if (!socket) return;
-            console.log("SENDING", JSON.stringify(strokes))
-            socket.send(JSON.stringify(strokes));
-            setRecieveBlocker(false)
-        }
-
-    }, [strokes]); 
-
+    }, [strokes, currentStroke]); 
+  
+    useEffect(() => {
+      if (recieveblocker) {
+          setRecieveBlocker(false)
+      } else {
+          if (!socket) return;
+          console.log("SENDING", JSON.stringify(strokes))
+          socket.send(JSON.stringify(strokes));
+          setRecieveBlocker(false)
+      };
+    }, [strokes]);
+        
     const handleMouseDown = (e: React.MouseEvent) => {
-        setIsDrawing(true);
-        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
-        setCurrentStroke({points:[point], colour:currentColour});
+        setIsToolDown(true);
+        if (tool === 'chalk') {
+            const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
+            setCurrentStroke({points:[point], colour:currentColour});
+        }
+        else if (tool === 'eraser') {
+            handleErase(e);
+        }
     }
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!isDrawing) return; 
-        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
-        setCurrentStroke((prev) => {
-            if (!prev) return null;
-            return {...prev, points: [...prev.points, point] };
-        });
+        if (!isToolDown) return; 
+        if (tool === 'chalk') {
+            const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
+            setCurrentStroke((prev) => {
+                if (!prev) return null;
+                return {...prev, points: [...prev.points, point] };
+            });
+        }
+        else if (tool === 'eraser') {
+            handleErase(e);
+        }
     }
 
     const handleMouseUp = () => { 
-        if (!isDrawing) return; 
-        setIsDrawing(false);    
-        if (currentStroke) {
-            setStrokes((prev) => [...prev, currentStroke]);
+        if (!isToolDown) return; 
+        setIsToolDown(false);    
+        if (tool === 'chalk') {
+            if (currentStroke) {
+                setStrokes((prev) => [...prev, currentStroke]);
+            }
+            setCurrentStroke(null);
+            setRemovedStrokes([]);
         }
-        setCurrentStroke(null);
-        setRemovedStrokes([]);
     }
 
     const handleUndo = () => {
@@ -169,25 +209,45 @@ const Board = () => {
     }
 
     const handleChangeColour = (colour: string) => {
+        setTool('chalk');
         setCurrentColour(colour);
     }
 
+    const handleSetEraser = () => {
+        setTool('eraser');
+    }
+
+    const handleErase = (e: React.MouseEvent) => {
+        const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top}; 
+
+        setStrokes((prevStrokes) => {
+            const updated = prevStrokes.filter(stroke => {
+                return !stroke.points.some(p => hypo(point.x, point.y, p.x, p.y) < 20);
+            });
+            return updated;
+        });
+
+        setRemovedStrokes([]);
+    }
+
     return (
-        <>
+        <div className='graph-paper'>
             <ToolBar 
             handleRedo={handleRedo}
             handleUndo={handleUndo}
             handleChangeColour={handleChangeColour}
+            handleSetEraser={handleSetEraser}
             />
             <canvas 
             ref={canvasRef}        
-            className='cursor-crosshair w-full h-full'
+            className='w-full h-full'
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             />
-        </>
+        </div>
     )
 }
 

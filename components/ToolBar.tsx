@@ -5,9 +5,10 @@ type ToolBarProps = {
     handleUndo: () => void;
     handleRedo: () => void;
     handleChangeColour: (colour: string) => void;
+    handleSetEraser: () => void;
 }
 
-const ToolBar = ({ handleUndo, handleRedo, handleChangeColour }: ToolBarProps) => {
+const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser }: ToolBarProps) => {
     const buttons = [
         {
             "text": "undo",
@@ -38,7 +39,13 @@ const ToolBar = ({ handleUndo, handleRedo, handleChangeColour }: ToolBarProps) =
             "text": "Green",
             "image": "/icons/chalk-green.svg",
             "onClick": () => handleChangeColour('hsl(108,22%,60%)')
+        },
+        {
+            "text": "Eraser",
+            "image": "/icons/eraser.svg",
+            "onClick": handleSetEraser,
         }
+
     ]
 
     return (
