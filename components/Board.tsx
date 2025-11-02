@@ -36,6 +36,7 @@ const Board = () => {
     const [currentColour, setCurrentColour] = useState('hsl(44,53%,74%)');
     const [id, setID] = useState<number | null>(null);
     const [recieveblocker, setRecieveBlocker] = useState(false)
+    const [oldstrokes, setOldStrokes] = useState<Stroke[]>([]);
 
     const [loadingAPI, setLoadingAPI] = useState(false);
     const [latexResult, setLatexResult] = useState('');
@@ -56,6 +57,8 @@ const Board = () => {
     const pathname = usePathname();
 
     const strokesRef = useRef<Stroke[]>([]);
+    const blockerRef = useRef(false)
+
 
     useEffect(() => {
         // set url
@@ -103,7 +106,6 @@ const Board = () => {
 
         socket.onmessage = (event: MessageEvent) => {
             const received = JSON.parse(event.data)
-            console.log("rec test", received)
 
             // handshake to let server know which board the client wants
             if (received['type'] == "handshake") {
@@ -124,11 +126,25 @@ const Board = () => {
 
             // recieve board updates
             } else if (received["type"] == "update") { 
-                if (strokes == received["strokes"]) return;
-                const updated_board = JSON.parse(received["strokes"])
-                console.log("[client] RECIEVED PURGED BOARD: ", updated_board)
+                const updated_board = received["diff"][0]  // STRINGIFY TO TEST
+                if (received["update_type"] == "add") {
+                    if (JSON.stringify(strokesRef.current).includes(JSON.stringify(updated_board))) {
+                        console.log("ALREADY IN, NOT ADDING")
+                    } else {
+                        setStrokes((prev) => [...prev, updated_board]);
+                    }   
+                } else {
+                    console.log("STROKESDONE", strokes, strokesRef.current)
+                    if (JSON.stringify(strokesRef.current).includes(JSON.stringify(updated_board))) {
+                        setStrokes(strokes.filter(item => item != updated_board));  // if it's in the most recent version, it should be in the older one
+                        console.log()
+                    } else {
+                        console.log("NOT IN, NOT REMOVING")
+                    }
+                }
                 setRecieveBlocker(true)
-                setStrokes(updated_board)
+                console.log("[client] RECIEVED UPDATE")
+                //setStrokes(updated_board)
                 console.log("[client] UPDATED");
             }
         };
@@ -196,18 +212,31 @@ const Board = () => {
 
 
     useEffect(() => {
-        if (recieveblocker) {
+        if (blockerRef.current) {
             setRecieveBlocker(false);
+            setOldStrokes(strokes)
+            console.log("rb blocked")
             return;
         }
         if (!socket) return;
         if (socket.readyState === WebSocket.OPEN) {
-            console.log("SENDING", JSON.stringify(strokes))
-            socket.send(JSON.stringify({"type": "update", "strokes": JSON.stringify(strokes)}));
+            // get the diff
+            let diff = null
+            let update_type = null
+            if (strokes.length > oldstrokes.length) {
+                diff = strokes.filter(x => !oldstrokes.includes(x));
+                update_type = "add"
+            } else {
+                diff = oldstrokes.filter(x => !strokes.includes(x));
+                update_type = "del"
+            }
+            console.log("DIFF: ", diff)
+            socket.send(JSON.stringify({"type": "update", "update_type": update_type, "diff": diff}));
         }
         else {
             console.warn("Socket not ready, state: ", socket.readyState);
         }
+        setOldStrokes(strokes)
         setRecieveBlocker(false);
 
     }, [strokes]);
