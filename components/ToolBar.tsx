@@ -1,4 +1,6 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Dock from './ui/Dock';
 import Image from 'next/image';
 

@@ -38,6 +38,7 @@ type DockItemProps = {
   distance: number;
   baseItemSize: number;
   magnification: number;
+  isActive?: boolean;
 };
 
 function DockItem({
@@ -48,7 +49,8 @@ function DockItem({
   spring,
   distance,
   magnification,
-  baseItemSize
+  baseItemSize,
+  isActive = false
 }: DockItemProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isHovered = useMotionValue(0);
@@ -61,22 +63,34 @@ function DockItem({
     return val - rect.x - baseItemSize / 2;
   });
 
-  const targetSize = useTransform(mouseDistance, [-distance, 0, distance], [baseItemSize, magnification, baseItemSize]);
-  const size = useSpring(targetSize, spring);
+  // Active icon boost
+  const activeBoost = isActive ? baseItemSize * 0.3 : 0;
+  const activeBaseSize = baseItemSize + activeBoost;
+  const activeMagnification = magnification + activeBoost;
+
+  // 🚀 Much faster spring response
+  const targetSize = useTransform(
+    mouseDistance,
+    [-distance, 0, distance],
+    [activeBaseSize, activeMagnification, activeBaseSize]
+  );
+
+  const size = useSpring(targetSize, {
+    mass: 0.3,
+    stiffness: 600, // doubled for faster response
+    damping: 9       // halved for snappier feel
+  });
 
   return (
     <motion.div
       ref={ref}
-      style={{
-        width: size,
-        height: size
-      }}
+      style={{ width: size, height: size }}
       onHoverStart={() => isHovered.set(1)}
       onHoverEnd={() => isHovered.set(0)}
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`relative button inline-flex items-center justify-center rounded-full bg-[#060010] shadow-md ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full bg-[#060010] shadow-md transition-all duration-100 ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -114,7 +128,7 @@ function DockLabel({ children, className = '', isHovered }: DockLabelProps) {
           initial={{ opacity: 0, y: 0 }}
           animate={{ opacity: 1, y: -10 }}
           exit={{ opacity: 0, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.1, ease: 'easeOut' }} // faster label fade
           className={`${className} absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-neutral-700 bg-[#060010] px-2 py-0.5 text-xs text-white`}
           role="tooltip"
           style={{ x: '-50%' }}
@@ -139,7 +153,7 @@ function DockIcon({ children, className = '' }: DockIconProps) {
 export default function Dock({
   items,
   className = '',
-  spring = { mass: 0.1, stiffness: 150, damping: 12 },
+  spring = { mass: 0.3, stiffness: 600, damping: 9 },
   magnification = 70,
   distance = 200,
   panelHeight = 64,
@@ -148,6 +162,7 @@ export default function Dock({
 }: DockProps) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
+  const [activeIndex, setActiveIndex] = useState<number | null>(0);
 
   const maxHeight = useMemo(() => Math.max(dockHeight, magnification + magnification / 2 + 4), [magnification]);
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
@@ -172,7 +187,13 @@ export default function Dock({
         {items.map((item, index) => (
           <DockItem
             key={index}
-            onClick={item.onClick}
+            onClick={() => {
+              if (0 < index && index < 4) {
+                setActiveIndex(index);
+              }
+              item.onClick();
+            }}
+            isActive={activeIndex === index}
             className={item.className}
             mouseX={mouseX}
             spring={spring}
