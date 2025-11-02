@@ -10,8 +10,8 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
+import { gsap } from 'gsap';
 
 type Point = {
     x: number;
@@ -28,6 +28,7 @@ type Tool = 'chalk' | 'eraser' | 'select';
 const Board = () => {
     // persistant reference to canvas 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const toolbarRef = useRef<HTMLDivElement | null>(null);
 
     const [isToolDown, setIsToolDown] = useState(false);
     const [tool, setTool] = useState<Tool>('chalk');
@@ -92,6 +93,32 @@ const Board = () => {
 
     }, []);
 
+    // gsap load in animation for toolbar 
+    useEffect(() => {
+        const el = toolbarRef.current
+        if (!el) return
+
+        el.style.pointerEvents = 'none'
+
+        const ctx = gsap.context(() => {
+            gsap.fromTo(el, 
+            {
+                y: 200,
+                opacity: 0,
+            }, 
+            {
+                y: 0,
+                opacity: 1,
+                duration: 1,
+                ease: 'power3.out',
+                onComplete: () => {
+                    el.style.pointerEvents = 'auto';
+                }
+            })
+        }, toolbarRef)
+
+        return () => ctx.revert()
+    }, []);
 
     useEffect(() => {
         if (!socket) return;
@@ -366,18 +393,20 @@ const Board = () => {
     };
 
     return (
-        <div className='graph-paper'>
-            <ToolBar
-                handleRedo={handleRedo}
-                handleUndo={handleUndo}
-                handleChangeColour={handleChangeColour}
-                handleSetEraser={handleSetEraser}
-                handleScreenshot={handleScreenshot}
-                loadingAPI={loadingAPI}
-            />
+        <div className='graph-paper will-change-transform relative'>
+            <div ref={toolbarRef} className='opacity-0 fixed bottom-2 left-1/2 -translate-x-1/2'>
+                <ToolBar
+                    handleRedo={handleRedo}
+                    handleUndo={handleUndo}
+                    handleChangeColour={handleChangeColour}
+                    handleSetEraser={handleSetEraser}
+                    handleScreenshot={handleScreenshot}
+                    loadingAPI={loadingAPI}
+                />
+            </div>
             <canvas
                 ref={canvasRef}
-                className='w-screen h-screen'
+                className='w-screen h-screen pointer-events-auto'
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
