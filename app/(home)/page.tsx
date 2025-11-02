@@ -1,13 +1,23 @@
 'use client'
 
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const Page = () => {
     const router = useRouter();
-    const uuid = crypto.randomUUID();
+    const [uuid, setUuid] = useState<string | null>(null);
+    useEffect(() => {
+        setUuid(uuidv4());
+    }, [])
 
     const handleLoadBoard = () => {
-        router.push(`/board/${uuid}`);
+        if (uuid) {
+            router.push(`/board/${uuid}`);
+        }
+        else {
+            console.error('uuid not created');
+        }
     }
 
     return (

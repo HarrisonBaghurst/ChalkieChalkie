@@ -37,7 +37,6 @@ wss.on("connection", (ws) => {  // add the client to the list of clients and boa
       } else {  // request the board from a client that has it
 //        try {  // only way to escape a forEach is to throw it
           for (let i=0; i<bds.length; i++) {
-            console.log(bds, bds[i], text["board"])
             if (bds[i] == text["board"]) {
               cts[i].send(JSON.stringify({"type": "foreign-sync", "id": cts.length-1}))
               console.log(`[sync] SYNC REQUESTED TO ${cts.indexOf(cts[i])}`)
@@ -51,15 +50,17 @@ wss.on("connection", (ws) => {  // add the client to the list of clients and boa
     } else if (text["type"] == "foreign-sync-return") {
       const updated_board = JSON.stringify(text)
       cts[text["id"]].send(updated_board)  // relay the new board from the updated client to the one needing sync
-      console.log(updated_board)
       console.log(`[sync] SYNC SENT TO ${text["id"]}`)
       
       // RELAY BOARDS TO OTHER CLIENTS
-    } else {
-      current_board = text["board"]
+    } else if (text["type"] == "update") {
+      console.log(`[boards] UPDATE FROM ${ws}: ${text}`)
+      board_id = bds[cts.indexOf(ws)]
+      //current_board = text["strokes"]
+      console.log("BID", board_id, "UPDATETEXT", text)
       wss.clients.forEach(client => {
-        if (bds[cts.indexOf(client)] == current_board && client != ws) {  // if the client is ready and they have access to the board
-          //console.log(`[traffic] SENT TO ${cts.indexOf(client)}`)
+        if (bds[cts.indexOf(client)] == board_id) {  // if the client is ready and they have access to the board
+          console.log(`[traffic] SENT TO ${cts.indexOf(client)}`)
           client.send(JSON.stringify(text));  // fwd the message
         } else if (client == ws) {
           console.log(`[boards] SUPPRESSED RETURN TO SENDER ${cts.indexOf(client)}`)

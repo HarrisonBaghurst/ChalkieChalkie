@@ -5,12 +5,12 @@ import ToolBar from './ToolBar';
 import { useParams, usePathname } from 'next/navigation';
 import hypo from '@/lib/numUtils';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog"
 
 type Point = {
@@ -28,7 +28,7 @@ type Tool = 'chalk' | 'eraser' | 'select';
 const Board = () => {
     // persistant reference to canvas 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    
+
     const [isToolDown, setIsToolDown] = useState(false);
     const [tool, setTool] = useState<Tool>('chalk');
     const [currentStroke, setCurrentStroke] = useState<Stroke | null>(null);
@@ -54,7 +54,7 @@ const Board = () => {
     const params = useParams();
 
     const pathname = usePathname();
-    
+
     const strokesRef = useRef<Stroke[]>([]);
 
     useEffect(() => {
@@ -97,35 +97,43 @@ const Board = () => {
         if (!socket) return;
         socket.onopen = () => {
             console.log("[client] SENT CONNECT REQ");
-            const msg = JSON.stringify({"type": "connect", "board": params["slug"]})
+            const msg = JSON.stringify({ "type": "connect", "board": params["slug"] })
             socket.send(msg);
         };
-        
+
         socket.onmessage = (event: MessageEvent) => {
             const received = JSON.parse(event.data)
+            console.log("rec test", received)
+
+            // handshake to let server know which board the client wants
             if (received['type'] == "handshake") {
                 console.log("[client] RECEIVED HANDSHAKE; ID" + received['id'])
                 setID(received['id'])
+
+            // send the board to a new client
             } else if (received["type"] == "foreign-sync") {
                 received['type'] = "foreign-sync-return"
-                console.log("STROKES", strokes)
                 received['board'] = strokesRef.current
                 socket.send(JSON.stringify(received))
+
+            // receive the board from another client on load (if board isn't new)
             } else if (received["type"] == "foreign-sync-return") {
                 console.log("RECEIVED: ", received['board'])
-                setStrokes(received['board'])
-            } 
-            
-            else {
-                if (strokes == JSON.parse(event.data)) return;
-                console.log("[client] RECIEVED PURGED BOARD")
                 setRecieveBlocker(true)
-                setStrokes(JSON.parse(event.data))
+                setStrokes(received['board'])
+
+            // recieve board updates
+            } else if (received["type"] == "update") { 
+                if (strokes == received["strokes"]) return;
+                const updated_board = JSON.parse(received["strokes"])
+                console.log("[client] RECIEVED PURGED BOARD: ", updated_board)
+                setRecieveBlocker(true)
+                setStrokes(updated_board)
                 console.log("[client] UPDATED");
             }
         };
     }, [socket]);
-    
+
     useEffect(() => {
         strokesRef.current = strokes;  // update strokes for sync requests
 
@@ -178,7 +186,7 @@ const Board = () => {
             ctx.lineWidth = 2;
             ctx.setLineDash([6]);
             ctx.strokeRect(x, y, w, h);
-            
+
             // optional semi-transparent fill for better UX
             ctx.fillStyle = 'rgba(0, 128, 255, 0.15)';
             ctx.fillRect(x, y, w, h);
@@ -186,7 +194,7 @@ const Board = () => {
         }
     }, [strokes, currentStroke, isSelecting, selectionStart, selectionEnd]);
 
-  
+
     useEffect(() => {
         if (recieveblocker) {
             setRecieveBlocker(false);
@@ -195,7 +203,7 @@ const Board = () => {
         if (!socket) return;
         if (socket.readyState === WebSocket.OPEN) {
             console.log("SENDING", JSON.stringify(strokes))
-            socket.send(JSON.stringify(strokes));
+            socket.send(JSON.stringify({"type": "update", "strokes": JSON.stringify(strokes)}));
         }
         else {
             console.warn("Socket not ready, state: ", socket.readyState);
@@ -203,7 +211,7 @@ const Board = () => {
         setRecieveBlocker(false);
 
     }, [strokes]);
-        
+
     const handleMouseDown = (e: React.MouseEvent) => {
         if (tool === 'select') {
             const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
@@ -217,8 +225,8 @@ const Board = () => {
         setIsToolDown(true);
         if (tool === 'chalk') {
             const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
-            setCurrentStroke({points:[point], colour:currentColour});
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            setCurrentStroke({ points: [point], colour: currentColour });
         }
         else if (tool === 'eraser') {
             handleErase(e);
@@ -232,14 +240,14 @@ const Board = () => {
             setSelectionEnd(end);
             return;
         }
-        
-        if (!isToolDown) return; 
+
+        if (!isToolDown) return;
         if (tool === 'chalk') {
             const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top};
+            const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
             setCurrentStroke((prev) => {
                 if (!prev) return null;
-                return {...prev, points: [...prev.points, point] };
+                return { ...prev, points: [...prev.points, point] };
             });
         }
         else if (tool === 'eraser') {
@@ -247,16 +255,16 @@ const Board = () => {
         }
     }
 
-    const handleMouseUp = () => { 
+    const handleMouseUp = () => {
         if (tool === 'select' && isSelecting) {
             setIsSelecting(false);
             handleSelectionComplete();
-            setTool('chalk'); 
+            setTool('chalk');
             return;
         }
 
-        if (!isToolDown) return; 
-        setIsToolDown(false);    
+        if (!isToolDown) return;
+        setIsToolDown(false);
         if (tool === 'chalk') {
             if (currentStroke) {
                 setStrokes((prev) => [...prev, currentStroke]);
@@ -297,7 +305,7 @@ const Board = () => {
 
     const handleErase = (e: React.MouseEvent) => {
         const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top}; 
+        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
         setStrokes((prevStrokes) => {
             const updated = prevStrokes.filter(stroke => {
@@ -343,8 +351,8 @@ const Board = () => {
 
         try {
             const res = await fetch('/api/latex', {
-            method: 'POST',
-            body: formData,
+                method: 'POST',
+                body: formData,
             });
             const text = await res.text();
             setLatexResult(text);
@@ -353,27 +361,27 @@ const Board = () => {
             console.error('[Selection Upload Error]:', err);
         } finally {
             setLoadingAPI(false);
-            setTool('chalk'); 
+            setTool('chalk');
         }
     };
 
     return (
         <div className='graph-paper'>
-            <ToolBar 
-            handleRedo={handleRedo}
-            handleUndo={handleUndo}
-            handleChangeColour={handleChangeColour}
-            handleSetEraser={handleSetEraser}
-            handleScreenshot={handleScreenshot}
-            loadingAPI={loadingAPI}
+            <ToolBar
+                handleRedo={handleRedo}
+                handleUndo={handleUndo}
+                handleChangeColour={handleChangeColour}
+                handleSetEraser={handleSetEraser}
+                handleScreenshot={handleScreenshot}
+                loadingAPI={loadingAPI}
             />
-            <canvas 
-            ref={canvasRef}        
-            className='w-screen h-screen'
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            <canvas
+                ref={canvasRef}
+                className='w-screen h-screen'
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
             />
             <Dialog open={openDialog} onOpenChange={() => setOpenDialog(!openDialog)}>
                 <DialogContent>
