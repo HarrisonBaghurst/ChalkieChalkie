@@ -10,10 +10,10 @@
 - [ ] import and export whiteboard information
 - [ ] panning on whiteboard
 - [ ] home page 
-- [ ] tooltips 
+- [x] ~~tooltips~~
 - [ ] whiteboard sharing UI
 
 ## other functions 
 - [x] ~~multi user whiteboard~~
-- [ ] AI / ML take whiteboard and convert to .tex
+- [x] ~~AI / ML take whiteboard and convert to .tex~~
 
