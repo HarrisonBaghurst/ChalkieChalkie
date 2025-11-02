@@ -188,7 +188,7 @@ export default function Dock({
           <DockItem
             key={index}
             onClick={() => {
-              if (0 <= index && index < 5) {
+              if (0 <= index && index < 6) {
                 setActiveIndex(index);
               }
               item.onClick();

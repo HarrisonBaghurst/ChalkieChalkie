@@ -368,9 +368,12 @@ const Board = () => {
             />
             <Dialog open={openDialog} onOpenChange={() => setOpenDialog(!openDialog)}>
                 <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className='text-2xl font-bold'>Your LaTeX result:</DialogTitle>
-                        <DialogDescription className='text-foreground text-xl'>
+                    <DialogHeader className='p-4 flex flex-col gap-6'>
+                        <DialogTitle className='text-2xl font-bold flex flex-col'>
+                            LaTeX Translation Complete
+                            <span className='text-sm text-foreground-second'>Your hand written equations - ready to copy.</span>
+                        </DialogTitle>
+                        <DialogDescription className='text-foreground text-lg bg-background p-4 rounded-(--rounding-small)'>
                             {latexResult}
                         </DialogDescription>
                     </DialogHeader>

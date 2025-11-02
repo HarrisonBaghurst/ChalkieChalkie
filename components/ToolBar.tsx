@@ -41,6 +41,13 @@ const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser, 
             "onClick": () => handleSetEraser(),
         },
         {
+            "label": "Convert to LaTeX",
+            "icon": loadingAPI? 
+                <Image src={"/icons/loading-arrow.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%] animate-spin'/> :
+                <Image src={"/icons/screenshot.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%]'/>,
+            "onClick": () => handleScreenshot(),
+        },
+        {
             "label": "Undo",
             "icon": <Image src={"/icons/undo.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%]'/>,
             "onClick": () => handleUndo(),
@@ -50,13 +57,6 @@ const ToolBar = ({ handleUndo, handleRedo, handleChangeColour, handleSetEraser, 
             "icon": <Image src={"/icons/redo.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%]'/>,
             "onClick": () => handleRedo(),
         },
-        {
-            "label": "Convert to LaTeX",
-            "icon": loadingAPI? 
-                <Image src={"/icons/loading-arrow.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%] animate-spin'/> :
-                <Image src={"/icons/screenshot.svg"} alt='Chalk' width={0} height={0} className='w-[60%] h-[60%]'/>,
-            "onClick": () => handleScreenshot(),
-        }
 
     ]
 
