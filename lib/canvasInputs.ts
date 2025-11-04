@@ -1,4 +1,5 @@
 import { Stroke } from '@/types/strokeTypes';
+import { simplifyRDP } from './strokeOptimisation';
 
 // ----- Parameter type definitions ----- 
 
@@ -46,7 +47,9 @@ const handleMouseUp = ({ isToolDown, setIsToolDown, currentStroke, setStrokes, s
     if (!isToolDown) return;
     setIsToolDown(false);
     if (currentStroke) {
-        setStrokes((prev) => [...prev, currentStroke]);
+        const updatedPoints = simplifyRDP(currentStroke.points, 2.5);
+        console.log(currentStroke.points.length, updatedPoints.length);
+        setStrokes((prev) => [...prev, {points: updatedPoints, colour: currentStroke.colour}]);
     }
     setCurrentStroke(null);
 }
