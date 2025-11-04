@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Blackboard",
-  description: "Collaborative Blackboard website with AI LaTeX conversion.",
+  description: "Durhack 2025",
 };
 
 export default function RootLayout({
