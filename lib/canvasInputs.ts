@@ -32,6 +32,10 @@ type handleMouseUpParameters = {
     panOffsetRef: RefObject<Point>;
 };
 
+type handleUndoProps = {
+    strokesRef: RefObject<Stroke[]>;
+}
+
 // --- helper ---
 
 const getMousePos = (e: React.MouseEvent): Point => {
@@ -124,5 +128,13 @@ export const handleMouseUp = ({
     if (e.button === 2) {
         panStartRef.current = null;
         lastPanOffsetRef.current = { ...panOffsetRef.current };
+    }
+};
+
+export const handleUndo = ({
+    strokesRef,
+}: handleUndoProps) => {
+    if (strokesRef.current) {
+        strokesRef.current.pop();
     }
 };

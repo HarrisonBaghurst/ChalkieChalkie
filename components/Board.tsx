@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import drawToCanvas from '@/lib/canvasDrawing';
-import { handleMouseDown, handleMouseMove, handleMouseUp } from '@/lib/canvasInputs';
+import { handleMouseDown, handleMouseMove, handleMouseUp, handleUndo } from '@/lib/canvasInputs';
 import { Point, Stroke } from '@/types/strokeTypes';
 
 const Board = () => {
@@ -46,6 +46,18 @@ const Board = () => {
         canvas.addEventListener('contextmenu', preventContextMenu);
         return () => canvas.removeEventListener('contextmenu', preventContextMenu);
     }, []);
+
+    // create event listeners for keybinds 
+    useEffect(() => {
+        const onKeypress = (event: KeyboardEvent) => {
+            if (event.ctrlKey && event.key === 'z') {
+                event.preventDefault();
+                handleUndo({ strokesRef });
+            }
+        }
+        document.addEventListener('keydown', onKeypress);
+        return () => document.removeEventListener('keydown', onKeypress);
+    })
 
     return (
         <canvas
