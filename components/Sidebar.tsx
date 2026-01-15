@@ -4,15 +4,16 @@ import { RefObject, useState } from "react";
 import { motion } from 'framer-motion';
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { handleUndo } from "@/lib/canvasInputs";
+import { handleRedo, handleUndo } from "@/lib/canvasInputs";
 import { Stroke } from '@/types/strokeTypes';
 
 type SidebarProps = {
     currentColourRef: RefObject<string>;
     strokesRef: RefObject<Stroke[]>;
+    undoneStrokesRef: RefObject<Stroke[]>;
 }
 
-const Sidebar = ({ currentColourRef, strokesRef }: SidebarProps) => {
+const Sidebar = ({ currentColourRef, strokesRef, undoneStrokesRef }: SidebarProps) => {
     const tools: ([string, number, string])[] = [
         ['/icons/pencil.svg', 90, '#ffffff'],
         ['/icons/crayon.svg', 270, '#edd973']
@@ -62,7 +63,7 @@ const Sidebar = ({ currentColourRef, strokesRef }: SidebarProps) => {
                 <div className="flex justify-center w-full mt-(--padding) items-center">
                     <button
                         className="w-12 h-12 cursor-pointer flex justify-center items-center"
-                        onClick={() => handleUndo({ strokesRef })}
+                        onClick={() => handleUndo({ strokesRef, undoneStrokesRef })}
                     >
                         <Image
                             src={'/icons/undo.svg'}
@@ -73,7 +74,10 @@ const Sidebar = ({ currentColourRef, strokesRef }: SidebarProps) => {
                         />
                     </button>
                     <div className="h-8 w-0.75 rounded-full bg-(--arrow-color)" />
-                    <button className="w-12 h-12 cursor-pointer flex justify-center items-center">
+                    <button
+                        className="w-12 h-12 cursor-pointer flex justify-center items-center"
+                        onClick={() => handleRedo({ strokesRef, undoneStrokesRef })}
+                    >
                         <Image
                             src={'/icons/undo.svg'}
                             alt="undo arrow"

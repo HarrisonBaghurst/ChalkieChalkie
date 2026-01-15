@@ -34,7 +34,13 @@ type handleMouseUpParameters = {
 
 type handleUndoProps = {
     strokesRef: RefObject<Stroke[]>;
-}
+    undoneStrokesRef: RefObject<Stroke[]>;
+};
+
+type handleRedoProps = {
+    strokesRef: RefObject<Stroke[]>;
+    undoneStrokesRef: RefObject<Stroke[]>;
+};
 
 // --- helper ---
 
@@ -133,8 +139,24 @@ export const handleMouseUp = ({
 
 export const handleUndo = ({
     strokesRef,
+    undoneStrokesRef,
 }: handleUndoProps) => {
     if (strokesRef.current) {
-        strokesRef.current.pop();
+        const undoneStroke = strokesRef.current.pop();
+        if (undoneStroke && undoneStrokesRef.current) {
+            undoneStrokesRef.current.push(undoneStroke);
+        }
+    }
+};
+
+export const handleRedo = ({
+    strokesRef,
+    undoneStrokesRef,
+}: handleRedoProps) => {
+    if (undoneStrokesRef.current) {
+        const redoneStroke = undoneStrokesRef.current.pop();
+        if (redoneStroke && strokesRef.current) {
+            strokesRef.current.push(redoneStroke);
+        }
     }
 };

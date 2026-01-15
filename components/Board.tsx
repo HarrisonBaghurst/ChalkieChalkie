@@ -11,6 +11,7 @@ const Board = () => {
 
     // refs for mutable data
     const strokesRef = useRef<Stroke[]>([]);
+    const undoneStrokesRef = useRef<Stroke[]>([]);
     const currentStrokeRef = useRef<Stroke | null>(null);
     const panOffsetRef = useRef<Point>({ x: 0, y: 0 });
     const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
@@ -53,7 +54,7 @@ const Board = () => {
         const onKeypress = (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key === 'z') {
                 event.preventDefault();
-                handleUndo({ strokesRef });
+                handleUndo({ strokesRef, undoneStrokesRef });
             }
         }
         document.addEventListener('keydown', onKeypress);
@@ -65,6 +66,7 @@ const Board = () => {
             <Sidebar
                 currentColourRef={currentColourRef}
                 strokesRef={strokesRef}
+                undoneStrokesRef={undoneStrokesRef}
             />
             <canvas
                 ref={canvasRef}
