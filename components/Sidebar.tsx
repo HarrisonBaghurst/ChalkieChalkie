@@ -7,11 +7,7 @@ import Image from "next/image";
 const Sidebar = () => {
     const tools: ([string, number])[] = [
         ['/icons/pencil.svg', 90],
-        ['/icons/crayon.svg', 270],
-        ['', 0],
-        ['', 0],
-        ['', 0],
-        ['', 0]
+        ['/icons/crayon.svg', 270]
     ];
 
     const [currentTool, setCurrentTool] = useState<number>(0);
@@ -40,8 +36,9 @@ const Sidebar = () => {
                                 src={tool[0]}
                                 width={0}
                                 height={0}
-                                alt="this"
-                                className={`w-full h-full rotate-${tool[1]} scale-270`}
+                                alt="tool"
+                                style={{ transform: `rotate(${tool[1]}deg)` }}
+                                className='w-full h-full scale-270'
                             />
                         ) : (<></>)
                     }
