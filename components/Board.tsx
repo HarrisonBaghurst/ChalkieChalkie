@@ -82,11 +82,6 @@ const Board = () => {
 
     return (
         <>
-            <Sidebar
-                currentColourRef={currentColourRef}
-                strokesRef={strokesRef}
-                undoneStrokesRef={undoneStrokesRef}
-            />
             {others.map(({ connectionId, presence }) => {
                 if (!presence?.cursor) return null;
                 return (
@@ -98,6 +93,11 @@ const Board = () => {
                     />
                 );
             })}
+            <Sidebar
+                currentColourRef={currentColourRef}
+                strokesRef={strokesRef}
+                undoneStrokesRef={undoneStrokesRef}
+            />
             <canvas
                 ref={canvasRef}
                 className="w-screen h-screen graph-paper"
