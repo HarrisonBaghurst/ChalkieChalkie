@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Baskerville";
-  src: url("/fonts/LibreBaskerville.ttf") format("truetype");
+  font-family: "Young";
+  src: url("/fonts/YoungSerif-Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Work";
+  src: url("/fonts/WorkSans-Medium.ttf") format("truetype");
   font-weight: 400;
 }
 
@@ -27,7 +33,8 @@
 }
 
 @theme inline {
-  --font-baskerville: "Baskerville";
+  --font-young: "Young";
+  --font-work: "Work";
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -62,10 +69,16 @@
     border-radius: var(--border-radius-small);
     box-shadow: 0 0 1px 1px var(--card-child-shadow);
   }
+
+  .button-style {
+    background-color: var(--card-child-background);
+    border-radius: 100%;
+    box-shadow: 0 0 1px 1px var(--card-child-shadow);
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Baskerville";
+  font-family: "Work";
 }

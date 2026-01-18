@@ -12,13 +12,21 @@ const page = () => {
     }
 
     return (
-        <div className='p-4'>
-            <button
-                className='card-style px-4 py-2 cursor-pointer'
-                onClick={createBoard}
-            >
-                Create Board
-            </button>
+        <div className='w-dvw h-dvh flex justify-center items-center'>
+            <div className='flex justify-center flex-col items-center'>
+                <h1 className='text-8xl font-young'>
+                    Chalkie Chalkie
+                </h1>
+                <p className='text-4xl text-foreground-second pt-4'>
+                    Online collaborative whiteboard
+                </p>
+                <button
+                    className='button-style px-6 py-3 cursor-pointer mt-14 text-3xl'
+                    onClick={createBoard}
+                >
+                    Create new board
+                </button>
+            </div>
         </div>
     )
 
