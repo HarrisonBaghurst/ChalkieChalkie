@@ -20,7 +20,7 @@ const page = () => {
                     <h1 className='text-5xl font-young'>
                         Chalkie Chalkie
                     </h1>
-                    <p className='text-sm text-foreground-second pt-4'>
+                    <p className='text-sm text-foreground-second pt-2'>
                         An interactive, collaborative whiteboard for online tutoring.
                     </p>
                     <div className='flex gap-6 mt-8'>
