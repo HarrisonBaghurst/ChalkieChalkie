@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "Young";
-  src: url("/fonts/YoungSerif-Regular.ttf") format("truetype");
+  font-family: "MontReg";
+  src: url("/fonts/Montserrat-Regular.ttf") format("truetype");
   font-weight: 400;
 }
 
 @font-face {
-  font-family: "Work";
-  src: url("/fonts/WorkSans-Medium.ttf") format("truetype");
+  font-family: "MontBold";
+  src: url("/fonts/Montserrat-SemiBold.ttf") format("truetype");
   font-weight: 400;
 }
 
 :root {
-  --background: hsl(0, 1%, 14%);
+  --background: hsl(0, 0%, 8%);
   --foreground: hsl(0, 0, 92%);
   --foreground-second: hsl(0, 0, 60%);
 
@@ -35,8 +35,8 @@
 }
 
 @theme inline {
-  --font-young: "Young";
-  --font-work: "Work";
+  --font-mont-bold: "MontBold";
+  --font-mont-reg: "MontReg";
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -87,5 +87,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Work";
+  font-family: "MontReg";
 }

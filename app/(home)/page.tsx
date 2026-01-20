@@ -1,7 +1,6 @@
 'use client'
 
 import Button from '@/components/Button';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -15,15 +14,15 @@ const page = () => {
 
     return (
         <>
-            <div className='p-[10%] flex justify-between items-center'>
-                <div className='flex justify-center flex-col'>
-                    <h1 className='text-5xl font-young'>
-                        Chalkie Chalkie
+            <div className='bg-card-background rounded-b-xl mx-[12%] h-8 text-xs flex items-center px-4 justify-between'>
+                Chalkie Chalkie
+            </div>
+            <div className='mt-[20dvh] flex justify-center'>
+                <div className='flex flex-col items-center justify-center gap-8'>
+                    <h1 className='font-mont-bold text-4xl'>
+                        Your collaborative Teaching tool
                     </h1>
-                    <p className='text-sm text-foreground-second pt-2'>
-                        An interactive, collaborative whiteboard for online tutoring.
-                    </p>
-                    <div className='flex gap-6 mt-8'>
+                    <div className='flex gap-8'>
                         <Button
                             text='Create new board'
                             handleClick={createBoard}
@@ -35,27 +34,6 @@ const page = () => {
                             variant='secondary'
                         />
                     </div>
-                </div>
-                <Image
-                    src={'/imgs/boardExample.png'}
-                    alt='Whiteboard Image'
-                    width={2048}
-                    height={0}
-                    className='card-style w-[40dvw]'
-                />
-            </div>
-            <div className='px-[10%] flex flex-col gap-10 pb-20'>
-                <div className='text-xl'>
-                    Your existing boards
-                </div>
-                <div className='grid grid-cols-3 gap-8'>
-                    {Array.from({ length: 5 }).map((_, index) => (
-                        <div
-                            key={index}
-                            className='card-style aspect-video'
-                        >
-                        </div>
-                    ))}
                 </div>
             </div>
         </>
