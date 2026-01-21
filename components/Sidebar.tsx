@@ -37,7 +37,7 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
                             setCurrentTool(index);
                             currentColourRef.current = tool[2];
                         }}
-                        className="h-15 w-[110px] relative cursor-pointer overflow-hidden p-(--padding)"
+                        className="h-18 w-[110px] relative cursor-pointer overflow-hidden p-(--padding)"
                         animate={{
                             width: currentTool === index ? 145 : hoveredTool === index ? 125 : 110
                         }}
@@ -49,7 +49,7 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
                         onHoverStart={() => setHoveredTool(index)}
                         onHoverEnd={() => setHoveredTool(null)}
                     >
-                        <div className="absolute top-1/2 -translate-y-1/2 left-0 w-[145px] h-15">
+                        <div className="absolute top-1/2 -translate-y-1/2 left-0 w-[145px] h-18">
                             <Image
                                 src={tool[0]}
                                 alt="tool"
@@ -63,9 +63,9 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
                         </div>
                     </motion.div>
                 ))}
-                <div className="flex justify-center w-full mt-(--padding) items-center">
+                <div className="flex justify-evenly w-full mt-(--padding) items-center">
                     <button
-                        className="w-12 h-12 cursor-pointer flex justify-center items-center"
+                        className="w-14 h-14 cursor-pointer flex justify-center items-center"
                         onClick={() => undo()}
                     >
                         <Image
@@ -78,7 +78,7 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
                     </button>
                     <div className="h-8 w-0.75 rounded-full bg-(--arrow-color)" />
                     <button
-                        className="w-12 h-12 cursor-pointer flex justify-center items-center"
+                        className="w-14 h-14 cursor-pointer flex justify-center items-center"
                         onClick={() => redo()}
                     >
                         <Image
