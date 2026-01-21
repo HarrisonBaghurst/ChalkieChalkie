@@ -2,6 +2,7 @@
 
 import Button from '@/components/Button';
 import gsap from 'gsap';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid'
@@ -49,8 +50,15 @@ const page = () => {
 
     return (
         <div className='bg-background min-h-dvh'>
-            <div className='bg-card-background rounded-b-xl mx-[12%] h-12 text-lg flex items-center px-4 justify-between'>
+            <div className='bg-card-background rounded-b-xl mx-[8%] h-12 text-lg flex items-center px-4 justify-between'>
                 Chalkie Chalkie
+                <Image
+                    src={'/icons/user.svg'}
+                    width={0}
+                    height={0}
+                    alt='user'
+                    className='h-6 w-6'
+                />
             </div>
             <div className='mt-[20dvh] flex justify-center'>
                 <div className='flex flex-col items-center justify-center gap-12'>
@@ -78,11 +86,13 @@ const page = () => {
                     text='Create workspace'
                     handleClick={createBoard}
                     variant='primary'
+                    icon='/icons/plus.svg'
                 />
                 <Button
                     text='Join workspace'
                     handleClick={() => { }}
                     variant='secondary'
+                    icon='/icons/search.svg'
                 />
             </div>
         </div>
