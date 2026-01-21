@@ -49,53 +49,43 @@ const page = () => {
     }, [wordIndex])
 
     return (
-        <div className='bg-background min-h-dvh'>
-            <div className='bg-card-background rounded-b-xl mx-[8%] h-12 text-lg flex items-center px-4 justify-between'>
-                <div className='cursor-default'>
-                    Chalkie Chalkie
+        <div className='bg-background w-dvw h-dvh flex items-center justify-center'>
+            <div>
+                <div className='flex justify-center'>
+                    <div className='flex flex-col items-center justify-center gap-12'>
+                        <h1 className='font-mont-bold text-5xl bg'>
+                            Your collaborative
+                            <span className='inline-flex overflow-hidden py-3  m-3 w-58 justify-center'>
+                                {currentWord.split('').map((char, i) => (
+                                    <span
+                                        key={`${char}-${i}`}
+                                        ref={(el) => {
+                                            if (el) lettersRef.current[i] = el;
+                                        }}
+                                        className='inline-block'
+                                    >
+                                        {char}
+                                    </span>
+                                ))}
+                            </span>
+                            tool
+                        </h1>
+                    </div>
                 </div>
-                <Image
-                    src={'/icons/user.svg'}
-                    width={0}
-                    height={0}
-                    alt='user'
-                    className='h-6 w-6 cursor-pointer'
-                />
-            </div>
-            <div className='mt-[20dvh] flex justify-center'>
-                <div className='flex flex-col items-center justify-center gap-12'>
-                    <h1 className='font-mont-bold text-5xl bg'>
-                        Your collaborative
-                        <span className='inline-flex overflow-hidden py-3  m-3 w-58 justify-center'>
-                            {currentWord.split('').map((char, i) => (
-                                <span
-                                    key={`${char}-${i}`}
-                                    ref={(el) => {
-                                        if (el) lettersRef.current[i] = el;
-                                    }}
-                                    className='inline-block'
-                                >
-                                    {char}
-                                </span>
-                            ))}
-                        </span>
-                        tool
-                    </h1>
+                <div className='flex justify-center gap-12 my-[4dvh]'>
+                    <Button
+                        text='Create workspace'
+                        handleClick={createBoard}
+                        variant='primary'
+                        icon='/icons/plus.svg'
+                    />
+                    <Button
+                        text='Join workspace'
+                        handleClick={() => { }}
+                        variant='secondary'
+                        icon='/icons/search.svg'
+                    />
                 </div>
-            </div>
-            <div className='flex justify-center gap-12 mt-[4dvh]'>
-                <Button
-                    text='Create workspace'
-                    handleClick={createBoard}
-                    variant='primary'
-                    icon='/icons/plus.svg'
-                />
-                <Button
-                    text='Join workspace'
-                    handleClick={() => { }}
-                    variant='secondary'
-                    icon='/icons/search.svg'
-                />
             </div>
         </div>
     )

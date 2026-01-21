@@ -6,7 +6,7 @@ type ButtonProps = {
     text: string;
     handleClick: () => void;
     variant: 'primary' | 'secondary';
-    icon: string;
+    icon?: string;
 }
 
 const Button = ({ text, handleClick, variant, icon }: ButtonProps) => {
@@ -20,13 +20,15 @@ const Button = ({ text, handleClick, variant, icon }: ButtonProps) => {
             whileHover={{}}
             transition={{}}
         >
-            <Image
-                src={icon}
-                alt="button icon"
-                width={0}
-                height={0}
-                className="h-8 w-8"
-            />
+            {icon && (
+                <Image
+                    src={icon}
+                    alt="button icon"
+                    width={0}
+                    height={0}
+                    className="h-8 w-8"
+                />
+            )}
             {text}
             <div className={cn("absolute bottom-0 right-0 w-6 h-6 bg-yellow-400/25 backdrop-blur-sm rounded-full translate-x-1/4 translate-y-1/4",
                 variant === 'primary' ?

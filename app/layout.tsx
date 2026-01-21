@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Chalkie Chalkie | Online whiteboard",
@@ -12,14 +14,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`antialiased`}
-      >
-        <div className="">
-          {children}
-        </div>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={`antialiased`}
+        >
+          <div className="relative w-dvw h-dvh">
+            <Header />
+            {children}
+          </div>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
