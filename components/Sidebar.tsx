@@ -3,8 +3,6 @@
 import { RefObject, useState } from "react";
 import { motion } from 'framer-motion';
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { Stroke } from '@/types/strokeTypes';
 import { useHistory } from "@liveblocks/react";
 
 type SidebarProps = {
@@ -12,9 +10,23 @@ type SidebarProps = {
 }
 
 const Sidebar = ({ currentColourRef }: SidebarProps) => {
-    const tools: ([string, number, string])[] = [
-        ['/icons/pencil.svg', 90, '#ffffff'],
-        ['/icons/crayon.svg', 270, '#edd973']
+    const tools = [
+        {
+            'code': '#dddddd',
+            'name': 'White',
+        },
+        {
+            'code': '#ffba00',
+            'name': 'Yellow',
+        },
+        {
+            'code': '#ed482b',
+            'name': 'Red',
+        },
+        {
+            'code': '#306bc9',
+            'name': 'Blue',
+        },
     ];
 
     const [currentTool, setCurrentTool] = useState<number>(0);
@@ -23,32 +35,32 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
     const { undo, redo } = useHistory();
 
     return (
-        <div className="fixed bg-card-background rounded-[5px] right-2 top-1/2 -translate-y-1/2 p-4 overflow-hidden">
-            <div className="flex gap-5 flex-col">
+        <div className="fixed bg-card-background rounded-[10px] right-2 top-1/2 -translate-y-1/2 p-4 overflow-hidden">
+            <div className="flex gap-4 flex-col items-center">
                 {tools.map((tool, index) => (
                     <motion.div
                         key={index}
-                        onClick={() => {
-                            setCurrentTool(index);
-                            currentColourRef.current = tool[2];
-                        }}
-                        className="w-35 h-8 relative will-change-transform translate-x-8"
-                        animate={{
-                            translateX: currentTool === index ? '-2rem' : hoveredTool === index ? '-0.75rem' : 0
-                        }}
-                        transition={{
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 25,
-                        }}
+                        className="w-20 h-26 relative overflow-hidden bg-white rounded-sm shadow-sm perspective-distant"
                         onHoverStart={() => setHoveredTool(index)}
                         onHoverEnd={() => setHoveredTool(null)}
+                        onClick={() => {
+                            setCurrentTool(index);
+                            currentColourRef.current = tool.code;
+                        }}
+                        animate={{
+                            rotateZ: currentTool === index ? -5 : hoveredTool === index ? -2 : 0
+                        }}
                     >
-                        <Image
-                            src={tool[0]}
-                            alt="tool"
-                            fill
+                        <div
+                            className="w-18 h-18 left-1 top-1 absolute rounded-xs"
+                            style={{
+                                backgroundColor: `${tool.code}`
+                            }}
+
                         />
+                        <p className="text-background text-sm absolute bottom-1 left-1 cursor-default">
+                            {tool.name}
+                        </p>
                     </motion.div>
                 ))}
                 <div className="flex justify-evenly mt-(--padding) items-center rounded-full">
@@ -79,78 +91,6 @@ const Sidebar = ({ currentColourRef }: SidebarProps) => {
                     </button>
                 </div>
             </div>
-            {/* 
-                
-            <div className="fixed right-(--gap) top-1/2 -translate-y-1/2 flex flex-col gap-(--gap)">
-                <div
-                    className={cn(
-                        'card-style flex flex-col gap-(--padding) p-(--padding) items-end',
-                        'w-[calc(110px+var(--padding)*2)]'
-                    )}
-                >
-                    {tools.map((tool, index) => (
-                        <motion.div
-                            key={index}
-                            onClick={() => {
-                                setCurrentTool(index);
-                                currentColourRef.current = tool[2];
-                            }}
-                            className="h-18 w-[110px] relative cursor-pointer overflow-hidden p-(--padding)"
-                            animate={{
-                                width: currentTool === index ? 145 : hoveredTool === index ? 125 : 110
-                            }}
-                            transition={{
-                                type: 'spring',
-                                stiffness: 300,
-                                damping: 25,
-                            }}
-                            onHoverStart={() => setHoveredTool(index)}
-                            onHoverEnd={() => setHoveredTool(null)}
-                        >
-                            <div className="absolute top-1/2 -translate-y-1/2 left-0 w-[145px] h-18">
-                                <Image
-                                    src={tool[0]}
-                                    alt="tool"
-                                    width={0}
-                                    height={0}
-                                    className="w-full h-full scale-210"
-                                    style={{
-                                        rotate: `${tool[1]}deg`
-                                    }}
-                                />
-                            </div>
-                        </motion.div>
-                    ))}
-                    <div className="flex justify-evenly w-full mt-(--padding) items-center">
-                        <button
-                            className="w-14 h-14 cursor-pointer flex justify-center items-center"
-                            onClick={() => undo()}
-                        >
-                            <Image
-                                src={'/icons/undo.svg'}
-                                alt="undo arrow"
-                                width={0}
-                                height={0}
-                                className="w-7/10 h-7/10"
-                            />
-                        </button>
-                        <div className="h-8 w-0.75 rounded-full bg-(--arrow-color)" />
-                        <button
-                            className="w-14 h-14 cursor-pointer flex justify-center items-center"
-                            onClick={() => redo()}
-                        >
-                            <Image
-                                src={'/icons/undo.svg'}
-                                alt="undo arrow"
-                                width={0}
-                                height={0}
-                                className="w-7/10 h-7/10 scale-x-[-1]"
-                            />
-                        </button>
-                    </div>
-                </div>
-            </div>
-            */}
         </div>
     )
 }
