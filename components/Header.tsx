@@ -11,9 +11,9 @@ const Header = () => {
     }
 
     return (
-        <div className='top-0 fixed w-[84%] bg-card-background rounded-b-xl mx-[8%] h-12 text-lg flex items-center px-4 justify-between z-500'>
+        <div className='top-2 fixed w-[80%] rounded-full mx-[10%] h-10 text-sm flex items-center px-2 justify-between z-500 bg-linear-to-b from-card-background/60 to-[hsl(0,0,18%)]/60 backdrop-blur-md border-b-white/25 border-b'>
             <button
-                className='cursor-pointer'
+                className='cursor-pointer pl-2'
                 onClick={returnHome}
             >
                 Chalkie Chalkie

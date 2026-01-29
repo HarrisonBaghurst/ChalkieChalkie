@@ -1,8 +1,8 @@
 'use client'
 
 import Button from '@/components/Button';
+import DotGrid from '@/components/DotGrid';
 import gsap from 'gsap';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid'
@@ -50,12 +50,25 @@ const page = () => {
 
     return (
         <div className='bg-background w-dvw h-dvh flex items-center justify-center'>
-            <div>
+            <div className='fixed w-dvw h-dvh top-0 left-0'>
+                <DotGrid
+                    dotSize={3}
+                    gap={15}
+                    baseColor="#2e2f30"
+                    activeColor="#1098b5"
+                    proximity={120}
+                    shockRadius={20}
+                    shockStrength={1}
+                    resistance={1700}
+                    returnDuration={0.5}
+                />
+            </div>
+            <div className='z-10 bg-background/60 p-15 rounded-full shadow-[0px_0px_84px_50px_rgba(2,8,18,0.6)]'>
                 <div className='flex justify-center'>
                     <div className='flex flex-col items-center justify-center gap-12'>
-                        <h1 className='font-mont-bold text-5xl bg'>
-                            Your collaborative
-                            <span className='inline-flex overflow-hidden py-3  m-3 w-58 justify-center'>
+                        <h1 className='font-mont-bold text-4xl bg'>
+                            Your
+                            <span className='inline-flex overflow-hidden py-3  m-3 w-44 justify-center'>
                                 {currentWord.split('').map((char, i) => (
                                     <span
                                         key={`${char}-${i}`}
@@ -72,7 +85,7 @@ const page = () => {
                         </h1>
                     </div>
                 </div>
-                <div className='flex justify-center gap-12 my-[4dvh]'>
+                <div className='flex justify-center gap-8 my-[2dvh]'>
                     <Button
                         text='Create workspace'
                         handleClick={createBoard}

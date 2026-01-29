@@ -104,7 +104,7 @@ const Board = () => {
     });
 
     return (
-        <>
+        <div className='w-dvw h-dvh overflow-hidden'>
             {others.map(({ connectionId, presence }) => {
                 if (!presence?.cursor) return null;
                 return (
@@ -122,7 +122,7 @@ const Board = () => {
             />
             <canvas
                 ref={canvasRef}
-                className="w-screen h-screen graph-paper"
+                className="w-screen h-screen graph-paper overflow-hidden"
                 onMouseDown={(e) =>
                     handleMouseDown({
                         e,
@@ -161,7 +161,7 @@ const Board = () => {
                     })
                 }
             />
-        </>
+        </div>
     );
 };
 
