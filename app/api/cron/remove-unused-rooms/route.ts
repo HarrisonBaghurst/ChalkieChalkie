@@ -7,7 +7,7 @@ const liveblocks = new Liveblocks({
     secret: process.env.LIVEBLOCKS_SECRET_KEY!,
 });
 
-const INACTIVITY_HOURS = 0.00001;
+const INACTIVITY_HOURS = 5;
 
 export async function GET() {
     const cutoff = new Date(
