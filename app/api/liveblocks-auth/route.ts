@@ -1,3 +1,4 @@
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Liveblocks } from "@liveblocks/node";
 import { NextRequest } from "next/server";
@@ -21,6 +22,19 @@ export async function POST(request: NextRequest) {
 
     // get the room ID from client request 
     const { room } = await request.json();
+
+    // update Supabase room info
+    await supabaseAdmin
+        .from('Room')
+        .upsert(
+            {
+                id: room,
+                lastActivityAt: new Date().toISOString(),
+            },
+            {
+                onConflict: 'id'
+            }
+        );
 
     // create a Liveblocks session with Clerk user data
     const session = liveblocks.prepareSession(userId, {

@@ -10,3 +10,4 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - **Vercel**: Hosting and cron jobs 
 - **Liveblocks**: Real time connection handling
 - **Clerk**: User accounts and authentication  
+- **Supabase**: Recent room information 
