@@ -1,6 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Liveblocks } from "@liveblocks/node";
-import { headers } from "next/headers";
 
 export const runtime = 'nodejs';
 
@@ -10,11 +9,12 @@ const liveblocks = new Liveblocks({
 
 const INACTIVITY_HOURS = 5;
 
-export async function GET() {
+export async function GET(request: Request) {
 
-    const authHeader = (await headers()).get('authorization');
+    const { searchParams } = new URL(request.url);
+    const secret = searchParams.get("secret");
 
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET!}`) {
+    if (secret !== process.env.CRON_SECRET!) {
         return Response.json({ message: 'Unauthorised' }, { status: 401 })
     }
 

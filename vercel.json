@@ -2,11 +2,8 @@
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "crons": [
         {
-            "path": "/api/cron/remove-unused-rooms",
-            "schedule": "0 5 * * *",
-            "headers": {
-                "authorization": "Bearer 5afc920f-840c-4df7-83f7-775dd5d17c71"
-            }
+            "path": "/api/cron/remove-unused-rooms?secret=5afc920f-840c-4df7-83f7-775dd5d17c71",
+            "schedule": "0 5 * * *"
         }
     ]
 }
