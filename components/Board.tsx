@@ -122,7 +122,7 @@ const Board = () => {
             />
             <canvas
                 ref={canvasRef}
-                className="w-screen h-screen graph-paper overflow-hidden"
+                className="w-screen h-screen dotted-paper overflow-hidden"
                 onMouseDown={(e) =>
                     handleMouseDown({
                         e,

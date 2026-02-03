@@ -63,7 +63,7 @@ const page = () => {
                     returnDuration={0.5}
                 />
             </div>
-            <div className='z-10 bg-background/60 p-15 rounded-full shadow-[0px_0px_84px_50px_rgba(2,8,18,0.6)]'>
+            <div className='z-10 bg-background/75 p-15 rounded-full shadow-[0px_0px_84px_50px_rgba(20,20,20,0.75)]'>
                 <div className='flex justify-center'>
                     <div className='flex flex-col items-center justify-center gap-12'>
                         <h1 className='font-mont-bold text-4xl bg'>

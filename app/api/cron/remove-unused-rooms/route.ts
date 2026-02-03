@@ -7,16 +7,9 @@ const liveblocks = new Liveblocks({
     secret: process.env.LIVEBLOCKS_SECRET_KEY!,
 });
 
-const INACTIVITY_HOURS = 5;
+const INACTIVITY_HOURS = 24;
 
-export async function GET(request: Request) {
-
-    const { searchParams } = new URL(request.url);
-    const secret = searchParams.get("secret");
-
-    if (secret !== process.env.CRON_SECRET!) {
-        return Response.json({ message: 'Unauthorised' }, { status: 401 })
-    }
+export async function GET() {
 
     const cutoff = new Date(
         Date.now() - INACTIVITY_HOURS * 60 * 60 * 1000

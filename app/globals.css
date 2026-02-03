@@ -13,9 +13,9 @@
 }
 
 :root {
-  --background: hsl(219, 78%, 4%);
+  --background: hsl(0, 0%, 8%);
   --foreground: hsl(0, 0, 92%);
-  --foreground-second: hsl(0, 0, 60%);
+  --foreground-second: hsl(0, 0%, 60%);
 
   --card-background: hsl(0, 1%, 25%);
   --card-shadow: hsl(0, 0, 12%);
@@ -58,6 +58,11 @@
       10px 10px,
       50px 50px,
       50px 50px;
+  }
+
+  .dotted-paper {
+    background-image: radial-gradient(#2e2f30 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
   }
 
   .card-style {
