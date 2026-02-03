@@ -39,7 +39,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                 {tools.map((tool, index) => (
                     <motion.div
                         key={index}
-                        className="w-10 h-fit rounded-md p-2 aspect-square relative border-[1.25px] border-foreground-second cursor-pointer"
+                        className="w-10 h-fit rounded-md p-2 aspect-square relative cursor-pointer bg-card-background border-b border-b-white/25"
                         animate={{ width: currentTool === index ? '3.5rem' : hoveredTool === index ? '2.75rem' : '2.5rem' }}
                         onClick={() => {
                             setCurrentTool(index);
@@ -49,9 +49,8 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                         onHoverStart={() => setHoveredTool(index)}
                         onHoverEnd={() => setHoveredTool(null)}
                         transition={{
-                            type: 'spring',
-                            stiffness: 500,
-                            damping: 25,
+                            ease: 'easeInOut',
+                            duration: 0.2,
                         }}
                     >
                         <div className="relative w-full h-full">
@@ -66,7 +65,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
             </div>
             <div className="flex gap-2 items-end">
                 <button
-                    className="relative p-2 w-10 h-fit aspect-square rounded-md border-[1.25px] border-foreground-second cursor-pointer"
+                    className="relative p-2 w-10 h-fit aspect-square rounded-md bg-card-background border-b border-b-white/25 cursor-pointer"
                     onClick={undo}
                 >
                     <div className="relative w-full h-full">
@@ -78,7 +77,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                     </div>
                 </button>
                 <button
-                    className="relative p-2 w-10 h-fit aspect-square rounded-md border-[1.25px] border-foreground-second cursor-pointer"
+                    className="relative p-2 w-10 h-fit aspect-square rounded-md bg-card-background border-b border-b-white/25 cursor-pointer"
                     onClick={redo}
                 >
                     <div className="relative w-full h-full">

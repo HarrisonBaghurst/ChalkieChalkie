@@ -1,7 +1,6 @@
 'use client'
 
 import Button from '@/components/Button';
-import DotGrid from '@/components/DotGrid';
 import gsap from 'gsap';
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react';
@@ -50,20 +49,7 @@ const page = () => {
 
     return (
         <div className='bg-background w-dvw h-dvh flex items-center justify-center'>
-            <div className='fixed w-dvw h-dvh top-0 left-0'>
-                <DotGrid
-                    dotSize={3}
-                    gap={15}
-                    baseColor="#2e2f30"
-                    activeColor="#1098b5"
-                    proximity={120}
-                    shockRadius={20}
-                    shockStrength={1}
-                    resistance={1700}
-                    returnDuration={0.5}
-                />
-            </div>
-            <div className='z-10 bg-background/75 p-15 rounded-full shadow-[0px_0px_84px_50px_rgba(20,20,20,0.75)]'>
+            <div className=''>
                 <div className='flex justify-center'>
                     <div className='flex flex-col items-center justify-center gap-12'>
                         <h1 className='font-mont-bold text-4xl bg'>

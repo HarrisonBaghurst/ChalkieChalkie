@@ -13,7 +13,7 @@
 }
 
 :root {
-  --background: hsl(0, 0%, 8%);
+  --background: hsl(60, 18%, 3%);
   --foreground: hsl(0, 0, 92%);
   --foreground-second: hsl(0, 0%, 60%);
 
@@ -61,7 +61,7 @@
   }
 
   .dotted-paper {
-    background-image: radial-gradient(#2e2f30 1.5px, transparent 1.5px);
+    background-image: radial-gradient(#1b1b19 1.5px, transparent 1.5px);
     background-size: 20px 20px;
   }
 
