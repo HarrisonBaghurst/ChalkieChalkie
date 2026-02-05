@@ -13,7 +13,7 @@
 }
 
 :root {
-  --background: hsl(60, 18%, 3%);
+  --background: hsl(60, 20%, 3%);
   --foreground: hsl(0, 0, 92%);
   --foreground-second: hsl(0, 0%, 60%);
 
