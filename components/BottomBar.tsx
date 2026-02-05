@@ -11,14 +11,14 @@ type BottomBarProps = {
     currentToolRef: RefObject<Tools>;
 }
 
-const RADIUS = 275;
-const ANGLE_SPREAD = 50;
+const RADIUS = 200;
+const ANGLE_SPREAD = 85;
 
 const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
     const tools: { 'tool': Tools, 'code': string, 'name': string }[] = [
         {
             'tool': 'pen',
-            'code': '#dddddd',
+            'code': '#eeeeee',
             'name': 'White',
         },
         {
@@ -31,23 +31,27 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
     const colours: { 'colour': string, 'code': string }[] = [
         {
             'colour': 'White',
-            'code': '#d1d0cd',
+            'code': '#eeeeee'
         },
         {
             'colour': 'Yellow',
-            'code': '#e8be25',
+            'code': '#ffbe0b',
         },
         {
-            'colour': 'Green',
-            'code': '#6fd141',
+            'colour': 'Orange',
+            'code': '#fb5607',
+        },
+        {
+            'colour': 'Pink',
+            'code': '#ff006e',
+        },
+        {
+            'colour': 'Purple',
+            'code': '#8338ec',
         },
         {
             'colour': 'Blue',
-            'code': '#2580e8',
-        },
-        {
-            'colour': 'Red',
-            'code': '#e82c25',
+            'code': '#3a86ff',
         },
     ]
 
@@ -56,6 +60,8 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
 
     const [currentColour, setCurrentColour] = useState<number>(0);
     const [hoveredColour, setHoveredColour] = useState<number | null>(null);
+
+    const [showColourSelect, setShowColourSelect] = useState<boolean>(false);
 
     const { undo, redo } = useHistory();
 
@@ -74,6 +80,12 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                             onClick={() => {
                                 setCurrentTool(index);
                                 currentToolRef.current = tool.tool;
+                                if (tool.tool === 'pen') {
+                                    setShowColourSelect(true);
+                                }
+                                else {
+                                    setShowColourSelect(false);
+                                }
                             }}
                             onHoverStart={() => setHoveredTool(index)}
                             onHoverEnd={() => setHoveredTool(null)}
@@ -135,9 +147,9 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                             key={index}
                             initial={false}
                             animate={{
-                                x: currentTool === 0 ? x : 0,
-                                y: currentTool === 0 ? y : 150,
-                                opacity: currentTool === 0 ? 100 : 0,
+                                x: showColourSelect ? x : 0,
+                                y: showColourSelect ? y : 150,
+                                opacity: showColourSelect ? 100 : 0,
                                 rotate: angle,
                                 scale: currentColour === index ? 1.15 : hoveredColour === index ? 1.05 : 1,
                             }}
@@ -146,6 +158,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                             onClick={() => {
                                 currentColourRef.current = colour.code;
                                 setCurrentColour(index);
+                                setShowColourSelect(false);
                             }}
                             onHoverStart={() => setHoveredColour(index)}
                             onHoverEnd={() => setHoveredColour(null)}

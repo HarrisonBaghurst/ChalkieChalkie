@@ -38,7 +38,7 @@ const Board = () => {
     // in progress stroke 
     const currentStrokeRef = useRef<Stroke | null>(null);
     const isDrawingRef = useRef(false);
-    const currentColourRef = useRef('#ffffff');
+    const currentColourRef = useRef('#eeeeee');
 
     // live cursor control - all clients 
     const others = useOthers();
