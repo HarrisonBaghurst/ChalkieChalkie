@@ -1,38 +1,47 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import UserCard from "./UserCard";
+import { userInfo } from "@/types/userTypes";
 
 type WorkspaceCardProps = {
     title: string;
     uuid: string;
     host: string;
-    collaborators: string[];
+    collaborators: userInfo[];
     lastEdited: Date;
     loading: boolean;
-}
+};
 
-const WorkspaceCard = ({ title, uuid, host, collaborators, lastEdited, loading }: WorkspaceCardProps) => {
+const WorkspaceCard = ({
+    title,
+    uuid,
+    host,
+    collaborators,
+    lastEdited,
+    loading,
+}: WorkspaceCardProps) => {
     const router = useRouter();
     const { user, isLoaded, isSignedIn } = useUser();
 
     const goToBoard = () => {
-        router.push(`/board/${uuid}`)
-    }
+        router.push(`/board/${uuid}`);
+    };
 
     const getOrdinal = (n: number) => {
         const s = ["th", "st", "nd", "rd"];
         const v = n % 100;
         return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    }
+    };
 
     if (loading || !isLoaded) return;
-    if (!isSignedIn || !user) return <p>Not signed in</p>
+    if (!isSignedIn || !user) return <p>Not signed in</p>;
 
     const weekday = new Intl.DateTimeFormat("en-GB", {
-        weekday: "long"
+        weekday: "long",
     }).format(lastEdited);
 
     const month = new Intl.DateTimeFormat("en-GB", {
-        month: "long"
+        month: "long",
     }).format(lastEdited);
 
     const dayWithOrdinal = getOrdinal(lastEdited.getDate());
@@ -47,33 +56,24 @@ const WorkspaceCard = ({ title, uuid, host, collaborators, lastEdited, loading }
             <div className="flex flex-col gap-4 pb-3">
                 <div>
                     <p className="text-sm text-foreground-second">
-                        {userId === host ? 'Host' : 'Guest'}
+                        {userId === host ? "Host" : "Guest"}
                     </p>
-                    <h3 className='font-mont-bold'>
-                        {title}
-                    </h3>
+                    <h3 className="font-mont-bold">{title}</h3>
                     <div className="w-full h-px bg-foreground-second mt-2" />
                 </div>
                 <div>
                     <p className="text-sm text-foreground-second pb-1">
                         Collaborators
                     </p>
-                    <div className='grid grid-cols-2 gap-4 flex-wrap'>
+                    <div className="grid grid-cols-2 gap-4 flex-wrap">
                         {collaborators.map((collaborator, index) => (
-                            <div
+                            <UserCard
                                 key={index}
-                                className='w-full bg-white/3 py-2 pl-2 pr-2 rounded-sm flex gap-2 items-center'
-                            >
-                                <div className="bg-white/5 w-8 h-8 rounded-full" />
-                                <div className="">
-                                    <p className="text-sm text-foreground">
-                                        {collaborator.substring(0, 8)}
-                                    </p>
-                                    <p className="text-xs text-foreground-second">
-                                        {collaborator.substring(0, 8)}
-                                    </p>
-                                </div>
-                            </div>
+                                firstName={collaborator.firstName}
+                                lastName={collaborator.lastName}
+                                imageUrl={collaborator.imageUrl}
+                                isHost={collaborator.id === host}
+                            />
                         ))}
                     </div>
                 </div>
@@ -81,7 +81,7 @@ const WorkspaceCard = ({ title, uuid, host, collaborators, lastEdited, loading }
                     <p className="text-sm text-foreground-second">
                         Last edited
                     </p>
-                    <p className='text-sm bg-white/3 p-2 text-foreground'>
+                    <p className="text-sm bg-white/3 p-2 text-foreground">
                         {formattedLastEdited}
                     </p>
                 </div>
@@ -98,7 +98,7 @@ const WorkspaceCard = ({ title, uuid, host, collaborators, lastEdited, loading }
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default WorkspaceCard
+export default WorkspaceCard;
