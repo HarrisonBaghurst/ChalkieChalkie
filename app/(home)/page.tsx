@@ -1,6 +1,7 @@
 'use client'
 
 import Button from '@/components/Button';
+import Workspaces from '@/components/Workspaces';
 import gsap from 'gsap';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation'
@@ -49,7 +50,7 @@ const page = () => {
     }, [wordIndex])
 
     return (
-        <div className='bgmin-h-dvh'>
+        <div className=''>
             <div className='bg-background w-dvw h-dvh flex items-center justify-center overflow-hidden'>
                 <div className='w-dvw h-dvh absolute top-0 left-0 dotted-paper z-0'>
                     <div className='absolute left-[10%] bottom-[30%] w-100 h-20'>
@@ -107,6 +108,7 @@ const page = () => {
                     </div>
                 </div>
             </div>
+            <Workspaces />
         </div>
     )
 

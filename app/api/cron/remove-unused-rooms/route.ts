@@ -7,7 +7,7 @@ const liveblocks = new Liveblocks({
     secret: process.env.LIVEBLOCKS_SECRET_KEY!,
 });
 
-const INACTIVITY_HOURS = 24;
+const INACTIVITY_HOURS = 0.0001;
 
 export async function GET() {
 
@@ -18,7 +18,7 @@ export async function GET() {
     const { data: rooms, error } = await supabaseAdmin
         .from('Room')
         .select('id')
-        .lt('lastActivityAt', cutoff);
+        .lt('last_activity_at', cutoff);
 
     if (error) {
         console.error('Failed to fetch inactive rooms:', error);

@@ -23,18 +23,12 @@ export async function POST(request: NextRequest) {
     // get the room ID from client request 
     const { room } = await request.json();
 
-    // update Supabase room info
-    await supabaseAdmin
-        .from('Room')
-        .upsert(
-            {
-                id: room,
-                lastActivityAt: new Date().toISOString(),
-            },
-            {
-                onConflict: 'id'
-            }
-        );
+    // call Supabase function to handle data at room join
+    await supabaseAdmin.rpc('upsert_room', {
+        p_id: room,
+        p_last_activity_at: new Date().toISOString(),
+        p_user_id: userId,
+    });
 
     // create a Liveblocks session with Clerk user data
     const session = liveblocks.prepareSession(userId, {
