@@ -32,6 +32,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Additional maths scribbles on hero
 - [ ] Center clerk login page
 - [ ] Search workspaces by title
+- [ ] Workspace card loading state
 
 ### Whiteboard and UI
 
