@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
 import { RefObject, useState } from "react";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import Image from "next/image";
@@ -9,51 +9,51 @@ import Image from "next/image";
 type BottomBarProps = {
     currentColourRef: RefObject<string>;
     currentToolRef: RefObject<Tools>;
-}
+};
 
-const RADIUS = 200;
-const ANGLE_SPREAD = 85;
+const RADIUS = 400;
+const ANGLE_SPREAD = 58;
 
-const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
-    const tools: { 'tool': Tools, 'code': string, 'name': string }[] = [
+const BottomBar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
+    const tools: { tool: Tools; code: string; name: string }[] = [
         {
-            'tool': 'pen',
-            'code': '#eeeeee',
-            'name': 'White',
+            tool: "pen",
+            code: "#eeeeee",
+            name: "White",
         },
         {
-            'tool': 'eraser',
-            'code': '#141414',
-            'name': 'Eraser',
+            tool: "eraser",
+            code: "#141414",
+            name: "Eraser",
         },
     ];
 
-    const colours: { 'colour': string, 'code': string }[] = [
+    const colours: { colour: string; code: string }[] = [
         {
-            'colour': 'White',
-            'code': '#eeeeee'
+            colour: "White",
+            code: "#eeeeee",
         },
         {
-            'colour': 'Yellow',
-            'code': '#ffbe0b',
+            colour: "Yellow",
+            code: "#ffbe0b",
         },
         {
-            'colour': 'Orange',
-            'code': '#fb5607',
+            colour: "Orange",
+            code: "#fb5607",
         },
         {
-            'colour': 'Pink',
-            'code': '#ff006e',
+            colour: "Pink",
+            code: "#ff006e",
         },
         {
-            'colour': 'Purple',
-            'code': '#8338ec',
+            colour: "Purple",
+            code: "#8338ec",
         },
         {
-            'colour': 'Blue',
-            'code': '#3a86ff',
+            colour: "Blue",
+            code: "#3a86ff",
         },
-    ]
+    ];
 
     const [currentTool, setCurrentTool] = useState<number>(0);
     const [hoveredTool, setHoveredTool] = useState<number | null>(null);
@@ -67,30 +67,37 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
 
     return (
         <>
-            <div className="
+            <div
+                className="
             fixed bottom-2 left-1/2 -translate-x-1/2 h-14 rounded-xl flex gap-4 p-2 items-end
-            bg-linear-to-b from-card-background/60 to-[hsl(0,0,18%)]/60 backdrop-blur-md border-b-white/25 border-b"
+            bg-linear-to-b from-card-background/60 to-[hsl(0,0,18%)]/60 backdrop-blur-md border-b-white/25 border-b z-100"
             >
                 <div className="flex gap-2 items-end">
                     {tools.map((tool, index) => (
                         <motion.div
                             key={index}
                             className="w-10 h-fit rounded-md p-2 aspect-square relative cursor-pointer bg-card-background border-b border-b-white/25"
-                            animate={{ width: currentTool === index ? '3.5rem' : hoveredTool === index ? '2.75rem' : '2.5rem' }}
+                            animate={{
+                                width:
+                                    currentTool === index
+                                        ? "3.5rem"
+                                        : hoveredTool === index
+                                          ? "2.75rem"
+                                          : "2.5rem",
+                            }}
                             onClick={() => {
                                 setCurrentTool(index);
                                 currentToolRef.current = tool.tool;
-                                if (tool.tool === 'pen') {
+                                if (tool.tool === "pen") {
                                     setShowColourSelect(true);
-                                }
-                                else {
+                                } else {
                                     setShowColourSelect(false);
                                 }
                             }}
                             onHoverStart={() => setHoveredTool(index)}
                             onHoverEnd={() => setHoveredTool(null)}
                             transition={{
-                                ease: 'easeInOut',
+                                ease: "easeInOut",
                                 duration: 0.2,
                             }}
                         >
@@ -110,11 +117,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                         onClick={undo}
                     >
                         <div className="relative w-full h-full">
-                            <Image
-                                src={'/icons/undo.svg'}
-                                alt="undo"
-                                fill
-                            />
+                            <Image src={"/icons/undo.svg"} alt="undo" fill />
                         </div>
                     </button>
                     <button
@@ -123,7 +126,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                     >
                         <div className="relative w-full h-full">
                             <Image
-                                src={'/icons/undo.svg'}
+                                src={"/icons/undo.svg"}
                                 alt="undo"
                                 fill
                                 className="scale-x-[-1]"
@@ -131,12 +134,13 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                         </div>
                     </button>
                 </div>
-
             </div>
             <div className="absolute bottom-48 left-1/2 -translate-x-1/2">
                 {colours.map((colour, index) => {
                     const totalItems = colours.length;
-                    const angle = ((index - (totalItems - 1) / 2) * (ANGLE_SPREAD / (totalItems - 1)));
+                    const angle =
+                        (index - (totalItems - 1) / 2) *
+                        (ANGLE_SPREAD / (totalItems - 1));
                     const radian = (angle * Math.PI) / 180;
 
                     const x = Math.sin(radian) * RADIUS;
@@ -148,13 +152,18 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                             initial={false}
                             animate={{
                                 x: showColourSelect ? x : 0,
-                                y: showColourSelect ? y : 150,
+                                y: showColourSelect ? y : 250,
                                 opacity: showColourSelect ? 100 : 0,
                                 rotate: angle,
-                                scale: currentColour === index ? 1.15 : hoveredColour === index ? 1.05 : 1,
+                                scale:
+                                    currentColour === index
+                                        ? 1.15
+                                        : hoveredColour === index
+                                          ? 1.05
+                                          : 1,
                             }}
-                            className="absolute w-16 h-18 rounded-xl bg-white backdrop-blur-md -translate-x-1/2 overflow-hidden"
-                            style={{ originY: 'bottom' }}
+                            className="absolute w-16 h-18 rounded-xl bg-white backdrop-blur-md -translate-x-1/2 overflow-hidden z-0"
+                            style={{ originY: "bottom" }}
                             onClick={() => {
                                 currentColourRef.current = colour.code;
                                 setCurrentColour(index);
@@ -175,7 +184,7 @@ const Sidebar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                 })}
             </div>
         </>
-    )
-}
+    );
+};
 
-export default Sidebar
+export default BottomBar;
