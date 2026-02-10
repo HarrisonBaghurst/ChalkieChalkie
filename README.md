@@ -1,13 +1,46 @@
-# Chalkie Chalkie 
+# Chalkie Chalkie
 
-Your teaching and learning tool. 
+Your teaching and learning tool.
 
-Chalkie Chalkie is an online collaborative blackboard designed specifically for maths tutoring, incuding features tailored for this use case. 
+Chalkie Chalkie is an online collaborative blackboard designed specifically for maths tutoring, incuding features tailored for this use case.
 
-## Tech Stack 
+## Tech Stack
 
-- **Next.js**: React framework of choice 
-- **Vercel**: Hosting and cron jobs 
+- **Next.js**: React framework of choice
+- **Vercel**: Hosting and cron jobs
 - **Liveblocks**: Real time connection handling
-- **Clerk**: User accounts and authentication  
-- **Supabase**: Recent room information 
+- **Clerk**: User accounts and authentication
+- **Supabase**: Recent room information
+
+## Todo before full deployment
+
+### General
+
+- [ ] Ensure browser support and compatibility
+- [ ] Search engine optimisation
+- [ ] Stroke drawing optimisation
+
+### Home and UI
+
+- [ ] Home page footer
+- [ ] Workspace titles
+- [ ] Join workspace button
+- [ ] Invite a user to workspace within the app
+- [ ] Copy invite link
+- [ ] Edit workspace button
+- [ ] Loading between page animation
+- [ ] Additional maths scribbles on hero
+- [ ] Center clerk login page
+- [ ] Search workspaces by title
+
+### Whiteboard and UI
+
+- [ ] Ensure correct spacing between pen colour selection menu
+- [ ] Current active and inactive user list
+- [ ] Pasting .png images
+- [ ] Hold for perfect line
+- [ ] Pen sizes
+- [ ] Highlighter
+- [ ] User name next to cursor
+
+## Complete tasks
