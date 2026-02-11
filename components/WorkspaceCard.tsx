@@ -2,6 +2,8 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import UserCard from "./UserCard";
 import { userInfo } from "@/types/userTypes";
+import Image from "next/image";
+import { getLastEditedText } from "@/lib/textUtils";
 
 type WorkspaceCardProps = {
     title: string;
@@ -27,29 +29,75 @@ const WorkspaceCard = ({
         router.push(`/board/${uuid}`);
     };
 
-    const getOrdinal = (n: number) => {
-        const s = ["th", "st", "nd", "rd"];
-        const v = n % 100;
-        return n + (s[(v - 20) % 10] || s[v] || s[0]);
-    };
-
     if (loading || !isLoaded) return;
     if (!isSignedIn || !user) return <p>Not signed in</p>;
 
-    const weekday = new Intl.DateTimeFormat("en-GB", {
-        weekday: "long",
-    }).format(lastEdited);
-
-    const month = new Intl.DateTimeFormat("en-GB", {
-        month: "long",
-    }).format(lastEdited);
-
-    const dayWithOrdinal = getOrdinal(lastEdited.getDate());
-
-    const formattedLastEdited = `${weekday} ${dayWithOrdinal} ${month}`;
-
     const userId = user.id;
 
+    const lastEditedText = getLastEditedText(lastEdited);
+
+    return (
+        <div className="bg-white/5 rounded-2xl border border-white/10 flex flex-col gap-6 pt-2 h-fit">
+            <div className="pt-4 px-6 flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-mont-bold text-foreground text-lg">
+                        {title}
+                    </h3>
+                    <div className="bg-[#fb5607]/10 px-2 py-0.5 rounded-full border border-[#f19468]/30">
+                        <p className="text-xs text-[#f19468]">Host</p>
+                    </div>
+                </div>
+                <p className="text-sm text-foreground-second">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                    do eiusmod tempor incididunt ut labore et dolore magna
+                    aliqua.
+                </p>
+                <p className="text-xs text-foreground-third">
+                    {lastEditedText}
+                </p>
+                <div className="flex flex-col gap-3">
+                    <p className="text-xs text-foreground-third">
+                        COLLABORATORS
+                    </p>
+                    {collaborators.map((collaborator, index) => (
+                        <div
+                            key={index}
+                            className="flex justify-between items-center"
+                        >
+                            <div className="flex gap-4 items-center ml-1">
+                                <div className="relative w-8 h-8 bg-white/25 rounded-full overflow-hidden">
+                                    <Image
+                                        src={collaborator.imageUrl}
+                                        alt={`${collaborator.firstName} user icon`}
+                                        fill
+                                    />
+                                </div>
+                                <p className="text-md text-foreground">
+                                    {`${collaborator.firstName} ${collaborator.lastName}`}
+                                </p>
+                            </div>
+                            <p className="text-xs text-foreground-second px-2 py-0.5 rounded-full border border-white/10 bg-white/5">
+                                {collaborator.id === host ? "Host" : "Guest"}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="border-t border-white/10 px-6 py-4 bg-white/2 justify-between w-full gap-2 flex">
+                <button className="bg-white/10 px-4 py-2 rounded-md w-fit text-sm text-foreground cursor-pointer">
+                    Edit
+                </button>
+                <button
+                    onClick={goToBoard}
+                    className="bg-white/10 px-4 py-2 rounded-md w-full text-sm text-foreground cursor-pointer"
+                >
+                    Join Workspace
+                </button>
+            </div>
+        </div>
+    );
+
+    /*
     return (
         <div className="bg-[#1d1c1c] rounded-md px-5 py-2 relative overflow-hidden">
             <div className="absolute left-0 top-0 w-1 h-full bg-[#3a86ff]" />
@@ -60,7 +108,7 @@ const WorkspaceCard = ({
                     </p>
                     <h3 className="font-mont-bold">{title}</h3>
                     <div className="w-full h-px bg-foreground-second mt-2" />
-                </div>
+                </div>This
                 <div>
                     <p className="text-sm text-foreground-second pb-1">
                         Collaborators
@@ -99,6 +147,7 @@ const WorkspaceCard = ({
             </div>
         </div>
     );
+    */
 };
 
 export default WorkspaceCard;
