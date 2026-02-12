@@ -24,7 +24,7 @@ const Workspaces = () => {
                 }
 
                 const workspaceData = await res.json();
-                setWorkspaces(workspaceData);
+                setWorkspaces(workspaceData.reverse());
 
                 // extract unique user IDs
                 const userIdSet = new Set<string>();

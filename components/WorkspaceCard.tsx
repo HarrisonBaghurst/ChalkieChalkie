@@ -43,8 +43,10 @@ const WorkspaceCard = ({
                     <h3 className="font-mont-bold text-foreground text-lg">
                         {title}
                     </h3>
-                    <div className="bg-[#fb5607]/10 px-2 py-0.5 rounded-full border border-[#f19468]/30">
-                        <p className="text-xs text-[#f19468]">Host</p>
+                    <div className="bg-[#3a86ff]/10 px-2 py-0.5 rounded-full border border-[#3a86ff]/30">
+                        <p className="text-xs text-[#3a86ff]">
+                            {userId === host ? "Host" : "Guest"}
+                        </p>
                     </div>
                 </div>
                 <p className="text-sm text-foreground-second">
@@ -84,12 +86,12 @@ const WorkspaceCard = ({
                 </div>
             </div>
             <div className="border-t border-white/10 px-6 py-4 bg-white/2 justify-between w-full gap-2 flex">
-                <button className="bg-white/10 px-4 py-2 rounded-md w-fit text-sm text-foreground cursor-pointer">
+                <button className="bg-linear-to-b from-white/30 to-white/10 px-4 py-2 rounded-md w-fit text-sm text-foreground cursor-pointer">
                     Edit
                 </button>
                 <button
                     onClick={goToBoard}
-                    className="bg-white/10 px-4 py-2 rounded-md w-full text-sm text-foreground cursor-pointer"
+                    className="bg-linear-to-b from-[#8338ec]/70 to-[#8338ec]/30 px-4 py-2 rounded-md w-full text-sm text-foreground cursor-pointer font-bold"
                 >
                     Join Workspace
                 </button>
