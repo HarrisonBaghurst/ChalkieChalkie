@@ -5,16 +5,24 @@ type ButtonProps = {
     handleClick: () => void;
     variant: "primary" | "secondary";
     icon?: string;
+    className?: string;
 };
 
-const Button = ({ text, handleClick, variant, icon }: ButtonProps) => {
+const Button = ({
+    text,
+    handleClick,
+    variant,
+    icon,
+    className,
+}: ButtonProps) => {
     return (
         <button
             className={cn(
-                "relative px-5 py-1.5 cursor-pointer text-md w-fit rounded-md flex justify-between gap-3 items-center border-b-white/15 border-b",
+                "relative px-4 py-2 cursor-pointer rounded-xl flex justify-center gap-4 items-center text-sm",
                 variant === "primary"
-                    ? "bg-linear-to-b from-[#ffbe0b]/90 to-[#fc9003]/90 text-background shadow-[0_0_12px_rgba(252,202,3,0.4)] font-mont-bold"
-                    : "bg-linear-to-b from-card-background/60 to-[hsl(0,0,18%)]/60 backdrop-blur-md text-foreground",
+                    ? "bg-[#6d16e8] border-2 border-[#4c03b1] shadow-[inset_0_2px_2px_rgba(140,67,243,1),inset_0_-5px_6px_rgba(76,3,177,1)] font-mont-bold text-foreground"
+                    : "bg-[#4b4b4b] border-2 border-[#303030] shadow-[inset_0_2px_2px_rgba(115,114,114,1),inset_0_-5px_6px_rgba(48,48,48,1)] text-foreground",
+                className && className,
             )}
             onClick={handleClick}
         >

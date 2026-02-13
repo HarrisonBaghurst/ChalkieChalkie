@@ -97,7 +97,7 @@ const Hero = () => {
                         </h1>
                     </div>
                 </div>
-                <div className="flex justify-center gap-8 my-[2dvh]">
+                <div className="grid grid-cols-2 gap-4 my-[1dvh]">
                     <Button
                         text="Create workspace"
                         handleClick={createBoard}
