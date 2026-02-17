@@ -25,9 +25,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Home page footer
 - [ ] Workspace titles
 - [ ] Join workspace button
-- [ ] Invite a user to workspace within the app
 - [ ] Copy invite link
-- [ ] Edit workspace button
 - [ ] Loading between page animation
 - [ ] Additional maths scribbles on hero
 - [ ] Center clerk login page
@@ -52,3 +50,5 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 ## Complete tasks
 
 - [x] Consistent button styling
+- [x] Invite a user to workspace within the app
+- [x] Edit workspace button
