@@ -89,7 +89,8 @@ const Workspaces = () => {
                     return (
                         <WorkspaceCard
                             key={index}
-                            title="Untitled workspace"
+                            title={workspace.title}
+                            description={workspace.description}
                             uuid={workspace.id}
                             host={workspace.host_id}
                             collaborators={collaborators}

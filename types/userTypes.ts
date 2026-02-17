@@ -4,3 +4,9 @@ export type userInfo = {
     lastName: string;
     imageUrl: string;
 };
+
+export type WorkspaceEditData = {
+    title: string;
+    description: string;
+    collaborators: userInfo[];
+};

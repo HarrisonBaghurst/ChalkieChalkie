@@ -1,15 +1,17 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import UserCard from "./UserCard";
-import { userInfo } from "@/types/userTypes";
+import { userInfo, WorkspaceEditData } from "@/types/userTypes";
 import Image from "next/image";
 import { getLastEditedText } from "@/lib/textUtils";
 import Button from "./Button";
+import { useEffect, useState } from "react";
+import CustomiseWorkspaceModal from "./EditWorkspaceModal";
 
 type WorkspaceCardProps = {
     title: string;
     uuid: string;
     host: string;
+    description: string;
     collaborators: userInfo[];
     lastEdited: Date;
     loading: boolean;
@@ -19,12 +21,29 @@ const WorkspaceCard = ({
     title,
     uuid,
     host,
+    description,
     collaborators,
     lastEdited,
     loading,
 }: WorkspaceCardProps) => {
     const router = useRouter();
     const { user, isLoaded, isSignedIn } = useUser();
+
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
+
+    const [workspaceData, setWorkspaceData] = useState<WorkspaceEditData>({
+        title,
+        description,
+        collaborators,
+    });
+
+    useEffect(() => {
+        setWorkspaceData({
+            title,
+            description,
+            collaborators,
+        });
+    }, [title, description, collaborators]);
 
     const goToBoard = () => {
         router.push(`/board/${uuid}`);
@@ -37,12 +56,53 @@ const WorkspaceCard = ({
 
     const lastEditedText = getLastEditedText(lastEdited);
 
+    const onSave = async (updatedData: WorkspaceEditData) => {
+        setWorkspaceData(updatedData);
+
+        try {
+            const res = await fetch("/api/patch/update-workspace", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    roomId: uuid,
+                    title: updatedData.title,
+                    description: updatedData.description,
+                    collaborators: updatedData.collaborators.map((c) => c.id),
+                }),
+            });
+
+            if (!res.ok) {
+                console.error("Failed to update workspace");
+            }
+
+            const data = await res.json();
+
+            setWorkspaceData({
+                title: data.title,
+                description: data.description,
+                collaborators: data.collaborators ?? updatedData.collaborators,
+            });
+        } catch (err) {
+            console.error(err);
+
+            setWorkspaceData({
+                title,
+                description,
+                collaborators,
+            });
+
+            alert("Failed to save changes");
+        }
+    };
+
     return (
-        <div className="bg-white/5 rounded-2xl border border-white/10 flex flex-col gap-6 pt-2 h-fit">
-            <div className="pt-4 px-6 flex flex-col gap-6">
+        <div className="bg-white/5 rounded-2xl border border-white/10 flex flex-col gap-6 h-fit">
+            <div className="pt-6 px-6 flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <h3 className="font-mont-bold text-foreground text-lg">
-                        {title}
+                        {workspaceData.title}
                     </h3>
                     <div className="bg-[#3a86ff]/10 px-2 py-0.5 rounded-full border border-[#3a86ff]/30">
                         <p className="text-xs text-[#3a86ff]">
@@ -51,9 +111,7 @@ const WorkspaceCard = ({
                     </div>
                 </div>
                 <p className="text-sm text-foreground-second">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut labore et dolore magna
-                    aliqua.
+                    {workspaceData.description}
                 </p>
                 <p className="text-xs text-foreground-third">
                     {lastEditedText}
@@ -62,7 +120,7 @@ const WorkspaceCard = ({
                     <p className="text-xs text-foreground-third">
                         COLLABORATORS
                     </p>
-                    {collaborators.map((collaborator, index) => (
+                    {workspaceData.collaborators.map((collaborator, index) => (
                         <div
                             key={index}
                             className="flex justify-between items-center"
@@ -90,7 +148,7 @@ const WorkspaceCard = ({
                 {userId === host && (
                     <Button
                         text="Edit"
-                        handleClick={() => {}}
+                        handleClick={() => setModalOpen(true)}
                         variant="secondary"
                     />
                 )}
@@ -101,6 +159,13 @@ const WorkspaceCard = ({
                     className="w-full"
                 />
             </div>
+            <CustomiseWorkspaceModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                initialData={workspaceData}
+                onSave={onSave}
+                currentUserId={userId}
+            />
         </div>
     );
 };
