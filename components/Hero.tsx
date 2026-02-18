@@ -78,9 +78,9 @@ const Hero = () => {
             <div className="bg-background/50 shadow-[0_0_40px_rgba(9,9,6,0.5)] rounded-full p-20 z-100">
                 <div className="flex justify-center">
                     <div className="flex flex-col items-center justify-center gap-12">
-                        <h1 className="font-mont-bold text-4xl">
+                        <h1 className="font-alpino text-5xl">
                             Your
-                            <span className="inline-flex overflow-hidden py-3  m-3 w-44 justify-center">
+                            <span className="inline-flex overflow-hidden py-3  m-3 w-48 justify-center">
                                 {currentWord.split("").map((char, i) => (
                                     <span
                                         key={`${char}-${i}`}
