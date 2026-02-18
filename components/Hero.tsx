@@ -17,6 +17,12 @@ const Hero = () => {
         router.push(`/board/${id}`);
     };
 
+    const scrollToWorkspaces = () => {
+        document
+            .getElementById("workspaces")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
     const lettersRef = useRef<HTMLSpanElement[]>([]);
     const [wordIndex, setWordIndex] = useState(0);
 
@@ -97,7 +103,7 @@ const Hero = () => {
                         </h1>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 my-[1dvh]">
+                <div className="grid grid-cols-2 gap-8 my-[1dvh]">
                     <Button
                         text="Create workspace"
                         handleClick={createBoard}
@@ -106,7 +112,7 @@ const Hero = () => {
                     />
                     <Button
                         text="Join workspace"
-                        handleClick={() => {}}
+                        handleClick={scrollToWorkspaces}
                         variant="secondary"
                         icon="/icons/search.svg"
                     />

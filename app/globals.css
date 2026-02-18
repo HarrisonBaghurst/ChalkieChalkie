@@ -100,6 +100,10 @@
         border-radius: var(--border-radius-small);
         box-shadow: 0 0 1px 1px var(--card-child-shadow);
     }
+
+    .scroll-target {
+        scroll-margin-top: 8dvw;
+    }
 }
 
 body {

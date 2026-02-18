@@ -75,7 +75,10 @@ const Workspaces = () => {
     }, [usersInfo]);
 
     return (
-        <div className="px-[10%] py-20 flex flex-col gap-10 bg-white/1.5 border-y border-y-[#ffffff]/15">
+        <div
+            id="workspaces"
+            className="scroll-target px-[10%] py-20 flex flex-col gap-10 bg-white/1.5 border-y border-y-[#ffffff]/15"
+        >
             <h2 className="font-mont-bold text-2xl">Your workspaces</h2>
             <div className="grid grid-cols-3 gap-6">
                 {workspaces.map((workspace, index) => {
