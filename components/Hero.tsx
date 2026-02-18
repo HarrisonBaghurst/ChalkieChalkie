@@ -6,11 +6,14 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import Button from "./Button";
 import gsap from "gsap";
+import { useUser } from "@clerk/nextjs";
 
 const WORDS = ["Teaching", "Learning"];
 
 const Hero = () => {
     const router = useRouter();
+
+    const { isLoaded, isSignedIn } = useUser();
 
     const createBoard = () => {
         const id = uuidv4();
@@ -21,6 +24,10 @@ const Hero = () => {
         document
             .getElementById("workspaces")
             ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    const handleLogin = () => {
+        router.push("/sign-in");
     };
 
     const lettersRef = useRef<HTMLSpanElement[]>([]);
@@ -103,20 +110,34 @@ const Hero = () => {
                         </h1>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-8 my-[1dvh]">
-                    <Button
-                        text="Create workspace"
-                        handleClick={createBoard}
-                        variant="primary"
-                        icon="/icons/plus.svg"
-                    />
-                    <Button
-                        text="Join workspace"
-                        handleClick={scrollToWorkspaces}
-                        variant="secondary"
-                        icon="/icons/search.svg"
-                    />
-                </div>
+                {isSignedIn && isLoaded && (
+                    <div className="grid grid-cols-2 gap-8 my-[1dvh]">
+                        <Button
+                            text="Create workspace"
+                            handleClick={createBoard}
+                            variant="primary"
+                        />
+                        <Button
+                            text="Join workspace"
+                            handleClick={scrollToWorkspaces}
+                            variant="secondary"
+                        />
+                    </div>
+                )}
+                {!isSignedIn && isLoaded && (
+                    <div className="grid grid-cols-2 gap-8 my-[1dvh]">
+                        <Button
+                            text="Create account"
+                            handleClick={() => {}}
+                            variant="primary"
+                        />
+                        <Button
+                            text="Login to account"
+                            handleClick={handleLogin}
+                            variant="secondary"
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

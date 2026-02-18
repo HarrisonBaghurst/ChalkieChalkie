@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import WorkspaceCard from "./WorkspaceCard";
 import { userInfo } from "@/types/userTypes";
+import { useUser } from "@clerk/nextjs";
 
 const Workspaces = () => {
     const [workspaces, setWorkspaces] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [usersInfo, setUsersInfo] = useState<userInfo[] | null>(null);
+
+    const { isLoaded, isSignedIn } = useUser();
 
     useEffect(() => {
         const fetchWorkspacesAndUsers = async () => {
@@ -66,8 +69,10 @@ const Workspaces = () => {
             }
         };
 
-        fetchWorkspacesAndUsers();
-    }, []);
+        if (isLoaded && isSignedIn) {
+            fetchWorkspacesAndUsers();
+        }
+    }, [isLoaded, isSignedIn]);
 
     const usersMap = useMemo(() => {
         if (!usersInfo) return {};
@@ -80,29 +85,37 @@ const Workspaces = () => {
             className="scroll-target px-[10%] py-20 flex flex-col gap-10 bg-white/1.5 border-y border-y-[#ffffff]/15"
         >
             <h2 className="font-mont-bold text-2xl">Your workspaces</h2>
-            <div className="grid grid-cols-3 gap-6">
-                {workspaces.map((workspace, index) => {
-                    const collaborators: userInfo[] =
-                        workspace.user_ids
-                            ?.map((id: string) => usersMap[id])
-                            .filter((user: userInfo): user is userInfo =>
-                                Boolean(user),
-                            ) || [];
+            {isLoaded && isSignedIn ? (
+                <div className="grid grid-cols-3 gap-6">
+                    {workspaces.map((workspace, index) => {
+                        const collaborators: userInfo[] =
+                            workspace.user_ids
+                                ?.map((id: string) => usersMap[id])
+                                .filter((user: userInfo): user is userInfo =>
+                                    Boolean(user),
+                                ) || [];
 
-                    return (
-                        <WorkspaceCard
-                            key={index}
-                            title={workspace.title}
-                            description={workspace.description}
-                            uuid={workspace.id}
-                            host={workspace.host_id}
-                            collaborators={collaborators}
-                            lastEdited={new Date(workspace.last_activity_at)}
-                            loading={loading}
-                        />
-                    );
-                })}
-            </div>
+                        return (
+                            <WorkspaceCard
+                                key={index}
+                                title={workspace.title}
+                                description={workspace.description}
+                                uuid={workspace.id}
+                                host={workspace.host_id}
+                                collaborators={collaborators}
+                                lastEdited={
+                                    new Date(workspace.last_activity_at)
+                                }
+                                loading={loading}
+                            />
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="text-foreground-second">
+                    Sign in or create an account to access workspaces
+                </div>
+            )}
         </div>
     );
 };

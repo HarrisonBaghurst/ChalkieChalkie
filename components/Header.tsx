@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 const Header = () => {
@@ -15,9 +15,6 @@ const Header = () => {
             <button className="cursor-pointer pl-2" onClick={returnHome}>
                 Chalkie Chalkie
             </button>
-            <SignedOut>
-                <SignInButton />
-            </SignedOut>
             <SignedIn>
                 <UserButton />
             </SignedIn>

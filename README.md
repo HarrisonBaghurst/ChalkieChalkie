@@ -31,10 +31,10 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Search workspaces by title
 - [ ] Workspace card loading state
 - [ ] Set workspace card default values
-- [ ] Update home page based on logged-in state
 - [ ] Icons
 - [ ] Scroll animations for home page
 - [ ] Update header
+- [ ] Toast messages - positive and negative interactions
 
 ### Whiteboard and UI
 
@@ -54,3 +54,4 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [x] Edit workspace button
 - [x] Join workspace button
 - [x] Center clerk login page
+- [x] Update home page based on logged-in state
