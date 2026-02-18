@@ -4,27 +4,25 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Chalkie Chalkie | Online whiteboard",
-  description: "Collaborative online whiteboard",
+    title: "Chalkie Chalkie | Your Teaching & Learning tool",
+    description: "Your Teaching & Learning tool",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`antialiased`}
-        >
-          <div className="relative">
-            <Header />
-            {children}
-          </div>
-        </body>
-      </html>
-    </ClerkProvider>
-  );
+    return (
+        <ClerkProvider>
+            <html lang="en">
+                <body className={`antialiased`}>
+                    <div className="relative">
+                        <Header />
+                        {children}
+                    </div>
+                </body>
+            </html>
+        </ClerkProvider>
+    );
 }
