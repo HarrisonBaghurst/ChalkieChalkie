@@ -1,17 +1,25 @@
-import { Point, Stroke } from '@/types/strokeTypes';
+import { PastedImage } from "@/types/imageTypes";
+import { Point, Stroke } from "@/types/strokeTypes";
 
 type DrawToCanvasParameters = {
     strokes: readonly Stroke[];
     currentStroke: Stroke | null;
+    pastedImages: PastedImage[];
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
     panOffset: Point;
 };
 
-const drawToCanvas = ({ strokes, currentStroke, canvasRef, panOffset }: DrawToCanvasParameters) => {
+const drawToCanvas = ({
+    strokes,
+    currentStroke,
+    pastedImages,
+    canvasRef,
+    panOffset,
+}: DrawToCanvasParameters) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // match display size
@@ -24,10 +32,21 @@ const drawToCanvas = ({ strokes, currentStroke, canvasRef, panOffset }: DrawToCa
     // cear & setup
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 3;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
 
     const allStrokes = currentStroke ? [...strokes, currentStroke] : strokes;
+
+    // Draw images
+    pastedImages?.forEach((image) => {
+        ctx.drawImage(
+            image.element,
+            image.x + panOffset.x,
+            image.y + panOffset.y,
+            image.width,
+            image.height,
+        );
+    });
 
     // render all strokes with panning offset
     for (const stroke of allStrokes) {
@@ -40,7 +59,12 @@ const drawToCanvas = ({ strokes, currentStroke, canvasRef, panOffset }: DrawToCa
         for (let i = 1; i < pts.length - 2; i++) {
             const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x;
             const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y;
-            ctx.quadraticCurveTo(pts[i].x + panOffset.x, pts[i].y + panOffset.y, xc, yc);
+            ctx.quadraticCurveTo(
+                pts[i].x + panOffset.x,
+                pts[i].y + panOffset.y,
+                xc,
+                yc,
+            );
         }
 
         const last = pts.length - 1;
@@ -48,12 +72,10 @@ const drawToCanvas = ({ strokes, currentStroke, canvasRef, panOffset }: DrawToCa
             pts[last - 1].x + panOffset.x,
             pts[last - 1].y + panOffset.y,
             pts[last].x + panOffset.x,
-            pts[last].y + panOffset.y
+            pts[last].y + panOffset.y,
         );
         ctx.stroke();
     }
 };
 
 export default drawToCanvas;
-
-

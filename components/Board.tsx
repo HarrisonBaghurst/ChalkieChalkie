@@ -18,6 +18,7 @@ import {
 } from "@liveblocks/react";
 import Cursor from "./Cursor";
 import { Tools } from "@/types/toolTypes";
+import { PastedImage } from "@/types/imageTypes";
 
 const Board = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -45,6 +46,10 @@ const Board = () => {
     const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
     const panStartRef = useRef<Point | null>(null);
 
+    // image pasting
+    const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
+    const pastedImagesRef = useRef<PastedImage[]>([]);
+
     // in progress stroke
     const currentStrokeRef = useRef<Stroke | null>(null);
     const isDrawingRef = useRef(false);
@@ -56,11 +61,13 @@ const Board = () => {
 
     // handle pointer movement
     const handlePresenceUpdate = (e: React.MouseEvent) => {
+        const x = Math.round(e.clientX - panOffsetRef.current.x);
+        const y = Math.round(e.clientY - panOffsetRef.current.y);
+
+        cursorPositionRef.current = { x, y };
+
         updateMyPresence({
-            cursor: {
-                x: Math.round(e.clientX - panOffsetRef.current.x),
-                y: Math.round(e.clientY - panOffsetRef.current.y),
-            },
+            cursor: { x, y },
         });
     };
 
@@ -73,6 +80,7 @@ const Board = () => {
             drawToCanvas({
                 strokes: strokes || [],
                 currentStroke: currentStrokeRef.current,
+                pastedImages: pastedImagesRef.current,
                 canvasRef,
                 panOffset: panOffsetRef.current,
             });
@@ -111,7 +119,7 @@ const Board = () => {
         };
         document.addEventListener("keydown", onKeypress);
         return () => document.removeEventListener("keydown", onKeypress);
-    });
+    }, []);
 
     useEffect(() => {
         document.body.style.overflow = "hidden";
@@ -119,6 +127,46 @@ const Board = () => {
             document.body.style.overflow = "";
         };
     }, []);
+
+    useEffect(() => {
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (!item.type.startsWith("image/")) continue;
+
+                const file = item.getAsFile();
+                if (!file) continue;
+
+                const reader = new FileReader();
+
+                reader.onload = () => {
+                    const img = new Image();
+
+                    img.onload = () => {
+                        const { x, y } = cursorPositionRef.current;
+
+                        pastedImagesRef.current.push({
+                            id: crypto.randomUUID(),
+                            element: img,
+                            x,
+                            y,
+                            width: img.width,
+                            height: img.height,
+                        });
+                    };
+                    img.src = reader.result as string;
+                };
+                reader.readAsDataURL(file);
+                e.preventDefault();
+                break;
+            }
+        };
+
+        window.addEventListener("paste", handlePaste);
+        return () => window.removeEventListener("paste", handlePaste);
+    });
 
     return (
         <div className="w-dvw h-dvh overflow-hidden">
