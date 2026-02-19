@@ -138,6 +138,11 @@ const Hero = () => {
                         />
                     </div>
                 )}
+                {!isLoaded && !isLoaded && (
+                    <div className="text-center text-foreground-second">
+                        Searching for your user acccount ...
+                    </div>
+                )}
             </div>
         </div>
     );
