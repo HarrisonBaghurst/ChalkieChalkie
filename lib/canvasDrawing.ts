@@ -1,12 +1,14 @@
 import { PastedImage } from "@/types/imageTypes";
 import { Point, Stroke } from "@/types/strokeTypes";
+import { RefObject } from "react";
 
 type DrawToCanvasParameters = {
     strokes: readonly Stroke[];
     currentStroke: Stroke | null;
     pastedImages: PastedImage[];
-    canvasRef: React.RefObject<HTMLCanvasElement | null>;
+    canvasRef: RefObject<HTMLCanvasElement | null>;
     panOffset: Point;
+    selectedImageId: string | null;
 };
 
 const drawToCanvas = ({
@@ -15,6 +17,7 @@ const drawToCanvas = ({
     pastedImages,
     canvasRef,
     panOffset,
+    selectedImageId,
 }: DrawToCanvasParameters) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -46,6 +49,31 @@ const drawToCanvas = ({
             image.width,
             image.height,
         );
+
+        if (image.id === selectedImageId) {
+            // border around selected image
+            const screenX = image.x + panOffset.x;
+            const screenY = image.y + panOffset.y;
+
+            ctx.strokeStyle = "#3a86ff";
+            ctx.strokeRect(screenX, screenY, image.width, image.height);
+
+            const size = 8;
+            const corners = [
+                { x: screenX, y: screenY }, // nw
+                { x: screenX + image.width, y: screenY }, // ne
+                { x: screenX, y: screenY + image.height }, // sw
+                { x: screenX + image.width, y: screenY + image.height }, // se
+            ];
+
+            // handles
+            corners.forEach((corner) => {
+                ctx.beginPath();
+                ctx.rect(corner.x - size / 2, corner.y - size / 2, size, size);
+                ctx.fill();
+                ctx.stroke();
+            });
+        }
     });
 
     // render all strokes with panning offset

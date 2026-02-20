@@ -18,7 +18,7 @@ import {
 } from "@liveblocks/react";
 import Cursor from "./Cursor";
 import { Tools } from "@/types/toolTypes";
-import { PastedImage } from "@/types/imageTypes";
+import { PastedImage, ResizeHandle } from "@/types/imageTypes";
 
 const Board = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -49,6 +49,9 @@ const Board = () => {
     // image pasting
     const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
     const pastedImagesRef = useRef<PastedImage[]>([]);
+    const selectedImageIdRef = useRef<string | null>(null);
+    const imageDragOffsetRef = useRef<Point | null>(null);
+    const activeResizeHandleRef = useRef<ResizeHandle>(null);
 
     // in progress stroke
     const currentStrokeRef = useRef<Stroke | null>(null);
@@ -83,6 +86,7 @@ const Board = () => {
                 pastedImages: pastedImagesRef.current,
                 canvasRef,
                 panOffset: panOffsetRef.current,
+                selectedImageId: selectedImageIdRef.current,
             });
 
             if (canvasRef.current) {
@@ -115,6 +119,14 @@ const Board = () => {
             } else if (event.ctrlKey && event.key === "y") {
                 event.preventDefault();
                 redo();
+            } else if (event.key === "Delete" || event.key === "Backspace") {
+                const id = selectedImageIdRef.current;
+                if (!id) return;
+
+                pastedImagesRef.current = pastedImagesRef.current.filter(
+                    (img) => img.id !== id,
+                );
+                selectedImageIdRef.current = null;
             }
         };
         document.addEventListener("keydown", onKeypress);
@@ -197,6 +209,10 @@ const Board = () => {
                         panStartRef,
                         lastPanOffsetRef,
                         currentToolRef,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
                     })
                 }
                 onMouseMove={(e) => {
@@ -210,6 +226,10 @@ const Board = () => {
                         currentToolRef,
                         strokes,
                         onErase: eraseStrokes,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
                     });
                     handlePresenceUpdate(e);
                 }}
@@ -223,6 +243,10 @@ const Board = () => {
                         panOffsetRef,
                         currentToolRef,
                         onStrokeFinished: addStroke,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
                     })
                 }
             />

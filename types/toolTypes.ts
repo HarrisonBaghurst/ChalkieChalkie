@@ -1,1 +1,1 @@
-export type Tools = 'pen' | 'eraser'
+export type Tools = "pen" | "eraser" | "pointer";

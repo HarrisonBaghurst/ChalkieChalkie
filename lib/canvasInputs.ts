@@ -1,8 +1,11 @@
-import { Point, Stroke } from '@/types/strokeTypes';
-import { simplifyRDP } from './strokeOptimisation';
-import { RefObject } from 'react';
-import { Tools } from '@/types/toolTypes';
-import { StrokeIntersectPoints } from './genometry';
+import { Point, Stroke } from "@/types/strokeTypes";
+import { simplifyRDP } from "./strokeOptimisation";
+import { RefObject } from "react";
+import { Tools } from "@/types/toolTypes";
+import { StrokeIntersectPoints } from "./genometry";
+import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { getImageAtPoint, getResizeHandleAtPoint } from "./imageUtils";
+import { maxHeaderSize } from "node:http";
 
 // --- type definitions ---
 
@@ -14,6 +17,10 @@ type handleMouseDownParameters = {
     panStartRef: RefObject<Point | null>;
     lastPanOffsetRef: RefObject<Point>;
     currentToolRef: RefObject<Tools>;
+    pastedImagesRef: RefObject<PastedImage[]>;
+    selectedImageIdRef: RefObject<string | null>;
+    imageDragOffsetRef: RefObject<Point | null>;
+    activeResizeHandleRef: RefObject<ResizeHandle>;
 };
 
 type handleMouseMoveParameters = {
@@ -26,6 +33,10 @@ type handleMouseMoveParameters = {
     currentToolRef: RefObject<Tools>;
     strokes: readonly Stroke[] | null;
     onErase: (strokeIds: string[]) => void;
+    pastedImagesRef: RefObject<PastedImage[]>;
+    selectedImageIdRef: RefObject<string | null>;
+    imageDragOffsetRef: RefObject<Point | null>;
+    activeResizeHandleRef: RefObject<ResizeHandle>;
 };
 
 type handleMouseUpParameters = {
@@ -37,6 +48,10 @@ type handleMouseUpParameters = {
     panOffsetRef: RefObject<Point>;
     currentToolRef: RefObject<Tools>;
     onStrokeFinished: (stroke: Stroke) => void;
+    pastedImagesRef: RefObject<PastedImage[]>;
+    selectedImageIdRef: RefObject<string | null>;
+    imageDragOffsetRef: RefObject<Point | null>;
+    activeResizeHandleRef: RefObject<ResizeHandle>;
 };
 
 // --- helpers ---
@@ -56,18 +71,57 @@ export const handleMouseDown = ({
     panStartRef,
     lastPanOffsetRef,
     currentToolRef,
+    pastedImagesRef,
+    selectedImageIdRef,
+    imageDragOffsetRef,
+    activeResizeHandleRef,
 }: handleMouseDownParameters) => {
     e.preventDefault();
 
-    if (e.buttons === 1 && currentToolRef.current === 'pen') {
+    if (e.buttons === 1 && currentToolRef.current === "pen") {
         // left click: start drawing
         isDrawingRef.current = true;
         const { x, y } = getMousePos(e);
         currentStrokeRef.current = {
             id: crypto.randomUUID(),
-            points: [{ x: x - lastPanOffsetRef.current.x, y: y - lastPanOffsetRef.current.y }],
+            points: [
+                {
+                    x: x - lastPanOffsetRef.current.x,
+                    y: y - lastPanOffsetRef.current.y,
+                },
+            ],
             colour: currentColourRef.current,
         };
+    }
+
+    if (e.buttons === 1 && currentToolRef.current === "pointer") {
+        // left click select image
+        const { x, y } = getMousePos(e);
+
+        // find image at current cursor position
+        const worldPoint = {
+            x: x - lastPanOffsetRef.current.x,
+            y: y - lastPanOffsetRef.current.y,
+        };
+        const images = pastedImagesRef.current;
+        const img = getImageAtPoint(images, worldPoint);
+
+        if (img) {
+            selectedImageIdRef.current = img.id;
+
+            const handle = getResizeHandleAtPoint(img, worldPoint);
+            if (handle) {
+                activeResizeHandleRef.current = handle;
+                return;
+            }
+
+            imageDragOffsetRef.current = {
+                x: worldPoint.x - img.x,
+                y: worldPoint.y - img.y,
+            };
+        } else {
+            selectedImageIdRef.current = null;
+        }
     }
 
     if (e.buttons === 2) {
@@ -91,6 +145,10 @@ export const handleMouseMove = (() => {
         currentToolRef,
         strokes,
         onErase,
+        pastedImagesRef,
+        selectedImageIdRef,
+        imageDragOffsetRef,
+        activeResizeHandleRef,
     }: handleMouseMoveParameters) => {
         const now = performance.now();
         if (now - lastTime < THROTTLE_MS) return;
@@ -100,19 +158,26 @@ export const handleMouseMove = (() => {
         const worldPoint = {
             x: x - lastPanOffsetRef.current.x,
             y: y - lastPanOffsetRef.current.y,
-        }
+        };
 
-        // drawing with pen 
-        if (currentToolRef.current === 'pen' && e.buttons === 1 && isDrawingRef.current && currentStrokeRef.current) {
+        // drawing with pen
+        if (
+            currentToolRef.current === "pen" &&
+            e.buttons === 1 &&
+            isDrawingRef.current &&
+            currentStrokeRef.current
+        ) {
             currentStrokeRef.current.points.push(worldPoint);
             return;
         }
 
-        // removing with eraser 
-        if (currentToolRef.current === 'eraser' && e.buttons === 1 && strokes) {
+        // removing with eraser
+        if (currentToolRef.current === "eraser" && e.buttons === 1 && strokes) {
             const hitStrokeIds = strokes
-                .filter(strokes => StrokeIntersectPoints(strokes, worldPoint, ERASER_RADIUS))
-                .map(stroke => stroke.id);
+                .filter((strokes) =>
+                    StrokeIntersectPoints(strokes, worldPoint, ERASER_RADIUS),
+                )
+                .map((stroke) => stroke.id);
 
             if (hitStrokeIds.length >= 1) {
                 onErase(hitStrokeIds);
@@ -120,14 +185,51 @@ export const handleMouseMove = (() => {
             return;
         }
 
-        // panning 
+        // panning
         if (e.buttons === 2 && panStartRef.current) {
             panOffsetRef.current = {
                 x: lastPanOffsetRef.current.x + (x - panStartRef.current.x),
                 y: lastPanOffsetRef.current.y + (y - panStartRef.current.y),
+            };
+        }
+
+        // dragging or resizing image
+        if (e.buttons === 1 && currentToolRef.current === "pointer") {
+            const { x, y } = getMousePos(e);
+
+            const worldPoint = {
+                x: x - lastPanOffsetRef.current.x,
+                y: y - lastPanOffsetRef.current.y,
+            };
+
+            const images = pastedImagesRef.current;
+            const selectedId = selectedImageIdRef.current;
+            if (!selectedId) return;
+
+            const img = images.find((i) => i.id === selectedId);
+            if (!img) return;
+
+            // resizing
+            if (activeResizeHandleRef.current) {
+                const dx = worldPoint.x - img.x;
+                const dy = worldPoint.y - img.y;
+
+                if (activeResizeHandleRef.current === "se") {
+                    img.width = Math.max(20, dx);
+                    img.height = Math.max(20, dy);
+                }
+                // add other resize handles later
+
+                return;
+            }
+
+            // dragging
+            if (imageDragOffsetRef.current) {
+                img.x = worldPoint.x - imageDragOffsetRef.current.x;
+                img.y = worldPoint.y - imageDragOffsetRef.current.y;
             }
         }
-    }
+    };
 })();
 
 export const handleMouseUp = ({
@@ -139,23 +241,32 @@ export const handleMouseUp = ({
     panOffsetRef,
     currentToolRef,
     onStrokeFinished,
+    pastedImagesRef,
+    selectedImageIdRef,
+    imageDragOffsetRef,
+    activeResizeHandleRef,
 }: handleMouseUpParameters) => {
-    if (e.button === 0 && isDrawingRef.current && currentToolRef.current === 'pen') {
+    if (
+        e.button === 0 &&
+        isDrawingRef.current &&
+        currentToolRef.current === "pen"
+    ) {
         isDrawingRef.current = false;
         if (currentStrokeRef.current) {
             const simplified = simplifyRDP(currentStrokeRef.current.points, 1);
-            const newStroke = ({
+            const newStroke = {
                 id: crypto.randomUUID(),
                 points: simplified,
                 colour: currentStrokeRef.current.colour,
-            })
+            };
             onStrokeFinished(newStroke);
             currentStrokeRef.current = null;
         }
-    }
-
-    else if (e.button === 2) {
+    } else if (e.button === 2) {
         panStartRef.current = null;
         lastPanOffsetRef.current = { ...panOffsetRef.current };
     }
+
+    imageDragOffsetRef.current = null;
+    activeResizeHandleRef.current = null;
 };

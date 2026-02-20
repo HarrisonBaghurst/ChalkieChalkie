@@ -45,6 +45,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Highlighter
 - [ ] User name next to cursor
 - [ ] Zooming
+- [ ] Cursor image change based on selected tool
 
 ## Complete tasks
 

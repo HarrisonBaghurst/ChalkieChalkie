@@ -15,16 +15,18 @@ const RADIUS = 400;
 const ANGLE_SPREAD = 58;
 
 const BottomBar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
-    const tools: { tool: Tools; code: string; name: string }[] = [
+    const tools: { tool: Tools; name: string }[] = [
         {
             tool: "pen",
-            code: "#eeeeee",
             name: "White",
         },
         {
             tool: "eraser",
-            code: "#141414",
             name: "Eraser",
+        },
+        {
+            tool: "pointer",
+            name: "Pointer",
         },
     ];
 

@@ -6,3 +6,6 @@ export type PastedImage = {
     width: number;
     height: number;
 };
+
+export type ResizeHandleKey = "nw" | "ne" | "sw" | "se";
+export type ResizeHandle = ResizeHandleKey | null;
