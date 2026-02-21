@@ -5,7 +5,6 @@ import { Tools } from "@/types/toolTypes";
 import { StrokeIntersectPoints } from "./genometry";
 import { PastedImage, ResizeHandle } from "@/types/imageTypes";
 import { getImageAtPoint, getResizeHandleAtPoint } from "./imageUtils";
-import { maxHeaderSize } from "node:http";
 
 // --- type definitions ---
 
@@ -211,14 +210,55 @@ export const handleMouseMove = (() => {
 
             // resizing
             if (activeResizeHandleRef.current) {
-                const dx = worldPoint.x - img.x;
-                const dy = worldPoint.y - img.y;
+                const MIN_SIZE = 20;
 
-                if (activeResizeHandleRef.current === "se") {
-                    img.width = Math.max(20, dx);
-                    img.height = Math.max(20, dy);
+                const right = img.x + img.width;
+                const bottom = img.y + img.height;
+
+                switch (activeResizeHandleRef.current) {
+                    case "se": {
+                        const newWidth = worldPoint.x - img.x;
+                        const newHeight = worldPoint.y - img.y;
+
+                        img.width = Math.max(MIN_SIZE, newWidth);
+                        img.height = Math.max(MIN_SIZE, newHeight);
+                        break;
+                    }
+
+                    case "sw": {
+                        const newWidth = right - worldPoint.x;
+                        const newHeight = worldPoint.y - img.y;
+
+                        img.width = Math.max(MIN_SIZE, newWidth);
+                        img.height = Math.max(MIN_SIZE, newHeight);
+
+                        img.x = right - img.width; // move left edge
+                        break;
+                    }
+
+                    case "ne": {
+                        const newWidth = worldPoint.x - img.x;
+                        const newHeight = bottom - worldPoint.y;
+
+                        img.width = Math.max(MIN_SIZE, newWidth);
+                        img.height = Math.max(MIN_SIZE, newHeight);
+
+                        img.y = bottom - img.height; // move top edge
+                        break;
+                    }
+
+                    case "nw": {
+                        const newWidth = right - worldPoint.x;
+                        const newHeight = bottom - worldPoint.y;
+
+                        img.width = Math.max(MIN_SIZE, newWidth);
+                        img.height = Math.max(MIN_SIZE, newHeight);
+
+                        img.x = right - img.width;
+                        img.y = bottom - img.height;
+                        break;
+                    }
                 }
-                // add other resize handles later
 
                 return;
             }

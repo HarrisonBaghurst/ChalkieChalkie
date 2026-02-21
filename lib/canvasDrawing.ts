@@ -56,6 +56,7 @@ const drawToCanvas = ({
             const screenY = image.y + panOffset.y;
 
             ctx.strokeStyle = "#3a86ff";
+            ctx.lineWidth = 2;
             ctx.strokeRect(screenX, screenY, image.width, image.height);
 
             const size = 8;

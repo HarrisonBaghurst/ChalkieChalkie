@@ -74,6 +74,12 @@ const Board = () => {
         });
     };
 
+    // remove selections when tool changed
+    const onToolChanged = () => {
+        selectedImageIdRef.current = null;
+        activeResizeHandleRef.current = null;
+    };
+
     // animation loop - decoupled from React lifecycle
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -196,6 +202,7 @@ const Board = () => {
             <BottomBar
                 currentColourRef={currentColourRef}
                 currentToolRef={currentToolRef}
+                onToolChanged={onToolChanged}
             />
             <canvas
                 ref={canvasRef}

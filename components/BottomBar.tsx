@@ -9,12 +9,17 @@ import Image from "next/image";
 type BottomBarProps = {
     currentColourRef: RefObject<string>;
     currentToolRef: RefObject<Tools>;
+    onToolChanged: () => void;
 };
 
 const RADIUS = 400;
 const ANGLE_SPREAD = 58;
 
-const BottomBar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
+const BottomBar = ({
+    currentColourRef,
+    currentToolRef,
+    onToolChanged,
+}: BottomBarProps) => {
     const tools: { tool: Tools; name: string }[] = [
         {
             tool: "pen",
@@ -88,6 +93,11 @@ const BottomBar = ({ currentColourRef, currentToolRef }: BottomBarProps) => {
                                           : "2.5rem",
                             }}
                             onClick={() => {
+                                // if tool has changed from previous
+                                if (currentTool !== index) {
+                                    onToolChanged();
+                                }
+
                                 setCurrentTool(index);
                                 currentToolRef.current = tool.tool;
                                 if (tool.tool === "pen") {

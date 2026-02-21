@@ -1,6 +1,8 @@
 import { PastedImage, ResizeHandle, ResizeHandleKey } from "@/types/imageTypes";
 import { Point } from "@/types/strokeTypes";
 
+const HANDLE_SIZE = 20;
+
 export const getImageAtPoint = (
     images: PastedImage[],
     point: Point,
@@ -8,18 +10,16 @@ export const getImageAtPoint = (
     for (let i = images.length - 1; i >= 0; i--) {
         const img = images[i];
         if (
-            point.x >= img.x &&
-            point.x <= img.x + img.width &&
-            point.y >= img.y &&
-            point.y <= img.y + img.height
+            point.x >= img.x - HANDLE_SIZE &&
+            point.x <= img.x + img.width + HANDLE_SIZE &&
+            point.y >= img.y - HANDLE_SIZE &&
+            point.y <= img.y + img.height + HANDLE_SIZE
         ) {
             return img;
         }
     }
     return null;
 };
-
-const HANDLE_SIZE = 20;
 
 export const getResizeHandleAtPoint = (
     img: PastedImage,
