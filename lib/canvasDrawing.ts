@@ -25,16 +25,24 @@ const drawToCanvas = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // match display size
+    // match display resolution
+    const devicePixelRatio = window.devicePixelRatio || 1;
     const { clientWidth, clientHeight } = canvas;
-    if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
-        canvas.width = clientWidth;
-        canvas.height = clientHeight;
+
+    // only resize if neccessary
+    if (
+        canvas.width !== clientWidth * devicePixelRatio ||
+        canvas.height !== clientHeight * devicePixelRatio
+    ) {
+        canvas.width = clientWidth * devicePixelRatio;
+        canvas.height = clientHeight * devicePixelRatio;
+        canvas.style.width = `${clientWidth}px`;
+        canvas.style.height = `${clientHeight}px`;
     }
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 
     // cear & setup
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineWidth = 3;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
 
@@ -56,7 +64,7 @@ const drawToCanvas = ({
             const screenY = image.y + panOffset.y;
 
             ctx.strokeStyle = "#3a86ff";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 1;
             ctx.strokeRect(screenX, screenY, image.width, image.height);
 
             const size = 8;
@@ -78,6 +86,7 @@ const drawToCanvas = ({
     });
 
     // render all strokes with panning offset
+    ctx.lineWidth = 3;
     for (const stroke of allStrokes) {
         if (stroke.points.length < 2) continue;
         ctx.beginPath();

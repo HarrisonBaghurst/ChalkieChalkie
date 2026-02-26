@@ -215,44 +215,46 @@ export const handleMouseMove = (() => {
                 const right = img.x + img.width;
                 const bottom = img.y + img.height;
 
+                const aspectRatio = img.width / img.height;
+
                 switch (activeResizeHandleRef.current) {
                     case "se": {
                         const newWidth = worldPoint.x - img.x;
-                        const newHeight = worldPoint.y - img.y;
-
                         img.width = Math.max(MIN_SIZE, newWidth);
-                        img.height = Math.max(MIN_SIZE, newHeight);
+
+                        img.width = newWidth;
+                        img.height = newWidth / aspectRatio;
                         break;
                     }
 
                     case "sw": {
-                        const newWidth = right - worldPoint.x;
-                        const newHeight = worldPoint.y - img.y;
+                        let newWidth = right - worldPoint.x;
+                        newWidth = Math.max(MIN_SIZE, newWidth);
 
-                        img.width = Math.max(MIN_SIZE, newWidth);
-                        img.height = Math.max(MIN_SIZE, newHeight);
+                        img.width = newWidth;
+                        img.height = newWidth / aspectRatio;
 
-                        img.x = right - img.width; // move left edge
+                        img.x = right - img.width;
                         break;
                     }
 
                     case "ne": {
-                        const newWidth = worldPoint.x - img.x;
-                        const newHeight = bottom - worldPoint.y;
+                        let newWidth = worldPoint.x - img.x;
+                        newWidth = Math.max(MIN_SIZE, newWidth);
 
-                        img.width = Math.max(MIN_SIZE, newWidth);
-                        img.height = Math.max(MIN_SIZE, newHeight);
+                        img.width = newWidth;
+                        img.height = newWidth / aspectRatio;
 
-                        img.y = bottom - img.height; // move top edge
+                        img.y = bottom - img.height;
                         break;
                     }
 
                     case "nw": {
-                        const newWidth = right - worldPoint.x;
-                        const newHeight = bottom - worldPoint.y;
+                        let newWidth = right - worldPoint.x;
+                        newWidth = Math.max(MIN_SIZE, newWidth);
 
-                        img.width = Math.max(MIN_SIZE, newWidth);
-                        img.height = Math.max(MIN_SIZE, newHeight);
+                        img.width = newWidth;
+                        img.height = newWidth / aspectRatio;
 
                         img.x = right - img.width;
                         img.y = bottom - img.height;
