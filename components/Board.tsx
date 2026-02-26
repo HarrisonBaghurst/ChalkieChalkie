@@ -18,20 +18,22 @@ import {
 } from "@liveblocks/react";
 import Cursor from "./Cursor";
 import { Tools } from "@/types/toolTypes";
-import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
 
-const Board = () => {
+const Board = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const currentToolRef = useRef<Tools>("pen");
 
     // liveblocks storage - sync accross clients
     const strokes = useStorage((root) => root.canvasStrokes);
+    const pastedImagesMeta = useStorage((root) => root.pastedImages);
     const { undo, redo } = useHistory();
 
-    // use mutations to updated liveblocks storage
+    // use mutations to update liveblocks storage
     const addStroke = useMutation(({ storage }, stroke: Stroke) => {
         storage.get("canvasStrokes").push(stroke);
     }, []);
+
     const eraseStrokes = useMutation(({ storage }, strokeIds: string[]) => {
         const strokes = storage.get("canvasStrokes");
         for (let i = strokes.length - 1; i >= 0; i--) {
@@ -41,6 +43,74 @@ const Board = () => {
         }
     }, []);
 
+    const addImageMeta = useMutation(({ storage }, meta: PastedImageMeta) => {
+        storage.get("pastedImages").push(meta);
+    }, []);
+
+    const removeImageMeta = useMutation(({ storage }, id: string) => {
+        const images = storage.get("pastedImages");
+        for (let i = images.length - 1; i >= 0; i--) {
+            if (images.get(i)!.id === id) images.delete(i);
+        }
+    }, []);
+
+    const updateImageMeta = useMutation(
+        ({ storage }, id: string, changes: Partial<PastedImageMeta>) => {
+            const images = storage.get("pastedImages");
+            for (let i = 0; i < images.length; i++) {
+                const img = images.get(i)!;
+                if (img.id === id) {
+                    images.set(i, { ...img, ...changes });
+                    break;
+                }
+            }
+        },
+        [],
+    );
+
+    const pastedImagesRef = useRef<PastedImage[]>([]);
+
+    useEffect(() => {
+        if (!pastedImagesMeta) return;
+
+        const existingIds = new Set(
+            pastedImagesRef.current.map((img) => img.id),
+        );
+
+        pastedImagesMeta.forEach((meta) => {
+            if (existingIds.has(meta.id)) {
+                const local = pastedImagesRef.current.find(
+                    (img) => img.id === meta.id,
+                );
+                if (local) {
+                    local.x = meta.x;
+                    local.y = meta.y;
+                    local.width = meta.width;
+                    local.height = meta.height;
+                }
+            } else {
+                const img = new Image();
+                img.onload = () => {
+                    pastedImagesRef.current.push({
+                        id: meta.id,
+                        element: img,
+                        x: meta.x,
+                        y: meta.y,
+                        width: meta.width,
+                        height: meta.height,
+                        url: meta.url,
+                    });
+                };
+                img.src = meta.url;
+            }
+        });
+
+        const metaIds = new Set(pastedImagesMeta.map((m) => m.id));
+        pastedImagesRef.current = pastedImagesRef.current.filter((img) => {
+            return metaIds.has(img.id);
+        });
+    }, [pastedImagesMeta]);
+
     // panning control
     const panOffsetRef = useRef<Point>({ x: 0, y: 0 });
     const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
@@ -48,7 +118,6 @@ const Board = () => {
 
     // image pasting
     const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
-    const pastedImagesRef = useRef<PastedImage[]>([]);
     const selectedImageIdRef = useRef<string | null>(null);
     const imageDragOffsetRef = useRef<Point | null>(null);
     const activeResizeHandleRef = useRef<ResizeHandle>(null);
@@ -104,7 +173,7 @@ const Board = () => {
         };
         const frameId = requestAnimationFrame(render);
         return () => cancelAnimationFrame(frameId);
-    }, [strokes]); // re-run if strokes changes
+    }, [strokes]);
 
     // prevent context menu when right-clicking to pan
     useEffect(() => {
@@ -128,7 +197,7 @@ const Board = () => {
             } else if (event.key === "Delete" || event.key === "Backspace") {
                 const id = selectedImageIdRef.current;
                 if (!id) return;
-
+                removeImageMeta(id);
                 pastedImagesRef.current = pastedImagesRef.current.filter(
                     (img) => img.id !== id,
                 );
@@ -147,7 +216,7 @@ const Board = () => {
     }, []);
 
     useEffect(() => {
-        const handlePaste = (e: ClipboardEvent) => {
+        const handlePaste = async (e: ClipboardEvent) => {
             const items = e.clipboardData?.items;
             if (!items) return;
 
@@ -157,26 +226,52 @@ const Board = () => {
                 const file = item.getAsFile();
                 if (!file) continue;
 
-                const reader = new FileReader();
+                const imageId = crypto.randomUUID();
+                const { x, y } = cursorPositionRef.current;
 
-                reader.onload = () => {
+                // get dimensions before uploading
+                const dimensions = await new Promise<{
+                    width: number;
+                    height: number;
+                }>((resolve) => {
                     const img = new Image();
-
+                    const url = URL.createObjectURL(file);
                     img.onload = () => {
-                        const { x, y } = cursorPositionRef.current;
-
-                        pastedImagesRef.current.push({
-                            id: crypto.randomUUID(),
-                            element: img,
-                            x,
-                            y,
-                            width: img.width,
-                            height: img.height,
-                        });
+                        resolve({ width: img.width, height: img.height });
+                        URL.revokeObjectURL(url);
                     };
-                    img.src = reader.result as string;
-                };
-                reader.readAsDataURL(file);
+                    img.src = url;
+                });
+
+                // upload image via API route, get back signed URL
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("imageId", imageId);
+                formData.append("workspaceId", workspaceId);
+                formData.append("width", dimensions.width.toString());
+                formData.append("height", dimensions.height.toString());
+
+                try {
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/post/upload-workspace-image`,
+                        {
+                            method: "POST",
+                            body: formData,
+                        },
+                    );
+                    const { url } = await res.json();
+                    addImageMeta({
+                        id: imageId,
+                        url,
+                        x,
+                        y,
+                        width: dimensions.width,
+                        height: dimensions.height,
+                    });
+                } catch (err) {
+                    console.error("Failed to upload image:", err);
+                }
+
                 e.preventDefault();
                 break;
             }
@@ -184,7 +279,7 @@ const Board = () => {
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    });
+    }, []);
 
     return (
         <div className="w-dvw h-dvh overflow-hidden">
@@ -254,6 +349,8 @@ const Board = () => {
                         selectedImageIdRef,
                         imageDragOffsetRef,
                         activeResizeHandleRef,
+                        onImageMoved: (id, changes) =>
+                            updateImageMeta(id, changes),
                     })
                 }
             />

@@ -3,7 +3,7 @@ import { simplifyRDP } from "./strokeOptimisation";
 import { RefObject } from "react";
 import { Tools } from "@/types/toolTypes";
 import { StrokeIntersectPoints } from "./genometry";
-import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
 import { getImageAtPoint, getResizeHandleAtPoint } from "./imageUtils";
 
 // --- type definitions ---
@@ -51,6 +51,7 @@ type handleMouseUpParameters = {
     selectedImageIdRef: RefObject<string | null>;
     imageDragOffsetRef: RefObject<Point | null>;
     activeResizeHandleRef: RefObject<ResizeHandle>;
+    onImageMoved: (id: string, changes: Partial<PastedImageMeta>) => void;
 };
 
 // --- helpers ---
@@ -219,8 +220,8 @@ export const handleMouseMove = (() => {
 
                 switch (activeResizeHandleRef.current) {
                     case "se": {
-                        const newWidth = worldPoint.x - img.x;
-                        img.width = Math.max(MIN_SIZE, newWidth);
+                        let newWidth = worldPoint.x - img.x;
+                        newWidth = Math.max(MIN_SIZE, newWidth);
 
                         img.width = newWidth;
                         img.height = newWidth / aspectRatio;
@@ -287,6 +288,7 @@ export const handleMouseUp = ({
     selectedImageIdRef,
     imageDragOffsetRef,
     activeResizeHandleRef,
+    onImageMoved,
 }: handleMouseUpParameters) => {
     if (
         e.button === 0 &&
@@ -307,6 +309,21 @@ export const handleMouseUp = ({
     } else if (e.button === 2) {
         panStartRef.current = null;
         lastPanOffsetRef.current = { ...panOffsetRef.current };
+    }
+
+    if (e.button === 0 && currentToolRef.current === "pointer") {
+        const id = selectedImageIdRef.current;
+        if (id) {
+            const img = pastedImagesRef.current.find((i) => i.id === id);
+            if (img) {
+                onImageMoved(id, {
+                    x: img.x,
+                    y: img.y,
+                    width: img.width,
+                    height: img.height,
+                });
+            }
+        }
     }
 
     imageDragOffsetRef.current = null;

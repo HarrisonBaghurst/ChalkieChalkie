@@ -1,10 +1,14 @@
-export type PastedImage = {
+export type PastedImageMeta = {
     id: string;
-    element: HTMLImageElement;
+    url: string;
     x: number;
     y: number;
     width: number;
     height: number;
+};
+
+export type PastedImage = PastedImageMeta & {
+    element: HTMLImageElement;
 };
 
 export type ResizeHandleKey = "nw" | "ne" | "sw" | "se";
