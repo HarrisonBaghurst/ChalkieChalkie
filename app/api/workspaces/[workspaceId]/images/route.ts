@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * Upload pasted image to database
  *
- * @route api/post/upload-workspace-image
+ * @route api/workspaces/[workspaceId]/images
  */
 export async function POST(req: NextRequest) {
     const { userId } = await auth();

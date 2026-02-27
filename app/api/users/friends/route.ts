@@ -11,7 +11,7 @@ export type FriendMetadata = {
 /**
  * Retrieve all friends of the current authenticated user
  *
- * @route /api/get/friends-from-user
+ * @route /api/users/friends
  */
 export async function GET() {
     try {

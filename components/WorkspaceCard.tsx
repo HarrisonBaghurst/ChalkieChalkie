@@ -61,7 +61,7 @@ const WorkspaceCard = ({
 
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/patch/update-workspace`,
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${uuid}`,
                 {
                     method: "PATCH",
                     headers: {

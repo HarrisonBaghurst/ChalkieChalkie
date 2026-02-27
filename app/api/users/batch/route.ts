@@ -8,7 +8,7 @@ type RequestBody = {
 /**
  * Returns a list of user information corresponding to passed user ids
  *
- * @route /api/get/users-from-ids
+ * @route /api/users/batch
  */
 export async function POST(req: Request) {
     try {

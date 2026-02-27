@@ -70,7 +70,9 @@ const CustomiseWorkspaceModal = ({
     useEffect(() => {
         const fetchFriends = async () => {
             try {
-                const res = await fetch("/api/get/friends-from-user");
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
+                );
 
                 if (!res.ok) {
                     console.error("Failed to fetch friends");

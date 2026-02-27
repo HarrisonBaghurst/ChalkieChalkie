@@ -253,7 +253,7 @@ const Board = ({ workspaceId }: { workspaceId: string }) => {
 
                 try {
                     const res = await fetch(
-                        `${process.env.NEXT_PUBLIC_APP_URL}/api/post/upload-workspace-image`,
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
                         {
                             method: "POST",
                             body: formData,

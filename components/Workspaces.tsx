@@ -17,7 +17,7 @@ const Workspaces = () => {
             try {
                 // fetch workspaces
                 const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_APP_URL}/api/get/user-boards`,
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/workspaces`,
                     { cache: "no-store" },
                 );
 
@@ -47,7 +47,7 @@ const Workspaces = () => {
                 // fetch unique users
                 if (uniqueUserIds.length > 0) {
                     const usersRes = await fetch(
-                        `${process.env.NEXT_PUBLIC_APP_URL}/api/get/users-from-ids`,
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/users/batch`,
                         {
                             method: "POST",
                             headers: {

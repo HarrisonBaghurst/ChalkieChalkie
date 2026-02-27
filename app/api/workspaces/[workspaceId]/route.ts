@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 /**
  * Update workspace details in database
  *
- * @route api/patch/update-workspace
+ * @route api/workspaces/[workspaceId]
  */
 export async function PATCH(req: Request) {
     const { userId } = await auth();

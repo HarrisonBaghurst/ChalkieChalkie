@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 /**
  * Retrieve all workspace data that the user is a part of
  *
- * @route /api/get/user-boards
+ * @route /api/users/workspaces
  */
 export async function GET() {
     const { userId } = await auth();
