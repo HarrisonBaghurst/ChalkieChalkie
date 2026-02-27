@@ -46,13 +46,16 @@ const Workspaces = () => {
 
                 // fetch unique users
                 if (uniqueUserIds.length > 0) {
-                    const usersRes = await fetch("/api/get/users-from-ids", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
+                    const usersRes = await fetch(
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/get/users-from-ids`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ userIds: uniqueUserIds }),
                         },
-                        body: JSON.stringify({ userIds: uniqueUserIds }),
-                    });
+                    );
 
                     if (!usersRes.ok) {
                         console.error("Failed to fetch users");

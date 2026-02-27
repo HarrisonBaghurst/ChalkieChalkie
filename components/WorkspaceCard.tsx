@@ -60,18 +60,23 @@ const WorkspaceCard = ({
         setWorkspaceData(updatedData);
 
         try {
-            const res = await fetch("/api/patch/update-workspace", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/patch/update-workspace`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        roomId: uuid,
+                        title: updatedData.title,
+                        description: updatedData.description,
+                        collaborators: updatedData.collaborators.map(
+                            (c) => c.id,
+                        ),
+                    }),
                 },
-                body: JSON.stringify({
-                    roomId: uuid,
-                    title: updatedData.title,
-                    description: updatedData.description,
-                    collaborators: updatedData.collaborators.map((c) => c.id),
-                }),
-            });
+            );
 
             if (!res.ok) {
                 console.error("Failed to update workspace");
