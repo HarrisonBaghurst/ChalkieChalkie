@@ -19,6 +19,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Ensure browser support and compatibility
 - [ ] Search engine optimisation
 - [ ] Stroke drawing optimisation
+- [ ] Ensure API security
 
 ### Home and UI
 
