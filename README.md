@@ -34,18 +34,26 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Icons
 - [ ] Scroll animations for home page
 - [ ] Toast messages - positive and negative interactions
+- [ ] Allow deleting workspace
 
 ### Whiteboard and UI
 
 - [ ] Ensure correct spacing between pen colour selection menu
 - [ ] Current active and inactive user list
-- [ ] Pasting .png images
 - [ ] Hold for perfect line
 - [ ] Pen sizes
 - [ ] Highlighter
 - [ ] User name next to cursor
 - [ ] Zooming
 - [ ] Cursor image change based on selected tool
+
+- [ ] Pasting .png images
+
+Still to do:
+delete image from database on deletion from workspace
+delete image when workspace is deleted in cron job
+run cron job to update liveblocks signed image urls
+pre-processing for images before upload
 
 ## Complete tasks
 
