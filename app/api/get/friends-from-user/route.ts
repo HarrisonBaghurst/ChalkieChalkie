@@ -1,6 +1,18 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+export type FriendMetadata = {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    imageUrl: string;
+};
+
+/**
+ * Retrieve all friends of the current authenticated user
+ *
+ * @route /api/get/friends-from-user
+ */
 export async function GET() {
     try {
         // ensure user is authenticated
@@ -22,12 +34,14 @@ export async function GET() {
         });
 
         // only return necessary data
-        const friends = usersResponse.data.map((user) => ({
-            id: user.id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            imageUrl: user.imageUrl,
-        }));
+        const friends = usersResponse.data.map(
+            (user): FriendMetadata => ({
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                imageUrl: user.imageUrl,
+            }),
+        );
 
         return NextResponse.json({ friends });
     } catch (err) {

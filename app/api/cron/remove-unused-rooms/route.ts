@@ -9,6 +9,11 @@ const liveblocks = new Liveblocks({
 
 const INACTIVITY_HOURS = 24;
 
+/**
+ * Delete all workspaces that are more than INACTIVITY_HOURS old from Supabase
+ *
+ * @route /api/cron/remove-unused-rooms
+ */
 export async function GET() {
     const cutoff = new Date(
         Date.now() - INACTIVITY_HOURS * 60 * 60 * 1000,

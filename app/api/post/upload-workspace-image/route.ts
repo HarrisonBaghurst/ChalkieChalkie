@@ -2,6 +2,11 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Upload pasted image to database
+ *
+ * @route api/post/upload-workspace-image
+ */
 export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) {

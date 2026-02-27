@@ -1,6 +1,11 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 
+/**
+ * Update workspace details in database
+ *
+ * @route api/patch/update-workspace
+ */
 export async function PATCH(req: Request) {
     const { userId } = await auth();
 

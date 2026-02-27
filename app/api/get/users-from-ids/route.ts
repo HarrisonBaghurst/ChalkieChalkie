@@ -5,6 +5,11 @@ type RequestBody = {
     userIds: string[];
 };
 
+/**
+ * Returns a list of user information corresponding to passed user ids
+ *
+ * @route /api/get/users-from-ids
+ */
 export async function POST(req: Request) {
     try {
         const body: RequestBody = await req.json();
