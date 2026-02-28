@@ -59,3 +59,46 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: signedData.signedUrl });
 }
+
+export async function DELETE(req: NextRequest) {
+    const { userId } = await auth();
+    if (!userId) {
+        return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+    }
+
+    const { imageId, workspaceId } = await req.json();
+
+    if (!imageId || !workspaceId) {
+        return NextResponse.json(
+            { error: "Missing ID or workspace" },
+            { status: 400 },
+        );
+    }
+
+    // verify user is a member of the workspace
+    const { data } = await supabaseAdmin
+        .from("Room")
+        .select("user_ids")
+        .eq("id", workspaceId)
+        .contains("user_ids", [userId])
+        .single();
+
+    if (!data || !data.user_ids) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const path = `${workspaceId}/${imageId}`;
+
+    const { error: deleteError } = await supabaseAdmin.storage
+        .from("workspace-images")
+        .remove([path]);
+
+    if (deleteError) {
+        return NextResponse.json(
+            { error: deleteError.message },
+            { status: 500 },
+        );
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
+}

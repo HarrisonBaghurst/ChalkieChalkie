@@ -106,12 +106,12 @@ const Hero = () => {
                                     </span>
                                 ))}
                             </span>
-                            tool
+                            Space
                         </h1>
                     </div>
                 </div>
                 {isSignedIn && isLoaded && (
-                    <div className="grid grid-cols-2 gap-8 my-[1dvh]">
+                    <div className="flex justify-center gap-8 my-[1dvh]">
                         <Button
                             text="Create workspace"
                             handleClick={createBoard}
@@ -125,7 +125,7 @@ const Hero = () => {
                     </div>
                 )}
                 {!isSignedIn && isLoaded && (
-                    <div className="grid grid-cols-2 gap-8 my-[1dvh]">
+                    <div className="flex justify-center gap-8 my-[1dvh]">
                         <Button
                             text="Create account"
                             handleClick={() => {}}

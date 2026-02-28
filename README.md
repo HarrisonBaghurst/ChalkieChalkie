@@ -51,7 +51,6 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Pasting .png images
 
 Still to do:
-delete image from database on deletion from workspace
 delete image when workspace is deleted in cron job
 run cron job to update liveblocks signed image urls
 pre-processing for images before upload

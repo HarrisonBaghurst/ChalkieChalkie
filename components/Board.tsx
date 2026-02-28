@@ -187,7 +187,7 @@ const Board = ({ workspaceId }: { workspaceId: string }) => {
 
     // create event listeners for keybinds
     useEffect(() => {
-        const onKeypress = (event: KeyboardEvent) => {
+        const onKeypress = async (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key === "z") {
                 event.preventDefault();
                 undo();
@@ -198,10 +198,27 @@ const Board = ({ workspaceId }: { workspaceId: string }) => {
                 const id = selectedImageIdRef.current;
                 if (!id) return;
                 removeImageMeta(id);
-                pastedImagesRef.current = pastedImagesRef.current.filter(
-                    (img) => img.id !== id,
-                );
-                selectedImageIdRef.current = null;
+
+                // delete image from databse
+                try {
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
+                        {
+                            method: "DELETE",
+                            body: JSON.stringify({ imageId: id, workspaceId }),
+                        },
+                    );
+                    if (!res.ok) {
+                        console.error("Failed to delete image");
+                        return;
+                    }
+                    pastedImagesRef.current = pastedImagesRef.current.filter(
+                        (img) => img.id !== id,
+                    );
+                    selectedImageIdRef.current = null;
+                } catch (err) {
+                    console.error("Failed to upload image:", err);
+                }
             }
         };
         document.addEventListener("keydown", onKeypress);
@@ -248,8 +265,6 @@ const Board = ({ workspaceId }: { workspaceId: string }) => {
                 formData.append("file", file);
                 formData.append("imageId", imageId);
                 formData.append("workspaceId", workspaceId);
-                formData.append("width", dimensions.width.toString());
-                formData.append("height", dimensions.height.toString());
 
                 try {
                     const res = await fetch(
