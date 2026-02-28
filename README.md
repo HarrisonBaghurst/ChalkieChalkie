@@ -50,11 +50,6 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] run cron job to update liveblocks signed image urls
 - [ ] pre-processing for images before upload
 
-- [ ] Pasting .png images
-
-Still to do:
-delete image when workspace is deleted in cron job
-
 ## Complete tasks
 
 - [x] Consistent button styling
@@ -64,3 +59,4 @@ delete image when workspace is deleted in cron job
 - [x] Center clerk login page
 - [x] Update home page based on logged-in state
 - [x] Update header
+- [x] Pasting .png images
