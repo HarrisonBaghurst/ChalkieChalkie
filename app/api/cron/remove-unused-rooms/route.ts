@@ -39,10 +39,34 @@ export async function GET() {
     let deletedCount = 0;
     for (const room of rooms) {
         try {
+            // delete images in supabase storage
+            const { data: files, error: listError } =
+                await supabaseAdmin.storage
+                    .from("workspace-images")
+                    .list(room.id);
+
+            if (listError) {
+                console.error(
+                    `Failed to list images for room ${room.id}`,
+                    listError,
+                );
+            } else if (files && files.length > 0) {
+                const paths = files.map((file) => `${room.id}/${file.name}`);
+                const { error: removeError } = await supabaseAdmin.storage
+                    .from("workspace-images")
+                    .remove(paths);
+
+                if (removeError) {
+                    console.error(
+                        `Failed to delete images for room ${room.id}`,
+                        removeError,
+                    );
+                }
+            }
+
+            // delete room from liveblocks and supabase database
             await liveblocks.deleteRoom(room.id);
-
             await supabaseAdmin.from("Room").delete().eq("id", room.id);
-
             deletedCount++;
         } catch (err) {
             console.error(`Failed to delete room ${room.id}`, err);

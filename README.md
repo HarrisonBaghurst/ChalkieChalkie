@@ -47,13 +47,13 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] User name next to cursor
 - [ ] Zooming
 - [ ] Cursor image change based on selected tool
+- [ ] run cron job to update liveblocks signed image urls
+- [ ] pre-processing for images before upload
 
 - [ ] Pasting .png images
 
 Still to do:
 delete image when workspace is deleted in cron job
-run cron job to update liveblocks signed image urls
-pre-processing for images before upload
 
 ## Complete tasks
 
