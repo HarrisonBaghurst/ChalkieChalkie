@@ -140,7 +140,7 @@ const CustomiseWorkspaceModal = ({
     return (
         <div className="fixed inset-0 z-500 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/75" onClick={onClose} />
-            <div className="relative z-10 w-[40dvw] h-[75dvh] bg-[#181815] rounded-2xl border border-white/10 flex flex-col justify-between overflow-hidden">
+            <div className="relative z-10 w-[40dvw] h-[75dvh] bg-[#181815] rounded-md border border-white/10 flex flex-col justify-between overflow-hidden">
                 <div className="flex-1 overflow-y-auto flex flex-col gap-8 pt-2">
                     <div className="px-6 pt-6 flex flex-col gap-8">
                         <h3 className="font-mont-bold text-lg text-foreground">
@@ -149,13 +149,13 @@ const CustomiseWorkspaceModal = ({
                         <TextInput
                             title={"TITLE"}
                             placeholder={"e.g. John Doe lesson 3"}
-                            value={title}
+                            value={title ? title : ""}
                             onChange={(text) => setTitle(text)}
                         />
                         <TextInput
                             title={"DESCRIPTION"}
                             placeholder={"e.g. Learning trigonometry"}
-                            value={description}
+                            value={description ? description : ""}
                             onChange={(text) => setDescription(text)}
                             variant="long"
                         />

@@ -107,7 +107,9 @@ const WorkspaceCard = ({
             <div className="pt-6 px-6 flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <h3 className="font-mont-bold text-foreground text-lg">
-                        {workspaceData.title}
+                        {workspaceData.title
+                            ? workspaceData.title
+                            : "Untitiled workspace"}
                     </h3>
                     <div className="bg-[#3a86ff]/10 px-2 py-0.5 rounded-full border border-[#3a86ff]/30">
                         <p className="text-xs text-[#3a86ff]">
@@ -116,7 +118,9 @@ const WorkspaceCard = ({
                     </div>
                 </div>
                 <p className="text-sm text-foreground-second">
-                    {workspaceData.description}
+                    {workspaceData.description
+                        ? workspaceData.description
+                        : "This workspace does not have a description"}
                 </p>
                 <p className="text-xs text-foreground-third">
                     {lastEditedText}
