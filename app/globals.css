@@ -1,20 +1,14 @@
 @import "tailwindcss";
 
 @font-face {
-    font-family: "MontReg";
-    src: url("/fonts/Montserrat-Regular.ttf") format("truetype");
+    font-family: "PoppinsLight";
+    src: url("/fonts/Poppins-Light.ttf") format("truetype");
     font-weight: 400;
 }
 
 @font-face {
-    font-family: "MontBold";
-    src: url("/fonts/Montserrat-SemiBold.ttf") format("truetype");
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: "Alpino";
-    src: url("/fonts/Alpino-Bold.otf") format("opentype");
+    font-family: "PoppinsBold";
+    src: url("/fonts/Poppins-Bold.ttf") format("truetype");
     font-weight: 400;
 }
 
@@ -42,9 +36,8 @@
 }
 
 @theme inline {
-    --font-mont-bold: "MontBold";
-    --font-mont-reg: "MontReg";
-    --font-alpino: "Alpino";
+    --font-poppins-bold: "PoppinsBold";
+    --font-poppins-light: "PoppinsLight";
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -106,8 +99,16 @@
     }
 }
 
-body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: "MontReg";
+@layer base {
+    body {
+        background: var(--background);
+        color: var(--foreground);
+        font-family: "PoppinsLight";
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }

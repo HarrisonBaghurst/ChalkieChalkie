@@ -11,7 +11,7 @@ const Header = () => {
     };
 
     return (
-        <div className="top-0 fixed w-[85%] rounded-b-2xl mx-[7.5%] h-12 text-sm flex items-center px-2 justify-between z-500 backdrop-blur-lg border-white/10 border-b border-x bg-white/5">
+        <div className="top-0 fixed w-[80%] rounded-b-lg mx-[10%] h-14 text-sm flex items-center px-4 justify-between z-500 backdrop-blur-lg border-white/10 border-b border-x bg-white/5">
             <button className="cursor-pointer pl-2" onClick={returnHome}>
                 Chalkie Chalkie
             </button>

@@ -103,7 +103,7 @@ const WorkspaceCard = ({
     };
 
     return (
-        <div className="bg-white/5 rounded-2xl border border-white/10 flex flex-col gap-6 h-fit">
+        <div className="bg-white/5 rounded-lg border border-white/10 flex flex-col gap-6 h-fit">
             <div className="pt-6 px-6 flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <h3 className="font-mont-bold text-foreground text-lg">
