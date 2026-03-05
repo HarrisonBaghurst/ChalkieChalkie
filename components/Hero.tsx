@@ -165,58 +165,57 @@ const Hero = () => {
 
     return (
         <div className="relative bg-background w-dvw h-dvh overflow-hidden dotted-paper">
-            <div className="[box-shadow:0_4px_100px_rgba(9,9,6,1)] absolute top-1/2 -translate-y-1/2 -left-4 bg-background w-200 h-200 rounded-full flex justify-center items-center">
-                <div className="w-120 flex flex-col gap-8 will-change-transform">
-                    <h1
-                        ref={titleRef}
-                        className="font-poppins-bold text-6xl text-foreground will-change-transform"
-                    >
-                        {TITLE.split(" ").map((word, i) => (
-                            <span
-                                key={i}
-                                className="word inline-block will-change-transform mr-4 last:mr-0"
-                            >
-                                {word}
-                            </span>
-                        ))}
-                    </h1>
-                    <h3 ref={subtitleRef} className="text-foreground text-lg">
-                        Schedule lessons, solve problems step by step and share
-                        progress effortlessly.
-                    </h3>
-                    <div ref={buttonsRef}>
-                        {!isLoaded ? (
-                            <div>Loading your account...</div>
-                        ) : isSignedIn ? (
-                            <div className="flex gap-8">
-                                <Button
-                                    text="Create workspace"
-                                    handleClick={createBoard}
-                                    variant="primary"
-                                    className="font-bold"
-                                />
-                                <Button
-                                    text="Join workspace"
-                                    handleClick={scrollToWorkspaces}
-                                    variant="secondary"
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex gap-8">
-                                <Button
-                                    text="Create account"
-                                    handleClick={() => {}}
-                                    variant="primary"
-                                    className="font-bold"
-                                />
-                                <Button
-                                    text="Sign in"
-                                    handleClick={handleLogin}
-                                    variant="secondary"
-                                />
-                            </div>
-                        )}
-                    </div>
+            <div className="[box-shadow:0_4px_100px_rgba(9,9,6,1)] absolute top-1/2 -translate-y-1/2 bg-background w-200 h-200 rounded-full flex justify-center items-center" />
+            <div className="absolute top-1/2 -translate-y-1/2 left-[10%] w-120 flex flex-col gap-8 will-change-transform">
+                <h1
+                    ref={titleRef}
+                    className="font-poppins-bold text-6xl text-foreground will-change-transform"
+                >
+                    {TITLE.split(" ").map((word, i) => (
+                        <span
+                            key={i}
+                            className="word inline-block will-change-transform mr-4 last:mr-0"
+                        >
+                            {word}
+                        </span>
+                    ))}
+                </h1>
+                <h3 ref={subtitleRef} className="text-foreground text-lg">
+                    Schedule lessons, solve problems step by step and share
+                    progress effortlessly.
+                </h3>
+                <div ref={buttonsRef}>
+                    {!isLoaded ? (
+                        <div>Loading your account...</div>
+                    ) : isSignedIn ? (
+                        <div className="flex gap-8">
+                            <Button
+                                text="Create workspace"
+                                handleClick={createBoard}
+                                variant="primary"
+                                className="font-bold"
+                            />
+                            <Button
+                                text="Join workspace"
+                                handleClick={scrollToWorkspaces}
+                                variant="secondary"
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex gap-8">
+                            <Button
+                                text="Create account"
+                                handleClick={() => {}}
+                                variant="primary"
+                                className="font-bold"
+                            />
+                            <Button
+                                text="Sign in"
+                                handleClick={handleLogin}
+                                variant="secondary"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
             <div
@@ -246,11 +245,11 @@ const Hero = () => {
                     />
                 </div>
             </div>
-            <div className="absolute top-25 right-15 w-130 h-130">
+            <div className="absolute top-25 right-25 w-160 h-160">
                 <div className="absolute left-0 bottom-0 w-75 h-75 rotate-45">
                     <Image src={"/icons/squiggle1.svg"} alt="squiggle" fill />
                 </div>
-                <div className="absolute right-35 top-20 w-35 h-35 -rotate-20">
+                <div className="absolute right-45 top-40 w-35 h-35 -rotate-20">
                     <Image src={"/icons/squiggle2.svg"} alt="squiggle" fill />
                 </div>
             </div>
