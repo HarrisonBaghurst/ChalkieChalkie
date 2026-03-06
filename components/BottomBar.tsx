@@ -77,13 +77,13 @@ const BottomBar = ({
             <div
                 className="
             fixed bottom-2 left-1/2 -translate-x-1/2 h-14 rounded-xl flex gap-4 p-2 items-end
-            bg-linear-to-b from-card-background/60 to-[hsl(0,0,18%)]/60 backdrop-blur-md border-b-white/25 border-b z-100"
+            backdrop-blur-lg border-white/10 border bg-white/5 z-100"
             >
                 <div className="flex gap-2 items-end">
                     {tools.map((tool, index) => (
                         <motion.div
                             key={index}
-                            className="w-10 h-fit rounded-md p-2 aspect-square relative cursor-pointer bg-card-background border-b border-b-white/25"
+                            className="w-10 h-fit rounded-lg p-2 aspect-square relative cursor-pointer bg-[#4b4b4b] border-2 border-[#303030] shadow-[inset_0_2px_2px_rgba(115,114,114,1),inset_0_-5px_6px_rgba(48,48,48,1)]"
                             animate={{
                                 width:
                                     currentTool === index
@@ -125,7 +125,7 @@ const BottomBar = ({
                 </div>
                 <div className="flex gap-2 items-end">
                     <button
-                        className="relative p-2 w-10 h-fit aspect-square rounded-md bg-card-background border-b border-b-white/25 cursor-pointer"
+                        className="w-10 h-fit rounded-lg p-2 aspect-square relative cursor-pointer bg-[#4b4b4b] border-2 border-[#303030] shadow-[inset_0_2px_2px_rgba(115,114,114,1),inset_0_-5px_6px_rgba(48,48,48,1)]"
                         onClick={undo}
                     >
                         <div className="relative w-full h-full">
@@ -133,7 +133,7 @@ const BottomBar = ({
                         </div>
                     </button>
                     <button
-                        className="relative p-2 w-10 h-fit aspect-square rounded-md bg-card-background border-b border-b-white/25 cursor-pointer"
+                        className="w-10 h-fit rounded-lg p-2 aspect-square relative cursor-pointer bg-[#4b4b4b] border-2 border-[#303030] shadow-[inset_0_2px_2px_rgba(115,114,114,1),inset_0_-5px_6px_rgba(48,48,48,1)]"
                         onClick={redo}
                     >
                         <div className="relative w-full h-full">
