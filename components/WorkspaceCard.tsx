@@ -4,10 +4,11 @@ import { userInfo, WorkspaceEditData } from "@/types/userTypes";
 import Image from "next/image";
 import { getLastEditedText } from "@/lib/textUtils";
 import Button from "./Button";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import TextInput from "./TextInput";
 import DateTimeInput from "./DateTimeInput";
 import CollaboratorsInput from "./CollaboratorsInput";
+import { useDebouncedCallback } from "use-debounce";
 
 type WorkspaceCardProps = {
     title: string;
@@ -46,6 +47,9 @@ const WorkspaceCard = ({
 
     const [isSaving, setIsSaving] = useState(false);
     const [undoKey, setUndoKey] = useState(0);
+    const [saveStatus, setSaveStatus] = useState<
+        "idle" | "saving" | "saved" | "error"
+    >("idle");
 
     const handleFieldChange =
         (field: keyof WorkspaceEditData) => (value: string) => {
@@ -70,80 +74,118 @@ const WorkspaceCard = ({
         router.push(`/board/${uuid}`);
     };
 
-    if (loading || !isLoaded) return;
-    if (!isSignedIn || !user) return <p>Not signed in</p>;
-
     const hostInfo = collaborators.find((c) => c.id === host);
 
     const lastEditedText = getLastEditedText(lastEdited);
 
-    const onSave = async () => {
-        if (!hasPendingChanges || isSaving) return;
+    const onSave = useCallback(
+        async (changes: Partial<WorkspaceEditData>) => {
+            if (!changes || Object.keys(changes).length === 0 || isSaving)
+                return;
 
-        const updatedData: WorkspaceEditData = {
-            ...workspaceData,
-            ...pendingChanges,
-        };
+            const updatedData: WorkspaceEditData = {
+                ...workspaceData,
+                ...changes,
+            };
 
-        const previousData = workspaceData;
-        const previousPending = pendingChanges;
+            const previousData = workspaceData;
 
-        setWorkspaceData(updatedData);
-        setPendingChanges({});
-        setIsSaving(true);
+            setWorkspaceData(updatedData);
+            setPendingChanges({});
+            setIsSaving(true);
+            setSaveStatus("saving");
 
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${uuid}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${uuid}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            roomId: uuid,
+                            title: updatedData.title,
+                            description: updatedData.description,
+                            collaborators: updatedData.collaborators
+                                .filter(Boolean)
+                                .map((c) => c.id),
+                            startTime: updatedData.startTime
+                                ? updatedData.startTime instanceof Date
+                                    ? updatedData.startTime.toISOString()
+                                    : new Date(
+                                          updatedData.startTime,
+                                      ).toISOString()
+                                : null,
+                        }),
                     },
-                    body: JSON.stringify({
-                        roomId: uuid,
-                        title: updatedData.title,
-                        description: updatedData.description,
-                        collaborators: updatedData.collaborators.map(
-                            (c) => c.id,
-                        ),
-                        startTime: updatedData.startTime
-                            ? updatedData.startTime instanceof Date
-                                ? updatedData.startTime.toISOString()
-                                : new Date(updatedData.startTime).toISOString()
-                            : null,
-                    }),
-                },
-            );
+                );
 
-            if (!res.ok) {
-                throw new Error("Failed to update workspace");
+                if (!res.ok) {
+                    throw new Error("Failed to update workspace");
+                }
+
+                const data = await res.json();
+
+                setWorkspaceData({
+                    title: data.title,
+                    description: data.description,
+                    collaborators: data.user_ids ?? updatedData.collaborators,
+                    startTime: data.start_time
+                        ? new Date(data.start_time)
+                        : null,
+                });
+
+                setSaveStatus("saved");
+            } catch (err) {
+                console.error(err);
+
+                setWorkspaceData(previousData);
+                setPendingChanges(changes);
+                setSaveStatus("error");
+            } finally {
+                setIsSaving(false);
             }
+        },
+        [workspaceData, uuid, isSaving],
+    );
 
-            const data = await res.json();
+    const onSaveRef = useRef(onSave);
+    useEffect(() => {
+        onSaveRef.current = onSave;
+    }, [onSave]);
 
-            setWorkspaceData({
-                title: data.title,
-                description: data.description,
-                collaborators: data.user_ids ?? updatedData.collaborators,
-                startTime: data.start_time ? new Date(data.start_time) : null,
-            });
-        } catch (err) {
-            console.error(err);
+    const debouncedSave = useDebouncedCallback(
+        (changes: Partial<WorkspaceEditData>) => {
+            onSaveRef.current(changes);
+        },
+        1500,
+    );
 
-            setWorkspaceData(previousData);
-            setPendingChanges(previousPending);
-
-            alert("Failed to save changes. Your edits have been restored.");
-        } finally {
-            setIsSaving(false);
+    useEffect(() => {
+        if (hasPendingChanges) {
+            setSaveStatus("saving");
+            debouncedSave(pendingChanges);
         }
-    };
+    }, [pendingChanges, hasPendingChanges]);
 
-    const onUndo = () => {
-        setPendingChanges({});
-        setUndoKey((k) => k + 1);
-    };
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden" && hasPendingChanges) {
+                debouncedSave.cancel();
+                onSaveRef.current(pendingChanges);
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () =>
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+    }, [hasPendingChanges, pendingChanges]);
+
+    if (loading || !isLoaded) return;
+    if (!isSignedIn || !user) return <p>Not signed in</p>;
 
     return (
         <div className="bg-white/5 rounded-2xl w-full h-fit border border-white/10 flex flex-col gap-8 px-8 py-5 relative">
@@ -166,24 +208,18 @@ const WorkspaceCard = ({
                         Error loading host
                     </div>
                 )}
-                {hasPendingChanges && (
-                    <div className="flex gap-2">
-                        <Button
-                            text={isSaving ? "Saving…" : "Save"}
-                            variant="save"
-                            size="small"
-                            icon="/icons/bookmar-save-svgrepo-com.svg"
-                            handleClick={onSave}
-                        />
-                        <Button
-                            text="Undo"
-                            variant="delete"
-                            size="small"
-                            icon="/icons/trash-delete-svgrepo-com.svg"
-                            handleClick={onUndo}
-                        />
-                    </div>
-                )}
+
+                <div className="flex gap-2 items-center text-foreground-third">
+                    {saveStatus === "saving" && (
+                        <span className="text-xs">Saving</span>
+                    )}
+                    {saveStatus === "saved" && (
+                        <span className="text-xs">Saved</span>
+                    )}
+                    {saveStatus === "error" && (
+                        <span className="text-xs">Failed - Retrying</span>
+                    )}
+                </div>
             </div>
             <div className="flex flex-col gap-1">
                 <TextInput
@@ -209,10 +245,13 @@ const WorkspaceCard = ({
             <CollaboratorsInput
                 collaborators={collaborators}
                 onSave={(updated) => {
-                    setPendingChanges((prev) => ({
-                        ...prev,
-                        collaborators: updated,
-                    }));
+                    const changes = {
+                        ...pendingChanges,
+                        collaborators: updated.filter(Boolean),
+                    };
+                    setPendingChanges(changes);
+                    debouncedSave.cancel();
+                    onSaveRef.current(changes);
                 }}
             />
             <Button

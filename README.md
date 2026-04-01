@@ -24,15 +24,12 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 ### Home and UI
 
 - [ ] Home page footer
-- [ ] Workspace titles
 - [ ] Copy invite link
 - [ ] Loading between page animation
 - [ ] Additional maths scribbles on hero
 - [ ] Clerk styling
 - [ ] Search workspaces by title
 - [ ] Workspace card loading state
-- [ ] Set workspace card default values
-- [ ] Icons
 - [ ] Scroll animations for home page
 - [ ] Toast messages - positive and negative interactions
 - [ ] Allow deleting workspace
@@ -60,3 +57,6 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [x] Update home page based on logged-in state
 - [x] Update header
 - [x] Pasting .png images
+- [x] Workspace titles
+- [x] Set workspace card default values
+- [x] Icons
