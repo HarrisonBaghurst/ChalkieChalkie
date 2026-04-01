@@ -27,3 +27,22 @@ export function getLastEditedText(inputDate: Date): string {
     const diffWeeks = Math.floor(diffDays / 7);
     return `Last opened ${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
 }
+
+export const formatDate = (date: Date): string => {
+    const day = date.toLocaleDateString("en-GB", { weekday: "long" });
+    const dayNum = date.getDate();
+    const month = date.toLocaleDateString("en-GB", { month: "long" });
+    const time = date.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+    const suffix =
+        dayNum % 10 === 1 && dayNum !== 11
+            ? "st"
+            : dayNum % 10 === 2 && dayNum !== 12
+              ? "nd"
+              : dayNum % 10 === 3 && dayNum !== 13
+                ? "rd"
+                : "th";
+    return `${day} ${dayNum}${suffix} ${month} - ${time}`;
+};

@@ -2,15 +2,25 @@
 
 import { useEffect, useMemo, useState } from "react";
 import WorkspaceCard from "./WorkspaceCard";
-import { userInfo } from "@/types/userTypes";
+import { userInfo, Workspace } from "@/types/userTypes";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 
 const Workspaces = () => {
-    const [workspaces, setWorkspaces] = useState<any[]>([]);
+    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [loading, setLoading] = useState(true);
     const [usersInfo, setUsersInfo] = useState<userInfo[] | null>(null);
 
     const { isLoaded, isSignedIn } = useUser();
+
+    const router = useRouter();
+
+    const createBoard = () => {
+        const id = uuidv4();
+        router.push(`/board/${id}`);
+    };
 
     useEffect(() => {
         const fetchWorkspacesAndUsers = async () => {
@@ -27,7 +37,13 @@ const Workspaces = () => {
                 }
 
                 const workspaceData = await res.json();
-                setWorkspaces(workspaceData.reverse());
+                const mapped = workspaceData.map((ws: any) => ({
+                    ...ws,
+                    collaboratorIds: ws.user_ids,
+                    host: ws.host_id,
+                    startTime: ws.start_time,
+                }));
+                setWorkspaces(mapped);
 
                 // extract unique user IDs
                 const userIdSet = new Set<string>();
@@ -85,14 +101,28 @@ const Workspaces = () => {
     return (
         <div
             id="workspaces"
-            className="scroll-target px-[10%] py-20 flex flex-col gap-10 bg-white/1.5 border-y border-y-[#ffffff]/15"
+            className="scroll-target px-[10%] py-32 flex flex-col gap-12"
         >
-            <h2 className="font-poppins-bold text-2xl">Your workspaces</h2>
+            <div className="flex gap-4 items-center">
+                <h2 className="font-poppins-light text-xl text-foreground-second">
+                    Your workspaces
+                </h2>
+                <div
+                    className="relative w-8 h-8 cursor-pointer"
+                    onClick={createBoard}
+                >
+                    <Image
+                        src={"/icons/plus-circle.svg"}
+                        alt="Create new"
+                        fill
+                    />
+                </div>
+            </div>
             {isLoaded && isSignedIn ? (
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-12">
                     {workspaces.map((workspace, index) => {
                         const collaborators: userInfo[] =
-                            workspace.user_ids
+                            workspace.collaboratorIds
                                 ?.map((id: string) => usersMap[id])
                                 .filter((user: userInfo): user is userInfo =>
                                     Boolean(user),
@@ -104,12 +134,15 @@ const Workspaces = () => {
                                 title={workspace.title}
                                 description={workspace.description}
                                 uuid={workspace.id}
-                                host={workspace.host_id}
+                                host={workspace.host}
                                 collaborators={collaborators}
-                                lastEdited={
-                                    new Date(workspace.last_activity_at)
-                                }
+                                lastEdited={new Date(workspace.lastActivity)}
                                 loading={loading}
+                                startTime={
+                                    workspace.startTime
+                                        ? new Date(workspace.startTime)
+                                        : null
+                                }
                             />
                         );
                     })}

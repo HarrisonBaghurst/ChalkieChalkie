@@ -1,7 +1,7 @@
 "use client";
 
 import { RefObject, useState } from "react";
-import { motion } from "framer-motion";
+import { color, motion } from "framer-motion";
 import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import Image from "next/image";
@@ -11,9 +11,6 @@ type BottomBarProps = {
     currentToolRef: RefObject<Tools>;
     onToolChanged: () => void;
 };
-
-const RADIUS = 400;
-const ANGLE_SPREAD = 58;
 
 const BottomBar = ({
     currentColourRef,
@@ -38,27 +35,27 @@ const BottomBar = ({
     const colours: { colour: string; code: string }[] = [
         {
             colour: "White",
-            code: "#eeeeee",
+            code: "#e6e8e6",
         },
         {
             colour: "Yellow",
-            code: "#ffbe0b",
+            code: "#fdca40",
         },
         {
             colour: "Orange",
-            code: "#fb5607",
+            code: "#db6b2a",
+        },
+        {
+            colour: "Red",
+            code: "#df2935",
         },
         {
             colour: "Pink",
-            code: "#ff006e",
-        },
-        {
-            colour: "Purple",
-            code: "#8338ec",
+            code: "#db53d9",
         },
         {
             colour: "Blue",
-            code: "#3a86ff",
+            code: "#3772ff",
         },
     ];
 
@@ -147,54 +144,40 @@ const BottomBar = ({
                     </button>
                 </div>
             </div>
-            <div className="absolute bottom-48 left-1/2 -translate-x-1/2">
-                {colours.map((colour, index) => {
-                    const totalItems = colours.length;
-                    const angle =
-                        (index - (totalItems - 1) / 2) *
-                        (ANGLE_SPREAD / (totalItems - 1));
-                    const radian = (angle * Math.PI) / 180;
-
-                    const x = Math.sin(radian) * RADIUS;
-                    const y = RADIUS - Math.cos(radian) * RADIUS;
-
-                    return (
-                        <motion.div
-                            key={index}
-                            initial={false}
-                            animate={{
-                                x: showColourSelect ? x : 0,
-                                y: showColourSelect ? y : 250,
-                                opacity: showColourSelect ? 100 : 0,
-                                rotate: angle,
-                                scale:
-                                    currentColour === index
-                                        ? 1.15
-                                        : hoveredColour === index
-                                          ? 1.05
-                                          : 1,
-                            }}
-                            className="absolute w-16 h-18 rounded-xl bg-white backdrop-blur-md -translate-x-1/2 overflow-hidden z-0"
-                            style={{ originY: "bottom" }}
-                            onClick={() => {
-                                currentColourRef.current = colour.code;
-                                setCurrentColour(index);
-                                setShowColourSelect(false);
-                            }}
-                            onHoverStart={() => setHoveredColour(index)}
-                            onHoverEnd={() => setHoveredColour(null)}
-                        >
-                            <div className="absolute text-xs bottom-0 p-1 text-background font-bold">
-                                {colour.colour}
-                            </div>
-                            <div
-                                className="absolute top-0 left-0 w-full h-12 border-b border-b-white/25"
-                                style={{ backgroundColor: colour.code }}
-                            />
-                        </motion.div>
-                    );
-                })}
-            </div>
+            <motion.div
+                className="absolute bottom-22 h-14 left-1/2 -translate-x-1/2 p-2 backdrop-blur-lg border-white/10 border bg-white/5 rounded-xl flex gap-2 items-end"
+                animate={{
+                    opacity: showColourSelect ? 1 : 0,
+                    y: showColourSelect ? 0 : 20,
+                    pointerEvents: showColourSelect ? "auto" : "none",
+                }}
+                transition={{ duration: 0.2 }}
+            >
+                {colours.map((colour, index) => (
+                    <motion.div
+                        key={index}
+                        className="w-10 aspect-square rounded-lg border-white/25 border-2"
+                        style={{ backgroundColor: `${colour.code}` }}
+                        animate={{
+                            width:
+                                currentColour === index
+                                    ? "3.5rem"
+                                    : hoveredColour === index
+                                      ? "2.75rem"
+                                      : "2.5rem",
+                            opacity: showColourSelect ? 1 : 0,
+                            y: showColourSelect ? 0 : 40,
+                        }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        onClick={() => {
+                            currentColourRef.current = colour.code;
+                            setCurrentColour(index);
+                        }}
+                        onHoverStart={() => setHoveredColour(index)}
+                        onHoverEnd={() => setHoveredColour(null)}
+                    />
+                ))}
+            </motion.div>
         </>
     );
 };

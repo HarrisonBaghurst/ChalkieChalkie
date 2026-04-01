@@ -1,11 +1,14 @@
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 type ButtonProps = {
     text: string;
     handleClick: () => void;
-    variant: "primary" | "secondary";
+    variant: "primary" | "secondary" | "delete" | "save";
+    size?: "small" | "large";
     icon?: string;
     className?: string;
+    clickable?: boolean;
 };
 
 const Button = ({
@@ -13,20 +16,38 @@ const Button = ({
     handleClick,
     variant,
     icon,
+    size,
     className,
+    clickable,
 }: ButtonProps) => {
     return (
         <button
             className={cn(
-                "relative px-4 py-2 cursor-pointer rounded-lg flex justify-center gap-4 items-center text-sm",
+                "text-foreground rounded-full cursor-pointer border-2 border-[#0f348b]",
+                variant === "delete" || variant === "save"
+                    ? "p-1"
+                    : size === "small"
+                      ? "px-3 py-1 text-xs"
+                      : "px-6 py-2",
                 variant === "primary"
-                    ? "font-bold bg-[#6d16e8] border-2 border-[#4c03b1] shadow-[inset_0_2px_2px_rgba(140,67,243,1),inset_0_-5px_6px_rgba(76,3,177,1)] font-mont-bold text-foreground"
-                    : "bg-[#4b4b4b] border-2 border-[#303030] shadow-[inset_0_2px_2px_rgba(115,114,114,1),inset_0_-5px_6px_rgba(48,48,48,1)] text-foreground",
-                className && className,
+                    ? "bg-[#0f348b]"
+                    : variant === "delete"
+                      ? "bg-[#c21f2f] border-[#c21f2f]"
+                      : variant === "save"
+                        ? "bg-[#3a9630] border-[#3a9630]"
+                        : "border-white/15",
+                className,
+                clickable === false ? "opacity-25" : "",
             )}
             onClick={handleClick}
         >
-            {text}
+            {icon ? (
+                <div className="relative w-4 h-4">
+                    <Image src={icon} alt={text} fill />
+                </div>
+            ) : (
+                <div>{text}</div>
+            )}
         </button>
     );
 };

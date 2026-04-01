@@ -4,18 +4,35 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import Button from "./Button";
 import gsap from "gsap";
 import { useUser } from "@clerk/nextjs";
 
 const TITLE = "Where Effort becomes Understanding";
+
+const INFOBAR = [
+    {
+        text: "Real time collaboration",
+        icon: "users-svgrepo-com.svg",
+    },
+    {
+        text: "Designed for tutors & students",
+        icon: "graduation-hat-svgrepo-com.svg",
+    },
+    {
+        text: "Simple lesson scheduling",
+        icon: "clock-two-svgrepo-com.svg",
+    },
+    {
+        text: "Organised workspaces",
+        icon: "folder-plus-svgrepo-com.svg",
+    },
+];
 
 const Hero = () => {
     const router = useRouter();
     const titleRef = useRef<HTMLHeadingElement>(null);
     const subtitleRef = useRef<HTMLHeadingElement>(null);
     const buttonsRef = useRef<HTMLDivElement>(null);
-    const betaRef = useRef<HTMLDivElement>(null);
     const workspaceHintRef = useRef<HTMLDivElement>(null);
     const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [showWorkspaceHint, setShowWorkspaceHint] = useState<Boolean>(false);
@@ -102,9 +119,8 @@ const Hero = () => {
         const title = titleRef.current;
         const subtitle = subtitleRef.current;
         const buttons = buttonsRef.current;
-        const beta = betaRef.current;
 
-        if (!title || !subtitle || !buttons || !beta) return;
+        if (!title || !subtitle || !buttons) return;
 
         const words = title.querySelectorAll<HTMLSpanElement>(".word");
 
@@ -112,13 +128,6 @@ const Hero = () => {
         gsap.set([words, subtitle, buttons], {
             opacity: 0,
             yPercent: 50,
-        });
-
-        gsap.set(beta, {
-            opacity: 0,
-            xPercent: 10,
-            yPercent: 50,
-            rotate: -10,
         });
 
         const tl = gsap.timeline({ delay: 0.5 });
@@ -139,7 +148,7 @@ const Hero = () => {
                 duration: 0.75,
                 ease: "elastic.out(1, 1)",
             },
-            "-=0.4",
+            "-=0.6",
         );
 
         tl.to(
@@ -152,107 +161,75 @@ const Hero = () => {
             },
             "-=0.6",
         );
-
-        tl.to(beta, {
-            opacity: 1,
-            duration: 0.75,
-            ease: "elastic.out(1, 1)",
-            xPercent: 0,
-            yPercent: 0,
-            rotate: 0,
-        });
     }, []);
 
     return (
-        <div className="relative bg-background w-dvw h-dvh overflow-hidden dotted-paper">
-            <div className="[box-shadow:0_4px_100px_rgba(9,9,6,1)] absolute top-1/2 -translate-y-1/2 bg-background w-200 h-200 rounded-full flex justify-center items-center" />
-            <div className="absolute top-1/2 -translate-y-1/2 left-[10%] w-120 flex flex-col gap-8 will-change-transform">
-                <h1
-                    ref={titleRef}
-                    className="font-poppins-bold text-6xl text-foreground will-change-transform"
-                >
-                    {TITLE.split(" ").map((word, i) => (
-                        <span
-                            key={i}
-                            className="word inline-block will-change-transform mr-4 last:mr-0"
-                        >
-                            {word}
-                        </span>
-                    ))}
-                </h1>
-                <h3 ref={subtitleRef} className="text-foreground text-lg">
-                    Schedule lessons, solve problems step by step and share
-                    progress effortlessly.
-                </h3>
-                <div ref={buttonsRef}>
-                    {!isLoaded ? (
-                        <div>Loading your account...</div>
-                    ) : isSignedIn ? (
-                        <div className="flex gap-8">
-                            <Button
-                                text="Create workspace"
-                                handleClick={createBoard}
-                                variant="primary"
-                                className="font-bold"
-                            />
-                            <Button
-                                text="Join workspace"
-                                handleClick={scrollToWorkspaces}
-                                variant="secondary"
+        <div className="relative mx-[10%] flex flex-col gap-35">
+            <div className="mt-50 z-10 flex justify-between w-full">
+                <div className="flex flex-col gap-8 w-160">
+                    <h1
+                        ref={titleRef}
+                        className="font-poppins-bold text-6xl text-foreground will-change-transform"
+                    >
+                        {TITLE.split(" ").map((word, i) => (
+                            <span
+                                key={i}
+                                className="word inline-block will-change-transform mr-4 last:mr-0"
+                            >
+                                {word}
+                            </span>
+                        ))}
+                    </h1>
+                    <h3
+                        ref={subtitleRef}
+                        className="text-lg text-foreground-second"
+                    >
+                        A real-time collaborative workspace built for effective
+                        learning. Schedule and manage sessions, work through
+                        problems step by step with your tutor or students, and
+                        keep track of progress, all in one place.
+                    </h3>
+                    <div className="flex gap-2 items-center">
+                        <div className="w-2 h-2 rounded-full bg-[#9cc0ef]" />
+                        <div className="text-[#9cc0ef]">
+                            Get early access to Chalkie Chalkie
+                        </div>
+                    </div>
+                </div>
+                <div className="w-[40%] relative dotted-paper">
+                    <div className="absolute top-25 left-5 w-1/2 h-1/2">
+                        <Image
+                            src={"/icons/squiggle1.svg"}
+                            alt="squiggle"
+                            fill
+                            className="rotate-45"
+                        />
+                    </div>
+                    <div className="absolute top-30 right-15 w-1/4 h-1/4">
+                        <Image
+                            src={"/icons/squiggle2.svg"}
+                            alt="squiggle"
+                            fill
+                            className="-rotate-20"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className="justify-between w-full flex backdrop-blur-lg border-white/10 border bg-[#151512] py-5 px-8 rounded-2xl">
+                {INFOBAR.map((info, i) => (
+                    <div className="flex gap-2 items-center w-fit " key={i}>
+                        <div className="w-6 h-6 relative">
+                            <Image
+                                src={`/icons/${info.icon}`}
+                                alt={info.text}
+                                fill
                             />
                         </div>
-                    ) : (
-                        <div className="flex gap-8">
-                            <Button
-                                text="Create account"
-                                handleClick={() => {}}
-                                variant="primary"
-                                className="font-bold"
-                            />
-                            <Button
-                                text="Sign in"
-                                handleClick={handleLogin}
-                                variant="secondary"
-                            />
-                        </div>
-                    )}
-                </div>
+                        <div>{info.text}</div>
+                    </div>
+                ))}
             </div>
-            <div
-                ref={betaRef}
-                className="absolute bottom-16 right-16 border-white/10 border bg-[#151512] p-4 rounded-lg flex gap-4 items-center will-change-transform"
-            >
-                <div className="w-2 h-2 rounded-full bg-[#e3642a]" />
-                <div className="flex flex-col gap-1">
-                    <p className="text-xs font-poppins-bold">
-                        Currently in private beta
-                    </p>
-                    <p className="text-xs">Contact us to request access</p>
-                </div>
-            </div>
-            <div
-                ref={workspaceHintRef}
-                className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col items-center"
-            >
-                <p className="text-xs font-poppins-light text-foreground-second">
-                    Your workspaces
-                </p>
-                <div className="relative w-4 h-4">
-                    <Image
-                        src={"/icons/down-arrow.svg"}
-                        alt="down arrow"
-                        fill
-                    />
-                </div>
-            </div>
-            <div className="absolute top-25 right-25 w-160 h-160">
-                <div className="absolute left-0 bottom-0 w-75 h-75 rotate-45">
-                    <Image src={"/icons/squiggle1.svg"} alt="squiggle" fill />
-                </div>
-                <div className="absolute right-45 top-40 w-35 h-35 -rotate-20">
-                    <Image src={"/icons/squiggle2.svg"} alt="squiggle" fill />
-                </div>
-            </div>
+            <div className="w-full h-90 relative dotted-paper"></div>
         </div>
     );
 };

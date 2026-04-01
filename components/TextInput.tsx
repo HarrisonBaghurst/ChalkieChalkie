@@ -1,54 +1,76 @@
+import { cn } from "@/lib/utils";
+import React, { useEffect, useRef, useState } from "react";
+
 type TextInputProps = {
-    title: string;
-    placeholder: string;
-    value: string;
-    onChange: (text: string) => void;
-    variant?: "short" | "long";
-    onFocus?: () => void;
-    onBlur?: () => void;
-    onKeyDown?: (e: React.KeyboardEvent) => void;
+    title?: string;
+    text: string;
+    placeholder?: string;
+    className?: string;
+    onChange: (value: string) => void;
 };
+
+const MAX_ROWS = 8;
 
 const TextInput = ({
     title,
+    text,
+    className,
     placeholder,
-    value,
     onChange,
-    variant,
-    onFocus,
-    onBlur,
-    onKeyDown,
 }: TextInputProps) => {
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [interacting, setInteracting] = useState(false);
+    const [value, setValue] = useState(text);
+
+    const adjustHeight = () => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        textarea.style.height = "auto";
+        const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+        const maxHeight = lineHeight * MAX_ROWS;
+        textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+    };
+
+    useEffect(() => {
+        adjustHeight();
+    }, [value]);
+
+    useEffect(() => {
+        setValue(text);
+    }, [text]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setValue(e.target.value);
+        onChange(e.target.value);
+    };
+
     return (
-        <div className="relative w-full h-fit">
-            <p className="px-1 absolute left-2 -translate-y-1/2 text-xs text-foreground-third bg-[#181815]">
-                {title}
-            </p>
-            {variant === "long" ? (
+        <div className="w-full h-full relative textd-base text-foreground-second">
+            <div className="flex flex-col gap-2 z-100">
+                {title && (
+                    <div className="text-sm text-foreground-third">{title}</div>
+                )}
                 <textarea
-                    className="
-                        border border-white/10 w-full h-full rounded-sm text-foreground text-sm p-2 resize-none
-                        focus:outline-none focus:border-[#9756f2] focus:border-dashed
-                    "
-                    value={value}
-                    rows={3}
-                    onChange={(e) => onChange(e.target.value)}
+                    ref={textareaRef}
+                    className={cn(
+                        "resize-none bg-transparent outline-none border-none overflow-y-auto",
+                        className,
+                    )}
+                    value={text ? text : ""}
+                    onChange={handleChange}
                     placeholder={placeholder}
+                    rows={1}
+                    onFocus={() => setInteracting(true)}
+                    onBlur={() => setInteracting(false)}
                 />
-            ) : (
-                <input
-                    className="
-                        border border-white/10 w-full h-full rounded-sm text-foreground text-sm p-2
-                        focus:outline-none focus:border-[#9756f2] focus:border-dashed
-                    "
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                    onKeyDown={onKeyDown}
-                    placeholder={placeholder}
-                />
-            )}
+            </div>
+            <div
+                className={cn(
+                    "absolute -left-2 -top-2 border-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] pointer-events-none rounded-md",
+                    interacting ? "border-white/15" : "border-transparent",
+                )}
+            />
         </div>
     );
 };

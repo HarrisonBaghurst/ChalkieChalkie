@@ -4,10 +4,9 @@ import Workspaces from "@/components/Workspaces";
 
 const page = () => {
     return (
-        <div className="">
+        <div className="h-fit">
             <Hero />
             <Workspaces />
-            <Footer />
         </div>
     );
 };

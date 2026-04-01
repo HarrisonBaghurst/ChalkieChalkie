@@ -1,4 +1,4 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth, clerkClient, EmailAddress } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 type RequestBody = {
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
             firstName: u.firstName,
             lastName: u.lastName,
             imageUrl: u.imageUrl,
+            email: u.emailAddresses[0].emailAddress,
         }));
 
         const { isAuthenticated } = await auth();

@@ -15,7 +15,7 @@ export async function PATCH(req: Request) {
 
     const body = await req.json();
 
-    const { roomId, title, description, collaborators } = body;
+    const { roomId, title, description, collaborators, startTime } = body;
 
     if (!roomId) {
         return new Response("roomId is required", { status: 400 });
@@ -42,6 +42,7 @@ export async function PATCH(req: Request) {
             title,
             description,
             user_ids: userIds,
+            start_time: startTime,
         })
         .eq("id", roomId)
         .select()
