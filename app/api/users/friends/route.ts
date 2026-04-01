@@ -6,6 +6,7 @@ export type FriendMetadata = {
     firstName: string | null;
     lastName: string | null;
     imageUrl: string;
+    email: string;
 };
 
 /**
@@ -40,6 +41,7 @@ export async function GET() {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 imageUrl: user.imageUrl,
+                email: user.emailAddresses[0].emailAddress,
             }),
         );
 

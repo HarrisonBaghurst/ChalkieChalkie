@@ -7,7 +7,7 @@ import Button from "./Button";
 import { useState } from "react";
 import TextInput from "./TextInput";
 import DateTimeInput from "./DateTimeInput";
-import CollaboratorCard from "./CollaboratorCard";
+import CollaboratorsInput from "./CollaboratorsInput";
 
 type WorkspaceCardProps = {
     title: string;
@@ -206,31 +206,15 @@ const WorkspaceCard = ({
                 placeholder="No description yet..."
                 onChange={handleFieldChange("description")}
             />
-            <div className="flex flex-col gap-2">
-                <div className="text-sm text-foreground-third">
-                    COLLABORATORS
-                </div>
-                <div className="flex flex-col gap-0">
-                    {collaborators.map((collaborator, i) => (
-                        <CollaboratorCard
-                            key={i}
-                            image={collaborator.imageUrl}
-                            firstName={collaborator.firstName}
-                            lastName={collaborator.lastName}
-                            email={collaborator.email}
-                            handleRemove={() => {}}
-                        />
-                    ))}
-                </div>
-                <div className="w-full flex">
-                    <Button
-                        text="Edit collaborators"
-                        size="small"
-                        variant="secondary"
-                        handleClick={() => {}}
-                    />
-                </div>
-            </div>
+            <CollaboratorsInput
+                collaborators={collaborators}
+                onSave={(updated) => {
+                    setPendingChanges((prev) => ({
+                        ...prev,
+                        collaborators: updated,
+                    }));
+                }}
+            />
             <Button
                 text="Join Workspace"
                 handleClick={goToBoard}

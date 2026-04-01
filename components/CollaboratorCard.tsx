@@ -7,7 +7,6 @@ type CollaboratorCardProps = {
     firstName: string;
     lastName: string;
     email: string;
-    handleRemove: () => void;
 };
 
 const CollaboratorCard = ({
@@ -15,7 +14,6 @@ const CollaboratorCard = ({
     firstName,
     lastName,
     email,
-    handleRemove,
 }: CollaboratorCardProps) => {
     return (
         <div className="flex justify-between items-center">
@@ -24,7 +22,7 @@ const CollaboratorCard = ({
                     <Image src={image} alt={`${firstName} icon`} fill />
                 </div>
                 <div className="flex flex-col gap-0.5">
-                    <div>{`${firstName} ${lastName}`}</div>
+                    <div className="text-base text-foreground">{`${firstName} ${lastName}`}</div>
                     <div className="text-sm text-foreground-third">
                         {email ? email : "Unknown email"}
                     </div>
