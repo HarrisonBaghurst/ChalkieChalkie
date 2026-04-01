@@ -125,7 +125,7 @@ const DateTimeInput = ({ setTime, onChange }: DateTimeInputProps) => {
 
     return (
         <div>
-            <div onClick={() => setPopupOpen(true)}>
+            <div className="cursor-pointer" onClick={() => setPopupOpen(true)}>
                 {setTime ? formatDate(setTime) : "Start time not set"}
             </div>
             {popupOpen && (

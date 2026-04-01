@@ -37,7 +37,7 @@ const Button = ({
                         ? "bg-[#3a9630] border-[#3a9630]"
                         : "border-white/15",
                 className,
-                clickable === false ? "opacity-25" : "",
+                clickable === false ? "opacity-25 cursor-not-allowed" : "",
             )}
             onClick={handleClick}
         >
