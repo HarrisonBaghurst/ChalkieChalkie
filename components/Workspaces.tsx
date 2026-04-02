@@ -107,16 +107,18 @@ const Workspaces = () => {
                 <h2 className="font-poppins-light text-xl text-foreground-second">
                     Your workspaces
                 </h2>
-                <div
-                    className="relative w-8 h-8 cursor-pointer"
-                    onClick={createBoard}
-                >
-                    <Image
-                        src={"/icons/plus-circle.svg"}
-                        alt="Create new"
-                        fill
-                    />
-                </div>
+                {isSignedIn && (
+                    <div
+                        className="relative w-8 h-8 cursor-pointer"
+                        onClick={createBoard}
+                    >
+                        <Image
+                            src={"/icons/plus-circle.svg"}
+                            alt="Create new"
+                            fill
+                        />
+                    </div>
+                )}
             </div>
             {isLoaded && isSignedIn ? (
                 <div className="grid grid-cols-3 gap-12">
@@ -147,8 +149,10 @@ const Workspaces = () => {
                         );
                     })}
                 </div>
+            ) : !isLoaded ? (
+                <div>Loading your workspaces...</div>
             ) : (
-                <div className="text-foreground-second">
+                <div className="text-foreground-third">
                     Sign in or create an account to access workspaces
                 </div>
             )}
