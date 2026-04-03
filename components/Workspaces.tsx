@@ -276,11 +276,8 @@ const Workspaces = () => {
     return (
         <div
             id="workspaces"
-            className="relative scroll-target px-[10%] py-32 flex flex-col gap-12 bg-[#0d0d0a] my-32 min-h-120"
+            className="relative scroll-target px-[10%] py-32 flex flex-col gap-12 my-32 min-h-120"
         >
-            <div className="absolute bg-linear-to-b from-background to bg-[#0d0d0a] top-0 left-0 w-full h-20" />
-            <div className="absolute bg-linear-to-t from-background to bg-[#0d0d0a] bottom-0 left-0 w-full h-20" />
-
             <div className="flex items-center justify-between">
                 <div className="flex gap-4 items-center">
                     <h2 className="font-poppins-light text-xl text-foreground-second">

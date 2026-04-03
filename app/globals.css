@@ -66,7 +66,7 @@
 
     --input: oklch(0.922 0 0);
 
-    --ring: oklch(0.708 0 0);
+    --ring: hsl(0, 0%, 63%);
 
     --chart-1: oklch(0.87 0 0);
 
@@ -186,50 +186,22 @@
 }
 
 @layer utilities {
-    .graph-paper {
-        background-image:
-            linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0.025) 1px,
-                transparent 1px
-            ),
-            linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.025) 1px,
-                transparent 1px
-            ),
-            linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0.075) 1px,
-                transparent 1px
-            ),
-            linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.075) 1px,
-                transparent 1px
-            );
-        background-size:
-            10px 10px,
-            10px 10px,
-            50px 50px,
-            50px 50px;
-    }
-
     .dotted-paper {
         background-image: radial-gradient(#272724 1.5px, transparent 1.5px);
         background-size: 20px 20px;
     }
 
     .card-style {
-        background-color: var(--card-background);
-        border-radius: var(--border-radius);
-        box-shadow: 0 0 5px 5px var(--card-shadow);
-    }
-
-    .card-style > div {
-        background-color: var(--card-child-background);
-        border-radius: var(--border-radius-small);
-        box-shadow: 0 0 1px 1px var(--card-child-shadow);
+        background-color: #0d0d0a;
+        border-radius: calc(var(--radius) * 0.8);
+        border-width: 1px;
+        border-color: color-mix(
+            in oklab,
+            var(--color-white) /* #fff = #ffffff */ 5%,
+            transparent
+        );
+        padding-inline: calc(var(--spacing) * 8);
+        padding-block: calc(var(--spacing) * 5);
     }
 
     .scroll-target {

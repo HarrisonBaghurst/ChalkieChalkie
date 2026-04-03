@@ -125,7 +125,7 @@ const CollaboratorsInput = ({
                 >
                     <div
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute left-1/2 top-1/2 w-[40%] h-[65%] bg-[#151512] rounded-2xl border border-white/15 -translate-x-1/2 -translate-y-1/2 px-8 py-5 flex flex-col justify-between"
+                        className="absolute left-1/2 top-1/2 w-[40%] h-[65%] -translate-x-1/2 -translate-y-1/2 flex flex-col justify-between card-style"
                     >
                         <div className="flex flex-col gap-8">
                             <div className="font-poppins-bold text-foreground text-2xl">

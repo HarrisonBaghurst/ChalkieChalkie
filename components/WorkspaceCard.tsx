@@ -198,7 +198,7 @@ const WorkspaceCard = ({
     if (!isSignedIn || !user) return <p>Not signed in</p>;
 
     return (
-        <div className="bg-white/5 rounded-2xl w-full h-fit border border-white/10 flex flex-col gap-8 px-8 py-5 relative">
+        <div className="w-full h-fit flex flex-col gap-8 relative card-style">
             <div className="flex justify-between">
                 {hostInfo ? (
                     <div className="flex gap-2 items-center">

@@ -67,7 +67,7 @@ const Combobox = ({ value, onChange, className }: ComboboxProps) => {
             </button>
 
             {open && (
-                <div className="absolute top-[calc(100%+6px)] left-0 z-10 min-w-40 overflow-hidden rounded-md border border-white/10 bg-[#1a1a17]">
+                <div className="absolute top-[calc(100%+6px)] left-0 z-10 min-w-40 overflow-hidden rounded-md border border-white/5 bg-[#0d0d0a]">
                     {OPTIONS.map((option) => (
                         <button
                             key={String(option.value)}

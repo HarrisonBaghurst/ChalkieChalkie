@@ -16,8 +16,8 @@ const Header = () => {
     };
 
     return (
-        <div className="px-[10%] w-full fixed top-0 z-500">
-            <div className="top-0 w-full rounded-b-2xl h-14 text-sm flex items-center px-4 justify-between backdrop-blur-lg border-white/10 border-b border-x bg-white/8">
+        <div className="px-4 w-full fixed top-0 z-500">
+            <div className="top-0 w-full h-14 text-sm flex items-center justify-between">
                 <button className="cursor-pointer pl-2" onClick={returnHome}>
                     Chalkie Chalkie
                 </button>

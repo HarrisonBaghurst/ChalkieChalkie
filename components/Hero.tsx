@@ -215,7 +215,7 @@ const Hero = () => {
                     </div>
                 </div>
             </div>
-            <div className="justify-between w-full flex backdrop-blur-lg border-white/10 border bg-[#151512] py-5 px-8 rounded-2xl">
+            <div className="justify-between w-full flex card-style">
                 {INFOBAR.map((info, i) => (
                     <div className="flex gap-2 items-center w-fit " key={i}>
                         <div className="w-6 h-6 relative">
