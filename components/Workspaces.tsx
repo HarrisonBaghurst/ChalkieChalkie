@@ -7,15 +7,120 @@ import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import Button from "./Button";
+
+// TYPES ------------------------------------------------------------------------------------------
+
+type SortDirection = "asc" | "desc";
+
+type TimeFilter = "upcoming" | "passed" | null;
+
+interface Filters {
+    search: string;
+    collaboratorIds: string[];
+    time: TimeFilter;
+}
+
+// CONSTANTS --------------------------------------------------------------------------------------
+
+const DEFAULT_FILTERS: Filters = {
+    search: "",
+    collaboratorIds: [],
+    time: null,
+};
+
+const GRACE_MS = 15 * 60 * 1000; // 15 mins
+
+// FILTER & SORT ----------------------------------------------------------------------------------
+
+const isUpcoming = (startTime: Date | null, now: Date): boolean => {
+    if (!startTime) return false;
+
+    return startTime.getTime() >= now.getTime() - GRACE_MS;
+};
+
+const isPassed = (startTime: Date | null, now: Date): boolean => {
+    if (!startTime) return false;
+
+    return startTime.getTime() < now.getTime();
+};
+
+const applyFiltersAndSort = (
+    workspaces: Workspace[],
+    filters: Filters,
+    sortDir: SortDirection,
+    currentUserId: string | undefined | null,
+    now: Date,
+): Workspace[] => {
+    let result = [...workspaces];
+
+    // search - case insensitive
+    if (filters.search.trim()) {
+        const query = filters.search.trim().toLowerCase();
+        result = result.filter((workspace) =>
+            workspace.title?.toLowerCase().includes(query),
+        );
+    }
+
+    // filter selected collaborators
+    if (filters.collaboratorIds.length > 0) {
+        result = result.filter((workspace) =>
+            filters.collaboratorIds.some((id) =>
+                workspace.collaboratorIds?.includes(id),
+            ),
+        );
+    }
+
+    // filter time
+    if (filters.time === "upcoming") {
+        result = result.filter((workspace) =>
+            isUpcoming(new Date(workspace.startTime), now),
+        );
+    } else if (filters.time === "passed") {
+        result = result.filter((workspace) =>
+            isPassed(new Date(workspace.startTime), now),
+        );
+    } else if (filters.time === "next") {
+        const future = result
+            .filter((workspace) =>
+                isUpcoming(new Date(workspace.startTime), now),
+            )
+            .sort(
+                (a, b) =>
+                    new Date(a.startTime!).getTime() -
+                    new Date(b.startTime!).getTime(),
+            );
+
+        result = future.length > 0 ? [future[0]] : [];
+    }
+
+    // sort by start time - nulls last
+    result.sort((a, b) => {
+        if (!a.startTime && !b.startTime) return 0;
+        if (!a.startTime) return 1;
+        if (!b.startTime) return -1;
+        const diff =
+            new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+        return sortDir === "asc" ? diff : -diff;
+    });
+
+    return result;
+};
+
+// MAIN COMPONENT ---------------------------------------------------------------------------------
 
 const Workspaces = () => {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [loading, setLoading] = useState(true);
     const [usersInfo, setUsersInfo] = useState<userInfo[] | null>(null);
 
-    const { isLoaded, isSignedIn } = useUser();
+    const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+    const [sortDir, setSortDir] = useState<SortDirection>("asc");
 
+    const { isLoaded, isSignedIn, user } = useUser();
     const router = useRouter();
+
+    const now = useMemo(() => new Date(), []);
 
     const createBoard = () => {
         const id = uuidv4();
@@ -98,31 +203,92 @@ const Workspaces = () => {
         return Object.fromEntries(usersInfo.map((user) => [user.id, user]));
     }, [usersInfo]);
 
+    const availableCollaborators = useMemo(() => {
+        const seen = new Set<string>();
+        const result: userInfo[] = [];
+        workspaces.forEach((workspace) => {
+            workspace.collaboratorIds?.forEach((id) => {
+                if (id !== user?.id && !seen.has(id) && usersMap[id]) {
+                    seen.add(id);
+                    result.push(usersMap[id]);
+                }
+            });
+        });
+        return result;
+    }, [workspaces, usersMap, user?.id]);
+
+    const filteredWorkspaces = useMemo(
+        () => applyFiltersAndSort(workspaces, filters, sortDir, user?.id, now),
+        [workspaces, filters, sortDir, user?.id, now],
+    );
+
+    const toggleCollaborator = (id: string) => {
+        setFilters((prev) => ({
+            ...prev,
+            collaboratorIds: prev.collaboratorIds.includes(id)
+                ? prev.collaboratorIds.filter((c) => c !== id)
+                : [...prev.collaboratorIds, id],
+        }));
+    };
+
+    const setTimeFilter = (value: TimeFilter) =>
+        setFilters((prev) => ({ ...prev, time: value }));
+
+    const toggleSortDir = () =>
+        setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+
+    const hasActiveFilters =
+        !!filters.search ||
+        filters.collaboratorIds.length > 0 ||
+        filters.time !== null;
+
+    const clearFilters = () => {
+        setFilters(DEFAULT_FILTERS);
+        setSortDir("asc");
+    };
+
     return (
         <div
             id="workspaces"
-            className="scroll-target px-[10%] py-32 flex flex-col gap-12"
+            className="relative scroll-target px-[10%] py-32 flex flex-col gap-12 bg-[#0d0d0a] my-32"
         >
-            <div className="flex gap-4 items-center">
-                <h2 className="font-poppins-light text-xl text-foreground-second">
-                    Your workspaces
-                </h2>
-                {isSignedIn && (
-                    <div
-                        className="relative w-8 h-8 cursor-pointer"
-                        onClick={createBoard}
-                    >
-                        <Image
-                            src={"/icons/plus-circle.svg"}
-                            alt="Create new"
-                            fill
-                        />
-                    </div>
-                )}
+            <div className="absolute bg-linear-to-b from-background to bg-[#0d0d0a] top-0 left-0 w-full h-20" />
+            <div className="absolute bg-linear-to-t from-background to bg-[#0d0d0a] bottom-0 left-0 w-full h-20" />
+
+            <div className="flex items-center justify-between">
+                <div className="flex gap-4 items-center">
+                    <h2 className="font-poppins-light text-xl text-foreground-second">
+                        Your workspaces
+                    </h2>
+                    {isSignedIn && (
+                        <div
+                            className="relative w-6 h-6 cursor-pointer"
+                            onClick={createBoard}
+                        >
+                            <Image
+                                src={"/icons/plus-circle.svg"}
+                                alt="Create new"
+                                fill
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="flex items-center gap-4">
+                    <Button
+                        text={
+                            sortDir === "asc"
+                                ? "Date Ascending"
+                                : "Date Descending"
+                        }
+                        handleClick={() => toggleSortDir()}
+                        variant="secondary"
+                        size="small"
+                    />
+                </div>
             </div>
             {isLoaded && isSignedIn ? (
                 <div className="grid grid-cols-3 gap-12">
-                    {workspaces.map((workspace, index) => {
+                    {filteredWorkspaces.map((workspace, index) => {
                         const collaborators: userInfo[] =
                             workspace.collaboratorIds
                                 ?.map((id: string) => usersMap[id])
@@ -132,7 +298,7 @@ const Workspaces = () => {
 
                         return (
                             <WorkspaceCard
-                                key={index}
+                                key={workspace.id}
                                 title={workspace.title}
                                 description={workspace.description}
                                 uuid={workspace.id}
