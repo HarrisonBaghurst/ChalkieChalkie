@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import WorkspaceCard from "./WorkspaceCard";
-import { userInfo, Workspace } from "@/types/userTypes";
+import { userInfo, Workspace, WorkspaceEditData } from "@/types/userTypes";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -128,6 +128,31 @@ const Workspaces = () => {
         router.push(`/board/${id}`);
     };
 
+    const handleWorkspaceUpdate = (
+        id: string,
+        updated: Partial<WorkspaceEditData>,
+    ) => {
+        setWorkspaces((prev) =>
+            prev.map((ws) =>
+                ws.id === id
+                    ? {
+                          ...ws,
+                          title: updated.title ?? ws.title,
+                          description: updated.description ?? ws.description,
+                          collaboratorIds: updated.collaborators
+                              ? updated.collaborators.map((c) => c.id)
+                              : ws.collaboratorIds,
+                          startTime:
+                              updated.startTime !== undefined
+                                  ? (updated.startTime?.toISOString() ??
+                                    ws.startTime)
+                                  : ws.startTime,
+                      }
+                    : ws,
+            ),
+        );
+    };
+
     useEffect(() => {
         const fetchWorkspacesAndUsers = async () => {
             try {
@@ -251,7 +276,7 @@ const Workspaces = () => {
     return (
         <div
             id="workspaces"
-            className="relative scroll-target px-[10%] py-32 flex flex-col gap-12 bg-[#0d0d0a] my-32"
+            className="relative scroll-target px-[10%] py-32 flex flex-col gap-12 bg-[#0d0d0a] my-32 min-h-120"
         >
             <div className="absolute bg-linear-to-b from-background to bg-[#0d0d0a] top-0 left-0 w-full h-20" />
             <div className="absolute bg-linear-to-t from-background to bg-[#0d0d0a] bottom-0 left-0 w-full h-20" />
@@ -288,7 +313,7 @@ const Workspaces = () => {
                     <Combobox value={filters.time} onChange={setTimeFilter} />
                 </div>
             </div>
-            {isLoaded && isSignedIn ? (
+            {isLoaded && isSignedIn && filteredWorkspaces.length > 0 ? (
                 <div className="grid grid-cols-3 gap-12">
                     {filteredWorkspaces.map((workspace, _) => {
                         const collaborators: userInfo[] =
@@ -313,12 +338,15 @@ const Workspaces = () => {
                                         ? new Date(workspace.startTime)
                                         : null
                                 }
+                                onUpdate={(updated) =>
+                                    handleWorkspaceUpdate(workspace.id, updated)
+                                }
                             />
                         );
                     })}
                 </div>
-            ) : !isLoaded ? (
-                <div>Loading your workspaces...</div>
+            ) : isLoaded && isSignedIn ? (
+                <div>No workspaces matching filters</div>
             ) : (
                 <div className="text-foreground-third">
                     Sign in or create an account to access workspaces

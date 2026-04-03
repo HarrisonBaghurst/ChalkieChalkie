@@ -19,6 +19,7 @@ type WorkspaceCardProps = {
     lastEdited: Date;
     loading: boolean;
     startTime: Date | null;
+    onUpdate: (updated: Partial<WorkspaceEditData>) => void;
 };
 
 const WorkspaceCard = ({
@@ -30,6 +31,7 @@ const WorkspaceCard = ({
     lastEdited,
     loading,
     startTime,
+    onUpdate,
 }: WorkspaceCardProps) => {
     const router = useRouter();
     const { user, isLoaded, isSignedIn } = useUser();
@@ -137,6 +139,14 @@ const WorkspaceCard = ({
                 });
 
                 setSaveStatus("saved");
+                onUpdate({
+                    title: data.title,
+                    description: data.description,
+                    collaborators: data.user_ids ?? updatedData.collaborators,
+                    startTime: data.start_time
+                        ? new Date(data.start_time)
+                        : null,
+                });
             } catch (err) {
                 console.error(err);
 
