@@ -7,6 +7,7 @@ const page = () => {
         <div className="h-fit">
             <Hero />
             <Workspaces />
+            <Footer />
         </div>
     );
 };
