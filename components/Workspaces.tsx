@@ -27,7 +27,7 @@ interface Filters {
 const DEFAULT_FILTERS: Filters = {
     search: "",
     collaboratorIds: [],
-    time: null,
+    time: "upcoming",
 };
 
 const GRACE_MS = 15 * 60 * 1000; // 15 mins
