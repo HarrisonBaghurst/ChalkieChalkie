@@ -8,12 +8,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import Button from "./Button";
+import Combobox from "./Combobox";
 
 // TYPES ------------------------------------------------------------------------------------------
 
 type SortDirection = "asc" | "desc";
 
-type TimeFilter = "upcoming" | "passed" | null;
+type TimeFilter = "upcoming" | "passed" | "next" | null;
 
 interface Filters {
     search: string;
@@ -284,11 +285,12 @@ const Workspaces = () => {
                         variant="secondary"
                         size="small"
                     />
+                    <Combobox value={filters.time} onChange={setTimeFilter} />
                 </div>
             </div>
             {isLoaded && isSignedIn ? (
                 <div className="grid grid-cols-3 gap-12">
-                    {filteredWorkspaces.map((workspace, index) => {
+                    {filteredWorkspaces.map((workspace, _) => {
                         const collaborators: userInfo[] =
                             workspace.collaboratorIds
                                 ?.map((id: string) => usersMap[id])
