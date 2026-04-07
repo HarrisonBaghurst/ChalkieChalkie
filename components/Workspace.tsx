@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import drawToCanvas from "@/lib/canvasDrawing";
 import {
     handleMouseDown,
     handleMouseMove,
@@ -9,18 +8,180 @@ import {
 } from "@/lib/canvasInputs";
 import { Point, Stroke } from "@/types/strokeTypes";
 import BottomBar from "./BottomBar";
-import {
-    useHistory,
-    useMutation,
-    useMyPresence,
-    useOthers,
-    useStorage,
-} from "@liveblocks/react";
-import Cursor from "./Cursor";
+import { useMyPresence } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
-import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
+import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
+import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
+import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
+import { useKeybinds } from "@/hooks/useKeybinds";
+import CursorLayer from "./CursorLayer";
 
-const Board = ({ workspaceId }: { workspaceId: string }) => {
+const Workspace = ({ workspaceId }: { workspaceId: string }) => {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const currentToolRef = useRef<Tools>("pen");
+
+    // Liveblocks state and mutations
+    const {
+        strokes,
+        pastedImagesMeta,
+        undo,
+        redo,
+        addStroke,
+        eraseStrokes,
+        addImageMeta,
+        removeImageMeta,
+        updateImageMeta,
+    } = useLiveWorkspace();
+
+    // local image element cache
+    const pastedImagesRef = useRef<PastedImage[]>([]);
+
+    // panning refs
+    const panOffsetRef = useRef<Point>({ x: 0, y: 0 });
+    const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
+    const panStartRef = useRef<Point | null>(null);
+
+    // image interaction refs
+    const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
+    const selectedImageIdRef = useRef<string | null>(null);
+    const imageDragOffsetRef = useRef<Point | null>(null);
+    const activeResizeHandleRef = useRef<ResizeHandle>(null);
+
+    // drawing refs
+    const currentStrokeRef = useRef<Stroke | null>(null);
+    const isDrawingRef = useRef(false);
+    const currentColourRef = useRef("#eeeeee");
+
+    // live presence
+    const [_, updateMyPresence] = useMyPresence();
+
+    const handlePresenceUpdate = (e: React.MouseEvent) => {
+        const x = Math.round(e.clientX - panOffsetRef.current.x);
+        const y = Math.round(e.clientY - panOffsetRef.current.y);
+        cursorPositionRef.current = { x, y };
+        updateMyPresence({ cursor: { x, y } });
+    };
+
+    // clear image selection on tool chagne
+    const onToolChanged = () => {
+        selectedImageIdRef.current = null;
+        activeResizeHandleRef.current = null;
+    };
+
+    // hooks
+    useCanvasRenderLoop({
+        canvasRef,
+        strokes,
+        currentStrokeRef,
+        pastedImagesRef,
+        panOffsetRef,
+        selectedImageIdRef,
+    });
+
+    usePastedImagesSync({ pastedImagesRef, pastedImagesMeta });
+
+    useImagePaste({
+        workspaceId,
+        cursorPositionRef,
+        pastedImagesRef,
+        addImageMeta,
+    });
+
+    useKeybinds({
+        workspaceId,
+        selectedImageIdRef,
+        pastedImagesRef,
+        removeImageMeta,
+        undo,
+        redo,
+    });
+
+    // prevent right click context menu on canvas
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const preventContextMenu = (e: MouseEvent) => e.preventDefault();
+        canvas.addEventListener("contextmenu", preventContextMenu);
+        return () =>
+            canvas.removeEventListener("contextmenu", preventContextMenu);
+    }, []);
+
+    // lock body scroll when board is mounted
+    useEffect(() => {
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, []);
+
+    return (
+        <div className="w-dvw h-dvh overflow-hidden">
+            <CursorLayer />
+            <BottomBar
+                currentColourRef={currentColourRef}
+                currentToolRef={currentToolRef}
+                onToolChanged={onToolChanged}
+            />
+            <canvas
+                ref={canvasRef}
+                className="w-screen h-screen dotted-paper overflow-hidden"
+                onMouseDown={(e) =>
+                    handleMouseDown({
+                        e,
+                        currentColourRef,
+                        currentStrokeRef,
+                        isDrawingRef,
+                        panStartRef,
+                        lastPanOffsetRef,
+                        currentToolRef,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
+                    })
+                }
+                onMouseMove={(e) => {
+                    handleMouseMove({
+                        e,
+                        currentStrokeRef,
+                        isDrawingRef,
+                        panStartRef,
+                        panOffsetRef,
+                        lastPanOffsetRef,
+                        currentToolRef,
+                        strokes,
+                        onErase: eraseStrokes,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
+                    });
+                    handlePresenceUpdate(e);
+                }}
+                onMouseUp={(e) => {
+                    handleMouseUp({
+                        e,
+                        isDrawingRef,
+                        currentStrokeRef,
+                        panStartRef,
+                        lastPanOffsetRef,
+                        panOffsetRef,
+                        currentToolRef,
+                        onStrokeFinished: addStroke,
+                        pastedImagesRef,
+                        selectedImageIdRef,
+                        imageDragOffsetRef,
+                        activeResizeHandleRef,
+                        onImageMoved: (id, changes) =>
+                            updateImageMeta(id, changes),
+                    });
+                }}
+            />
+        </div>
+    );
+
+    /*
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const currentToolRef = useRef<Tools>("pen");
 
@@ -371,6 +532,7 @@ const Board = ({ workspaceId }: { workspaceId: string }) => {
             />
         </div>
     );
+    */
 };
 
-export default Board;
+export default Workspace;

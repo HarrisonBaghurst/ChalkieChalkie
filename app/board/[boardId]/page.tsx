@@ -1,4 +1,4 @@
-import Board from "@/components/Board";
+import Workspace from "@/components/Workspace";
 import { Room } from "./Room";
 
 const page = async ({ params }: { params: Promise<{ boardId: string }> }) => {
@@ -6,7 +6,7 @@ const page = async ({ params }: { params: Promise<{ boardId: string }> }) => {
 
     return (
         <Room boardId={boardId}>
-            <Board workspaceId={boardId} />
+            <Workspace workspaceId={boardId} />
         </Room>
     );
 };
