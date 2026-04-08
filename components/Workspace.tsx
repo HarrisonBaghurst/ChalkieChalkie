@@ -7,7 +7,7 @@ import {
     handleMouseUp,
 } from "@/lib/canvasInputs";
 import { Point, Stroke } from "@/types/strokeTypes";
-import BottomBar from "./BottomBar";
+import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import { PastedImage, ResizeHandle } from "@/types/imageTypes";
@@ -118,7 +118,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     return (
         <div className="w-dvw h-dvh overflow-hidden">
             <CursorLayer />
-            <BottomBar
+            <Sidebar
                 currentColourRef={currentColourRef}
                 currentToolRef={currentToolRef}
                 onToolChanged={onToolChanged}

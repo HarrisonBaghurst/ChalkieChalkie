@@ -188,7 +188,7 @@
 @layer utilities {
     .dotted-paper {
         background-image: radial-gradient(#272724 1.5px, transparent 1.5px);
-        background-size: 20px 20px;
+        background-size: 40px 40px;
     }
 
     .card-style {
