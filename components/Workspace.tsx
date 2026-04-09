@@ -1,11 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-} from "@/lib/canvasInputs";
 import { Point, Stroke } from "@/types/strokeTypes";
 import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
@@ -16,6 +11,9 @@ import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
 import { useKeybinds } from "@/hooks/useKeybinds";
 import CursorLayer from "./CursorLayer";
+import { handleMouseDown } from "@/lib/handlers/mouseDown";
+import { handleMouseMove } from "@/lib/handlers/mouseMove";
+import { handleMouseUp } from "@/lib/handlers/mouseUp";
 
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
