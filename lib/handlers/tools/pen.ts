@@ -45,23 +45,33 @@ export const handlePenMove = ({
 }: HandlePenMoveProps) => {
     if (!currentStrokeRef.current) return;
     const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
-    currentStrokeRef.current.points.push(worldPoint);
+
+    if (e.shiftKey && currentStrokeRef.current.points.length > 0) {
+        const origin = currentStrokeRef.current.points[0];
+        currentStrokeRef.current.points = [origin, worldPoint];
+    } else {
+        currentStrokeRef.current.points.push(worldPoint);
+    }
 };
 
 interface HandlePenUpProps {
+    e: React.MouseEvent;
     isDrawingRef: RefObject<boolean>;
     currentStrokeRef: RefObject<Stroke | null>;
     onStrokeFinished: (stroke: Stroke) => void;
 }
 
 export const handlePenUp = ({
+    e,
     isDrawingRef,
     currentStrokeRef,
     onStrokeFinished,
 }: HandlePenUpProps) => {
     isDrawingRef.current = false;
     if (currentStrokeRef.current) {
-        const simplified = simplifyRDP(currentStrokeRef.current.points, 1);
+        const simplified = e.shiftKey
+            ? currentStrokeRef.current.points
+            : simplifyRDP(currentStrokeRef.current.points, 1);
         const newStroke = {
             id: crypto.randomUUID(),
             points: simplified,

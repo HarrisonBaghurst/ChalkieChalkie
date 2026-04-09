@@ -43,6 +43,7 @@ export const handleMouseUp = ({
         isDrawingRef.current
     ) {
         handlePenUp({
+            e,
             isDrawingRef,
             currentStrokeRef,
             onStrokeFinished,
