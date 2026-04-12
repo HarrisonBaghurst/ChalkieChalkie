@@ -36,6 +36,15 @@ const CollaboratorsInput = ({
 
     useEffect(() => {
         setLocalCollaborators(initialCollaborators);
+
+        if (friends !== null) {
+            setLocalFriends(
+                friends.filter(
+                    (f) =>
+                        !initialCollaborators.some((c) => c.email === f.email),
+                ),
+            );
+        }
     }, [initialCollaborators]);
 
     useEffect(() => {

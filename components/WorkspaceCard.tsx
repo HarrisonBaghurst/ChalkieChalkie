@@ -132,7 +132,7 @@ const WorkspaceCard = ({
                 setWorkspaceData({
                     title: data.title,
                     description: data.description,
-                    collaborators: data.user_ids ?? updatedData.collaborators,
+                    collaborators: updatedData.collaborators,
                     startTime: data.start_time
                         ? new Date(data.start_time)
                         : null,
@@ -142,7 +142,7 @@ const WorkspaceCard = ({
                 onUpdate({
                     title: data.title,
                     description: data.description,
-                    collaborators: data.user_ids ?? updatedData.collaborators,
+                    collaborators: updatedData.collaborators,
                     startTime: data.start_time
                         ? new Date(data.start_time)
                         : null,

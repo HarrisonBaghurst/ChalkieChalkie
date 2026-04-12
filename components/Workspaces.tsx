@@ -229,49 +229,16 @@ const Workspaces = () => {
         return Object.fromEntries(usersInfo.map((user) => [user.id, user]));
     }, [usersInfo]);
 
-    const availableCollaborators = useMemo(() => {
-        const seen = new Set<string>();
-        const result: userInfo[] = [];
-        workspaces.forEach((workspace) => {
-            workspace.collaboratorIds?.forEach((id) => {
-                if (id !== user?.id && !seen.has(id) && usersMap[id]) {
-                    seen.add(id);
-                    result.push(usersMap[id]);
-                }
-            });
-        });
-        return result;
-    }, [workspaces, usersMap, user?.id]);
-
     const filteredWorkspaces = useMemo(
         () => applyFiltersAndSort(workspaces, filters, sortDir, user?.id, now),
         [workspaces, filters, sortDir, user?.id, now],
     );
-
-    const toggleCollaborator = (id: string) => {
-        setFilters((prev) => ({
-            ...prev,
-            collaboratorIds: prev.collaboratorIds.includes(id)
-                ? prev.collaboratorIds.filter((c) => c !== id)
-                : [...prev.collaboratorIds, id],
-        }));
-    };
 
     const setTimeFilter = (value: TimeFilter) =>
         setFilters((prev) => ({ ...prev, time: value }));
 
     const toggleSortDir = () =>
         setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-
-    const hasActiveFilters =
-        !!filters.search ||
-        filters.collaboratorIds.length > 0 ||
-        filters.time !== null;
-
-    const clearFilters = () => {
-        setFilters(DEFAULT_FILTERS);
-        setSortDir("asc");
-    };
 
     return (
         <div
