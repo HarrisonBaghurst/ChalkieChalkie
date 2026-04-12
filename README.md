@@ -23,7 +23,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 
 ### Home and UI
 
-- [ ] Home page footer
+- [ ] Complete home page footer
 - [ ] Copy invite link
 - [ ] Loading between page animation
 - [ ] Additional maths scribbles on hero
@@ -36,9 +36,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 
 ### Whiteboard and UI
 
-- [ ] Ensure correct spacing between pen colour selection menu
 - [ ] Current active and inactive user list
-- [ ] Hold for perfect line
 - [ ] Pen sizes
 - [ ] Highlighter
 - [ ] User name next to cursor
@@ -60,3 +58,6 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [x] Workspace titles
 - [x] Set workspace card default values
 - [x] Icons
+- [x] Home page footer outline
+- [x] Ensure correct spacing between pen colour selection menu
+- [x] Hold for perfect line
