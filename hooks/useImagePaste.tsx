@@ -60,6 +60,7 @@ export const useImagePaste = ({
     workspaceId,
     cursorPositionRef,
     addImageMeta,
+    pastedImagesRef,
 }: Omit<UseImagePasteProps, "pastedImagesMeta">) => {
     useEffect(() => {
         const handlePaste = async (e: ClipboardEvent) => {
@@ -74,42 +75,67 @@ export const useImagePaste = ({
 
                 const imageId = crypto.randomUUID();
                 const { x, y } = cursorPositionRef.current;
+                const blobUrl = URL.createObjectURL(file);
 
-                const dimensions = await new Promise<{
-                    width: number;
-                    height: number;
-                }>((resolve) => {
-                    const img = new Image();
-                    const url = URL.createObjectURL(file);
-                    img.onload = () => {
-                        resolve({ width: img.width, height: img.height });
-                        URL.revokeObjectURL(url);
-                    };
-                    img.src = url;
+                const img = new Image();
+                await new Promise<void>((resolve) => {
+                    img.onload = () => resolve();
+                    img.src = blobUrl;
                 });
 
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("imageId", imageId);
-                formData.append("workspaceId", workspaceId);
+                pastedImagesRef.current.push({
+                    id: imageId,
+                    element: img,
+                    x,
+                    y,
+                    width: img.naturalWidth,
+                    height: img.naturalHeight,
+                    url: blobUrl,
+                });
 
-                try {
-                    const res = await fetch(
-                        `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
-                        { method: "POST", body: formData },
-                    );
-                    const { url } = await res.json();
-                    addImageMeta({
-                        id: imageId,
-                        url,
-                        x,
-                        y,
-                        width: dimensions.width,
-                        height: dimensions.height,
-                    });
-                } catch (err) {
-                    console.error("Failed to upload image:", err);
-                }
+                (async () => {
+                    try {
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        formData.append("imageId", imageId);
+                        formData.append("workspaceId", workspaceId);
+
+                        const res = await fetch(
+                            `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
+                            { method: "POST", body: formData },
+                        );
+                        const { url: permanentUrl } = await res.json();
+
+                        const local = pastedImagesRef.current.find(
+                            (i) => i.id === imageId,
+                        );
+                        if (local) {
+                            const newImg = new Image();
+                            newImg.onload = () => {
+                                local.element = newImg;
+                                local.url = permanentUrl;
+                                URL.revokeObjectURL(blobUrl);
+                            };
+                            newImg.src = permanentUrl;
+                        }
+
+                        addImageMeta({
+                            id: imageId,
+                            url: permanentUrl,
+                            x,
+                            y,
+                            width: img.naturalWidth,
+                            height: img.naturalHeight,
+                        });
+                    } catch (err) {
+                        console.error("Failed to upload image:", err);
+                        pastedImagesRef.current =
+                            pastedImagesRef.current.filter(
+                                (i) => i.id !== imageId,
+                            );
+                        URL.revokeObjectURL(blobUrl);
+                    }
+                })();
 
                 e.preventDefault();
                 break;

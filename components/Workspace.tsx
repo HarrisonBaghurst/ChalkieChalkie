@@ -128,7 +128,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                     />
                     <canvas
                         ref={canvasRef}
-                        style={{ pointerEvents: isLoaded ? "auto" : "none" }} // add this line
+                        style={{ pointerEvents: isLoaded ? "auto" : "none" }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) =>
                             handleMouseDown({
