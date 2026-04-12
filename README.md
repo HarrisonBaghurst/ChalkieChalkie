@@ -1,27 +1,13 @@
-# Chalkie Chalkie
+# Todo before full deployment
 
-Your teaching and learning tool.
-
-Chalkie Chalkie is an online collaborative blackboard designed specifically for maths tutoring, incuding features tailored for this use case.
-
-## Tech Stack
-
-- **Next.js**: React framework of choice
-- **Vercel**: Hosting and cron jobs
-- **Liveblocks**: Real time connection handling
-- **Clerk**: User accounts and authentication
-- **Supabase**: Recent room information
-
-## Todo before full deployment
-
-### General
+## General
 
 - [ ] Ensure browser support and compatibility
 - [ ] Search engine optimisation
 - [ ] Stroke drawing optimisation
 - [ ] Ensure API security
 
-### Home and UI
+## Home and UI
 
 - [ ] Complete home page footer
 - [ ] Copy invite link
@@ -34,7 +20,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] Toast messages - positive and negative interactions
 - [ ] Allow deleting workspace
 
-### Whiteboard and UI
+## Whiteboard and UI
 
 - [ ] Current active and inactive user list
 - [ ] Pen sizes
@@ -45,7 +31,7 @@ Chalkie Chalkie is an online collaborative blackboard designed specifically for 
 - [ ] run cron job to update liveblocks signed image urls
 - [ ] pre-processing for images before upload
 
-## Complete tasks
+# Complete tasks
 
 - [x] Consistent button styling
 - [x] Invite a user to workspace within the app
