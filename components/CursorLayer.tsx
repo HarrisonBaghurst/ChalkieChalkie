@@ -12,6 +12,7 @@ const CursorLayer = () => {
                 if (!presence?.cursor) return null;
                 return (
                     <svg
+                        key={connectionId}
                         style={{
                             position: "absolute",
                             left: 0,
