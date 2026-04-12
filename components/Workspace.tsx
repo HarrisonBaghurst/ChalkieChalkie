@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Point, Stroke } from "@/types/strokeTypes";
 import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
-import { Tools } from "@/types/toolTypes";
+import { toolCursorMap, Tools } from "@/types/toolTypes";
 import { PastedImage, ResizeHandle } from "@/types/imageTypes";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
@@ -54,6 +54,9 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const isDrawingRef = useRef(false);
     const currentColourRef = useRef("#eeeeee");
 
+    // cursor image state
+    const [currentTool, setCurrentTool] = useState<Tools>("pen");
+
     // live presence
     const [_, updateMyPresence] = useMyPresence();
 
@@ -65,7 +68,9 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     };
 
     // clear image selection on tool chagne
-    const onToolChanged = () => {
+    const onToolChanged = (tool: Tools) => {
+        setCurrentTool(tool);
+        currentToolRef.current = tool;
         selectedImageIdRef.current = null;
         activeResizeHandleRef.current = null;
     };
@@ -122,13 +127,16 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                 <div className="w-dvw h-dvh overflow-hidden">
                     <CursorLayer />
                     <Sidebar
+                        currentTool={currentToolRef.current}
                         currentColourRef={currentColourRef}
-                        currentToolRef={currentToolRef}
                         onToolChanged={onToolChanged}
                     />
                     <canvas
                         ref={canvasRef}
-                        style={{ pointerEvents: isLoaded ? "auto" : "none" }}
+                        style={{
+                            pointerEvents: isLoaded ? "auto" : "none",
+                            cursor: toolCursorMap[currentTool],
+                        }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) =>
                             handleMouseDown({

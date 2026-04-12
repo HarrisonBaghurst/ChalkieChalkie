@@ -27,7 +27,6 @@
 - [ ] Highlighter
 - [ ] User name next to cursor
 - [ ] Zooming
-- [ ] Cursor image change based on selected tool
 - [ ] run cron job to update liveblocks signed image urls
 - [ ] pre-processing for images before upload
 
@@ -47,3 +46,4 @@
 - [x] Home page footer outline
 - [x] Ensure correct spacing between pen colour selection menu
 - [x] Hold for perfect line
+- [x] Cursor image change based on selected tool

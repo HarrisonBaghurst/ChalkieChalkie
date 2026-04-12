@@ -5,24 +5,21 @@ import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import SidebarButton from "./SidebarButton";
 
-type BottomBarProps = {
+type SidebarProps = {
+    currentTool: Tools;
     currentColourRef: RefObject<string>;
-    currentToolRef: RefObject<Tools>;
-    onToolChanged: () => void;
+    onToolChanged: (tool: Tools) => void;
 };
 
-const BottomBar = ({
+const Sidebar = ({
+    currentTool,
     currentColourRef,
-    currentToolRef,
     onToolChanged,
-}: BottomBarProps) => {
-    const [currentTool, setCurrentTool] = useState<Tools>("pen");
+}: SidebarProps) => {
     const { undo, redo } = useHistory();
 
     const handleToolChange = (tool: Tools) => {
-        setCurrentTool(tool);
-        onToolChanged();
-        currentToolRef.current = tool;
+        onToolChanged(tool);
     };
 
     return (
@@ -67,4 +64,4 @@ const BottomBar = ({
     );
 };
 
-export default BottomBar;
+export default Sidebar;
