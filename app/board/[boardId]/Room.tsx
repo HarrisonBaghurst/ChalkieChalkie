@@ -7,6 +7,7 @@ import {
     ClientSideSuspense,
 } from "@liveblocks/react/suspense";
 import { LiveList } from "@liveblocks/client";
+import FullscreenLoader from "@/components/FullscreenLoader";
 
 export function Room({
     children,
@@ -25,7 +26,7 @@ export function Room({
                     pastedImages: new LiveList([]),
                 }}
             >
-                <ClientSideSuspense fallback={<div>Loading canvas…</div>}>
+                <ClientSideSuspense fallback={<FullscreenLoader />}>
                     {children}
                 </ClientSideSuspense>
             </RoomProvider>
