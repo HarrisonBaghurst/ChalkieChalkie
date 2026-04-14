@@ -50,13 +50,26 @@ const drawToCanvas = ({
 
     // Draw images
     pastedImages?.forEach((image) => {
-        ctx.drawImage(
-            image.element,
-            image.x + panOffset.x,
-            image.y + panOffset.y,
-            image.width,
-            image.height,
-        );
+        if (image.inverted) {
+            ctx.save();
+            ctx.filter = "invert(1)";
+            ctx.drawImage(
+                image.element,
+                image.x + panOffset.x,
+                image.y + panOffset.y,
+                image.width,
+                image.height,
+            );
+            ctx.restore();
+        } else {
+            ctx.drawImage(
+                image.element,
+                image.x + panOffset.x,
+                image.y + panOffset.y,
+                image.width,
+                image.height,
+            );
+        }
 
         if (image.id === selectedImageId) {
             // border around selected image

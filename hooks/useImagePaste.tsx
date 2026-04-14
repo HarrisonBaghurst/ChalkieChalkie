@@ -10,6 +10,40 @@ interface UseImagePasteProps {
     addImageMeta: (meta: PastedImageMeta) => void;
 }
 
+// _____ helper functions _________________________________________________________________________
+
+function shouldInvert(img: HTMLImageElement): boolean {
+    const canvas = document.createElement("canvas");
+    canvas.width = 50;
+    canvas.height = 50;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return false;
+
+    ctx.drawImage(img, 0, 0, 50, 50);
+    let data: ImageData;
+    try {
+        data = ctx.getImageData(0, 0, 50, 50);
+    } catch {
+        return false;
+    }
+
+    let total = 0;
+    const pixels = data.data;
+    const pixelCount = pixels.length / 4;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        // relative luminance formula
+        total += 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+
+    return total / pixelCount > 128;
+}
+
+// _____ hooks ____________________________________________________________________________________
+
 export const usePastedImagesSync = ({
     pastedImagesRef,
     pastedImagesMeta,
@@ -91,6 +125,7 @@ export const useImagePaste = ({
                     width: img.naturalWidth,
                     height: img.naturalHeight,
                     url: blobUrl,
+                    inverted: shouldInvert(img),
                 });
 
                 (async () => {
