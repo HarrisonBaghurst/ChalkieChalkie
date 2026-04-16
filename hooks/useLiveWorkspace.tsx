@@ -38,7 +38,7 @@ export const useLiveWorkspace = () => {
             const images = storage.get("pastedImages");
             for (let i = 0; i < images.length; i++) {
                 const img = images.get(i)!;
-                if ((img.id = id)) {
+                if (img.id === id) {
                     images.set(i, { ...img, ...changes });
                     break;
                 }
