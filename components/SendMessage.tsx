@@ -235,7 +235,7 @@ const SendMessage = () => {
                         className="w-full"
                     />
                     <TextInput
-                        title={"Epected vs actual behaviour"}
+                        title={"Expected vs actual behaviour"}
                         placeholder="Expected... Actual..."
                         text={expectedVsActual}
                         onChange={setExpectedVsActual}
