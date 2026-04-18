@@ -28,7 +28,6 @@
 - [ ] User name next to cursor
 - [ ] Zooming
 - [ ] run cron job to update liveblocks signed image urls
-- [ ] pre-processing for images before upload
 
 # Complete tasks
 
@@ -47,3 +46,7 @@
 - [x] Ensure correct spacing between pen colour selection menu
 - [x] Hold for perfect line
 - [x] Cursor image change based on selected tool
+- [x] Footer message for early access and bug reporting
+- [x] Forbidden user page for non-collaborators
+- [x] Got lost? 404 page
+- [x] pre-processing for images before upload
