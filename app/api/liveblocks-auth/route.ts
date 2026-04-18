@@ -27,6 +27,18 @@ export async function POST(request: NextRequest) {
     // get the room ID from client request
     const { room } = await request.json();
 
+    // ensure user is a collaborator in the workspace
+    const { data: roomData, error } = await supabaseAdmin
+        .from("Room")
+        .select("id")
+        .eq("id", room)
+        .contains("user_ids", [userId])
+        .single();
+
+    if (error || !roomData) {
+        return new Response("Forbidden", { status: 403 });
+    }
+
     // call Supabase function to handle data at room join
     await supabaseAdmin.rpc("upsert_room", {
         p_id: room,
