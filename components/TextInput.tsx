@@ -46,10 +46,12 @@ const TextInput = ({
     };
 
     return (
-        <div className="w-full h-full relative textd-base text-foreground-second">
+        <div className="w-full h-full relative textd-base text-foreground">
             <div className="flex flex-col gap-2 z-100">
                 {title && (
-                    <div className="text-sm text-foreground-third">{title}</div>
+                    <div className="text-sm text-foreground-second">
+                        {title}
+                    </div>
                 )}
                 <textarea
                     ref={textareaRef}
