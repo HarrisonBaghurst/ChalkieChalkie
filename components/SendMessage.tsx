@@ -99,13 +99,10 @@ const SendMessage = () => {
             );
             if (!res.ok) {
                 console.error(`Server error: ${res.status}`);
-                toast.error("Error sending message. Please try again later.", {
-                    position: "top-center",
-                });
+                toast.error("Error sending message. Please try again later.");
             }
             resetFields();
             toast.success("Message sent successfully.", {
-                position: "top-center",
                 description: "We aim to respond within 2 business days.",
             });
         } catch (err) {

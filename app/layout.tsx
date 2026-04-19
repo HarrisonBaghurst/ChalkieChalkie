@@ -25,7 +25,11 @@ export default function RootLayout({
                     <div className="relative">
                         <Header />
                         {children}
-                        <Toaster />
+                        <Toaster
+                            position="bottom-center"
+                            theme="dark"
+                            richColors
+                        />
                     </div>
                 </body>
             </html>

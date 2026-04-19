@@ -167,7 +167,6 @@ export const useImagePaste = ({
                     } catch (err) {
                         console.error("Failed to upload image:", err);
                         toast.error("Failed to upload image.", {
-                            position: "top-center",
                             description: "Please reload page and try again.",
                         });
                         pastedImagesRef.current =

@@ -127,7 +127,6 @@ const WorkspaceCard = ({
                 if (!res.ok) {
                     console.error("Failed to update workspace");
                     toast.error("Failed to update workspace.", {
-                        position: "top-center",
                         description: "Please reload the page and try again.",
                     });
                 }

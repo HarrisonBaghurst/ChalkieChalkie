@@ -35,9 +35,7 @@ export function Room({
 
                 if (!response.ok) {
                     console.error(`Auth failed: ${response.status}`);
-                    toast.error("Authentication failed.", {
-                        position: "top-center",
-                    });
+                    toast.error("Authentication failed.");
                 }
 
                 return response.json();

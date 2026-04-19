@@ -166,7 +166,6 @@ const Workspaces = () => {
                 if (!res.ok) {
                     console.error("Failed to fetch workspaces");
                     toast.error("Failed to fetch workspaces.", {
-                        position: "top-center",
                         description: "Please reload the page and try again.",
                     });
                     return;
@@ -212,7 +211,6 @@ const Workspaces = () => {
                     if (!usersRes.ok) {
                         console.error("Failed to fetch users");
                         toast.error("Failed to fetch users.", {
-                            position: "top-center",
                             description:
                                 "Please reload the page and try again.",
                         });

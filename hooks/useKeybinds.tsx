@@ -48,7 +48,6 @@ export const useKeybinds = ({
                 } catch (err) {
                     console.error("Failed to delete image:", err);
                     toast.error("Failed to delete image.", {
-                        position: "top-center",
                         description: "Please reload page and try again.",
                     });
                 }
