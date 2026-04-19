@@ -1,6 +1,7 @@
 import { PastedImage, PastedImageMeta } from "@/types/imageTypes";
 import { Point } from "@/types/strokeTypes";
 import { RefObject, useEffect } from "react";
+import { toast } from "sonner";
 
 interface UseImagePasteProps {
     workspaceId: string;
@@ -139,6 +140,7 @@ export const useImagePaste = ({
                             `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
                             { method: "POST", body: formData },
                         );
+
                         const { url: permanentUrl } = await res.json();
 
                         const local = pastedImagesRef.current.find(
@@ -164,6 +166,10 @@ export const useImagePaste = ({
                         });
                     } catch (err) {
                         console.error("Failed to upload image:", err);
+                        toast.error("Failed to upload image.", {
+                            position: "top-center",
+                            description: "Please reload page and try again.",
+                        });
                         pastedImagesRef.current =
                             pastedImagesRef.current.filter(
                                 (i) => i.id !== imageId,

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Button from "./Button";
 import TextInput from "./TextInput";
+import { toast } from "sonner";
 
 type MessageType = "early access" | "report a bug";
 type SeverityType =
@@ -96,8 +97,17 @@ const SendMessage = () => {
                     }),
                 },
             );
-            if (!res.ok) throw new Error(`Server error: ${res.status}`);
+            if (!res.ok) {
+                console.error(`Server error: ${res.status}`);
+                toast.error("Error sending message. Please try again later.", {
+                    position: "top-center",
+                });
+            }
             resetFields();
+            toast.success("Message sent successfully.", {
+                position: "top-center",
+                description: "We aim to respond within 2 business days.",
+            });
         } catch (err) {
             setSubmitError(
                 err instanceof Error

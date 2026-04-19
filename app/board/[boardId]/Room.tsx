@@ -9,6 +9,7 @@ import {
 import { LiveList } from "@liveblocks/client";
 import FullscreenLoader from "@/components/FullscreenLoader";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function Room({
     children,
@@ -33,7 +34,10 @@ export function Room({
                 }
 
                 if (!response.ok) {
-                    throw new Error(`Auth failed: ${response.status}`);
+                    console.error(`Auth failed: ${response.status}`);
+                    toast.error("Authentication failed.", {
+                        position: "top-center",
+                    });
                 }
 
                 return response.json();

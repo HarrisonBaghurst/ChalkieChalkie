@@ -1,5 +1,6 @@
 import { PastedImage } from "@/types/imageTypes";
 import { RefObject, useEffect } from "react";
+import { toast } from "sonner";
 
 interface UseKeybindsProps {
     workspaceId: string;
@@ -40,16 +41,16 @@ export const useKeybinds = ({
                             body: JSON.stringify({ imageId: id, workspaceId }),
                         },
                     );
-                    if (!res.ok) {
-                        console.error("Failed to delete image");
-                        return;
-                    }
                     pastedImagesRef.current = pastedImagesRef.current.filter(
                         (img) => img.id != id,
                     );
                     selectedImageIdRef.current = null;
                 } catch (err) {
                     console.error("Failed to delete image:", err);
+                    toast.error("Failed to delete image.", {
+                        position: "top-center",
+                        description: "Please reload page and try again.",
+                    });
                 }
             }
         };

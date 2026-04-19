@@ -9,6 +9,7 @@ import TextInput from "./TextInput";
 import DateTimeInput from "./DateTimeInput";
 import CollaboratorsInput from "./CollaboratorsInput";
 import { useDebouncedCallback } from "use-debounce";
+import { toast } from "sonner";
 
 type WorkspaceCardProps = {
     title: string;
@@ -124,7 +125,11 @@ const WorkspaceCard = ({
                 );
 
                 if (!res.ok) {
-                    throw new Error("Failed to update workspace");
+                    console.error("Failed to update workspace");
+                    toast.error("Failed to update workspace.", {
+                        position: "top-center",
+                        description: "Please reload the page and try again.",
+                    });
                 }
 
                 const data = await res.json();
