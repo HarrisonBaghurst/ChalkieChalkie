@@ -17,7 +17,6 @@
 - [ ] Search workspaces by title
 - [ ] Workspace card loading state
 - [ ] Scroll animations for home page
-- [ ] Toast messages - positive and negative interactions
 - [ ] Allow deleting workspace
 
 ## Whiteboard and UI
@@ -50,3 +49,4 @@
 - [x] Forbidden user page for non-collaborators
 - [x] Got lost? 404 page
 - [x] pre-processing for images before upload
+- [x] Toast messages - positive and negative interactions
