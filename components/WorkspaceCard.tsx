@@ -54,6 +54,11 @@ const WorkspaceCard = ({
         "idle" | "saving" | "saved" | "error"
     >("idle");
 
+    const collaboratorsRef = useRef<userInfo[]>(workspaceData.collaborators);
+    useEffect(() => {
+        collaboratorsRef.current = workspaceData.collaborators;
+    }, [workspaceData.collaborators]);
+
     const handleFieldChange =
         (field: keyof WorkspaceEditData) => (value: string) => {
             setPendingChanges((prev) => ({ ...prev, [field]: value }));
@@ -78,7 +83,6 @@ const WorkspaceCard = ({
     };
 
     const hostInfo = collaborators.find((c) => c.id === host);
-
     const lastEditedText = getLastEditedText(lastEdited);
 
     const onSave = useCallback(
@@ -86,9 +90,13 @@ const WorkspaceCard = ({
             if (!changes || Object.keys(changes).length === 0 || isSaving)
                 return;
 
+            const latestCollaborators =
+                changes.collaborators ?? collaboratorsRef.current;
+
             const updatedData: WorkspaceEditData = {
                 ...workspaceData,
                 ...changes,
+                collaborators: latestCollaborators,
             };
 
             const previousData = workspaceData;
@@ -103,9 +111,7 @@ const WorkspaceCard = ({
                     `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${uuid}`,
                     {
                         method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             roomId: uuid,
                             title: updatedData.title,
@@ -129,6 +135,10 @@ const WorkspaceCard = ({
                     toast.error("Failed to update workspace.", {
                         description: "Please reload the page and try again.",
                     });
+                    setWorkspaceData(previousData);
+                    setPendingChanges(changes);
+                    setSaveStatus("error");
+                    return;
                 }
 
                 const data = await res.json();
@@ -153,7 +163,6 @@ const WorkspaceCard = ({
                 });
             } catch (err) {
                 console.error(err);
-
                 setWorkspaceData(previousData);
                 setPendingChanges(changes);
                 setSaveStatus("error");
@@ -198,6 +207,14 @@ const WorkspaceCard = ({
             );
     }, [hasPendingChanges, pendingChanges]);
 
+    useEffect(() => {
+        setWorkspaceData((prev) => ({
+            ...prev,
+            collaborators,
+        }));
+        collaboratorsRef.current = collaborators;
+    }, [collaborators]);
+
     if (loading || !isLoaded) return;
     if (!isSignedIn || !user) return <p>Not signed in</p>;
 
@@ -222,7 +239,6 @@ const WorkspaceCard = ({
                         Error loading host
                     </div>
                 )}
-
                 <div className="flex gap-2 items-center text-foreground-third">
                     {saveStatus === "saving" && (
                         <span className="text-xs">Saving</span>
@@ -256,8 +272,9 @@ const WorkspaceCard = ({
                 placeholder="No description yet..."
                 onChange={handleFieldChange("description")}
             />
+            {/* FIX: pass currentData.collaborators so it reflects local state */}
             <CollaboratorsInput
-                collaborators={collaborators}
+                collaborators={currentData.collaborators}
                 onSave={(updated) => {
                     const changes = {
                         ...pendingChanges,

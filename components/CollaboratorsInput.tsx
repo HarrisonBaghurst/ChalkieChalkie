@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CollaboratorCard from "./CollaboratorCard";
 import { userInfo } from "@/types/userTypes";
 import Button from "./Button";
@@ -16,7 +16,6 @@ const CollaboratorsInput = ({
     const [friends, setFriends] = useState<userInfo[] | null>(null);
     const [localCollaborators, setLocalCollaborators] =
         useState<userInfo[]>(initialCollaborators);
-    const [localFriends, setLocalFriends] = useState<userInfo[]>([]);
     const [draggedUser, setDraggedUser] = useState<{
         user: userInfo;
         from: "collaborators" | "friends";
@@ -34,17 +33,16 @@ const CollaboratorsInput = ({
         return aEmails.every((email, i) => email === bEmails[i]);
     };
 
+    const localFriends = useMemo(
+        () =>
+            (friends ?? []).filter(
+                (f) => !localCollaborators.some((c) => c.email === f.email),
+            ),
+        [friends, localCollaborators],
+    );
+
     useEffect(() => {
         setLocalCollaborators(initialCollaborators);
-
-        if (friends !== null) {
-            setLocalFriends(
-                friends.filter(
-                    (f) =>
-                        !initialCollaborators.some((c) => c.email === f.email),
-                ),
-            );
-        }
     }, [initialCollaborators]);
 
     useEffect(() => {
@@ -58,12 +56,6 @@ const CollaboratorsInput = ({
             }
             const data = await res.json();
             const fetchedFriends: userInfo[] = data.friends;
-            setLocalFriends(
-                fetchedFriends.filter(
-                    (f) =>
-                        !initialCollaborators.some((c) => c.email === f.email),
-                ),
-            );
             setFriends(fetchedFriends);
         };
         fetchFriends();
@@ -81,14 +73,10 @@ const CollaboratorsInput = ({
 
         if (target === "collaborators") {
             setLocalCollaborators((prev) => [...prev, draggedUser.user]);
-            setLocalFriends((prev) =>
-                prev.filter((f) => f.email !== draggedUser.user.email),
-            );
         } else {
             setLocalCollaborators((prev) =>
                 prev.filter((c) => c.email !== draggedUser.user.email),
             );
-            setLocalFriends((prev) => [...prev, draggedUser.user]);
         }
 
         setDraggedUser(null);
@@ -97,11 +85,6 @@ const CollaboratorsInput = ({
 
     const handleDiscard = () => {
         setLocalCollaborators(initialCollaborators);
-        setLocalFriends(
-            (friends ?? []).filter(
-                (f) => !initialCollaborators.some((c) => c.email === f.email),
-            ),
-        );
         setPopupOpen(false);
     };
 

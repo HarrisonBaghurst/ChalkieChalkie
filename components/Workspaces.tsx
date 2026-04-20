@@ -133,6 +133,19 @@ const Workspaces = () => {
         id: string,
         updated: Partial<WorkspaceEditData>,
     ) => {
+        if (updated.collaborators) {
+            setUsersInfo((prev) => {
+                const existing = prev ?? [];
+                const existingIds = new Set(existing.map((u) => u.id));
+                const newUsers = updated.collaborators!.filter(
+                    (c) => c && !existingIds.has(c.id),
+                );
+                return newUsers.length > 0
+                    ? [...existing, ...newUsers]
+                    : existing;
+            });
+        }
+
         setWorkspaces((prev) =>
             prev.map((ws) =>
                 ws.id === id
@@ -153,7 +166,6 @@ const Workspaces = () => {
             ),
         );
     };
-
     useEffect(() => {
         const fetchWorkspacesAndUsers = async () => {
             try {
