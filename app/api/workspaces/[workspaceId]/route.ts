@@ -8,7 +8,7 @@ import { auth } from "@clerk/nextjs/server";
  */
 export async function GET(
     _req: Request,
-    { params }: { params: { workspaceId: string } },
+    { params }: { params: Promise<{ workspaceId: string }> },
 ) {
     const { userId } = await auth();
 
