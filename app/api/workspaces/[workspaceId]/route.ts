@@ -2,6 +2,37 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 
 /**
+ * Retrieve workspace data given ID for authenticated user
+ *
+ * @route api/workspaces/[workspaceId]
+ */
+export async function GET(
+    _req: Request,
+    { params }: { params: { workspaceId: string } },
+) {
+    const { userId } = await auth();
+
+    if (!userId) {
+        return new Response("Unauthorised", { status: 401 });
+    }
+
+    const { workspaceId } = await params;
+
+    const { data, error } = await supabaseAdmin
+        .from("Room")
+        .select("*")
+        .eq("id", workspaceId)
+        .contains("user_ids", [userId]) // ensures user is a member
+        .single();
+
+    if (error) {
+        return new Response(error.message, { status: 500 });
+    }
+
+    return Response.json(data);
+}
+
+/**
  * Update workspace details in database
  *
  * @route api/workspaces/[workspaceId]

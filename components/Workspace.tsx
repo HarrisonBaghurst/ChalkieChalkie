@@ -15,6 +15,7 @@ import { handleMouseDown } from "@/lib/handlers/mouseDown";
 import { handleMouseMove } from "@/lib/handlers/mouseMove";
 import { handleMouseUp } from "@/lib/handlers/mouseUp";
 import FullscreenLoader from "./FullscreenLoader";
+import WorkspaceTopbar from "./WorkspaceTopbar";
 
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -126,6 +127,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
                     <CursorLayer />
+                    <WorkspaceTopbar />
                     <Sidebar
                         currentTool={currentToolRef.current}
                         currentColourRef={currentColourRef}
