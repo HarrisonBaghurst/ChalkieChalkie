@@ -85,3 +85,26 @@ export async function PATCH(req: Request) {
 
     return Response.json(data);
 }
+
+export async function POST(req: Request) {
+    const { userId } = await auth();
+    if (!userId) return new Response("Unauthorised", { status: 401 });
+
+    const { roomId } = await req.json();
+    if (!roomId) return new Response("roomId is required", { status: 400 });
+
+    const { data, error } = await supabaseAdmin
+        .from("Room")
+        .insert({
+            id: roomId,
+            host_id: userId,
+            user_ids: [userId],
+            last_activity_at: new Date(),
+        })
+        .select()
+        .single();
+
+    console.error(error);
+    if (error) return new Response(error.message, { status: 500 });
+    return Response.json(data);
+}

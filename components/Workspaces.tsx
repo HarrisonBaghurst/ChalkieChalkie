@@ -119,14 +119,60 @@ const Workspaces = () => {
     const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
     const [sortDir, setSortDir] = useState<SortDirection>("asc");
 
+    const [creatingWorkspace, setCreatingWorkspace] = useState(false);
+
     const { isLoaded, isSignedIn, user } = useUser();
     const router = useRouter();
 
     const now = useMemo(() => new Date(), []);
 
-    const createBoard = () => {
+    const createBoard = async () => {
+        if (!user) return;
+        setCreatingWorkspace(true);
+
         const id = uuidv4();
-        router.push(`/board/${id}`);
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${id}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        roomId: id,
+                        title: "New Workspace",
+                    }),
+                },
+            );
+
+            if (!res.ok) {
+                toast.error("Failed to create workspace.", {
+                    description: "Please try again.",
+                });
+                return;
+            }
+
+            const newRoom = await res.json();
+
+            setWorkspaces((prev) => [
+                ...prev,
+                {
+                    id: newRoom.id,
+                    title: newRoom.title,
+                    description: newRoom.description ?? null,
+                    host: newRoom.host_id,
+                    collaboratorIds: newRoom.user_ids,
+                    startTime: newRoom.start_time ?? null,
+                    lastActivity:
+                        newRoom.lastActivity ?? new Date().toISOString(),
+                },
+            ]);
+        } catch (err) {
+            console.error(err);
+            toast.error("Something went wrong.");
+        } finally {
+            setCreatingWorkspace(false);
+        }
     };
 
     const handleWorkspaceUpdate = (
