@@ -1,5 +1,6 @@
 import drawToCanvas from "@/lib/canvasDrawing";
 import { PastedImage } from "@/types/imageTypes";
+import { Rect } from "@/lib/genometry";
 import { Point, Stroke } from "@/types/strokeTypes";
 import { RefObject, useEffect } from "react";
 
@@ -10,6 +11,10 @@ interface useCanvasRenderLoopProps {
     pastedImagesRef: RefObject<PastedImage[]>;
     panOffsetRef: RefObject<Point>;
     selectedImageIdRef: RefObject<string | null>;
+    selectorRectRef: RefObject<Rect | null>;
+    selectedStrokeIdsRef: RefObject<string[]>;
+    selectedImageIdsRef: RefObject<string[]>;
+    selectorDeltaRef: RefObject<Point>;
 }
 
 // runs requestAnimationFrame render loop and syncs background to pan offset
@@ -20,6 +25,10 @@ export const useCanvasRenderLoop = ({
     pastedImagesRef,
     panOffsetRef,
     selectedImageIdRef,
+    selectorRectRef,
+    selectedStrokeIdsRef,
+    selectedImageIdsRef,
+    selectorDeltaRef,
 }: useCanvasRenderLoopProps) => {
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -33,6 +42,10 @@ export const useCanvasRenderLoop = ({
                 canvasRef,
                 panOffset: panOffsetRef.current,
                 selectedImageId: selectedImageIdRef.current,
+                selectorRect: selectorRectRef.current,
+                selectedStrokeIds: selectedStrokeIdsRef.current,
+                selectedImageIds: selectedImageIdsRef.current,
+                selectorDelta: selectorDeltaRef.current,
             });
 
             if (canvasRef.current) {

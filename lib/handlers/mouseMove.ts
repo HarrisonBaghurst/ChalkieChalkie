@@ -1,4 +1,5 @@
 import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { Rect } from "@/lib/genometry";
 import { Point, Stroke } from "@/types/strokeTypes";
 import { Tools } from "@/types/toolTypes";
 import { RefObject } from "react";
@@ -6,6 +7,7 @@ import { handlePenMove } from "./tools/pen";
 import { handlePointerMove } from "./tools/pointer";
 import { handleEraserMove } from "./tools/eraser";
 import { handlePanMove } from "./tools/pan";
+import { handleSelectorMove } from "./tools/selector";
 
 interface HandleMouseMoveProps {
     e: React.MouseEvent;
@@ -21,6 +23,13 @@ interface HandleMouseMoveProps {
     selectedImageIdRef: RefObject<string | null>;
     imageDragOffsetRef: RefObject<Point | null>;
     activeResizeHandleRef: RefObject<ResizeHandle>;
+    selectorRectRef: RefObject<Rect | null>;
+    selectorRectOriginRef: RefObject<Rect | null>;
+    selectorStartRef: RefObject<Point | null>;
+    selectedImageIdsRef: RefObject<string[]>;
+    selectorDragStartRef: RefObject<Point | null>;
+    selectorDeltaRef: RefObject<Point>;
+    selectorImageOriginsRef: RefObject<Map<string, Point>>;
 }
 
 export const handleMouseMove = (() => {
@@ -41,6 +50,13 @@ export const handleMouseMove = (() => {
         selectedImageIdRef,
         imageDragOffsetRef,
         activeResizeHandleRef,
+        selectorRectRef,
+        selectorRectOriginRef,
+        selectorStartRef,
+        selectedImageIdsRef,
+        selectorDragStartRef,
+        selectorDeltaRef,
+        selectorImageOriginsRef,
     }: HandleMouseMoveProps) => {
         const now = performance.now();
         if (now - lastTime < THROTTLE_MS) return;
@@ -76,6 +92,19 @@ export const handleMouseMove = (() => {
                 selectedImageIdRef,
                 activeResizeHandleRef,
                 imageDragOffsetRef,
+            });
+        } else if (e.buttons === 1 && currentToolRef.current === "selector") {
+            handleSelectorMove({
+                e,
+                lastPanOffsetRef,
+                pastedImagesRef,
+                selectorRectRef,
+                selectorRectOriginRef,
+                selectorStartRef,
+                selectedImageIdsRef,
+                selectorDragStartRef,
+                selectorDeltaRef,
+                selectorImageOriginsRef,
             });
         } else if (e.buttons === 2 && panStartRef.current) {
             handlePanMove({

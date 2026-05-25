@@ -45,6 +45,12 @@ const Sidebar = ({
                         isActive={currentTool === "pointer"}
                         onSelect={() => handleToolChange("pointer")}
                     />
+                    <SidebarButton
+                        icon={"/icons/selector.svg"}
+                        label="selector icon"
+                        isActive={currentTool === "selector"}
+                        onSelect={() => handleToolChange("selector")}
+                    />
                 </div>
                 <div className="w-full h-px bg-white/5" />
                 <div className="flex flex-col gap-2 p-2">

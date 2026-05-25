@@ -47,6 +47,20 @@ export const useLiveWorkspace = () => {
         [],
     );
 
+    const moveStrokes = useMutation(
+        ({ storage }, moves: { id: string; points: { x: number; y: number }[] }[]) => {
+            const canvasStrokes = storage.get("canvasStrokes");
+            for (let i = 0; i < canvasStrokes.length; i++) {
+                const stroke = canvasStrokes.get(i)!;
+                const move = moves.find((m) => m.id === stroke.id);
+                if (move) {
+                    canvasStrokes.set(i, { ...stroke, points: move.points });
+                }
+            }
+        },
+        [],
+    );
+
     return {
         strokes,
         pastedImagesMeta,
@@ -57,5 +71,6 @@ export const useLiveWorkspace = () => {
         addImageMeta,
         removeImageMeta,
         updateImageMeta,
+        moveStrokes,
     };
 };

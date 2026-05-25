@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
 import { toolCursorMap, Tools } from "@/types/toolTypes";
 import { PastedImage, ResizeHandle } from "@/types/imageTypes";
+import { Rect } from "@/lib/genometry";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
@@ -32,6 +33,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         addImageMeta,
         removeImageMeta,
         updateImageMeta,
+        moveStrokes,
     } = useLiveWorkspace();
 
     const isLoaded = strokes !== null;
@@ -55,6 +57,16 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const isDrawingRef = useRef(false);
     const currentColourRef = useRef("#eeeeee");
 
+    // selector refs
+    const selectorRectRef = useRef<Rect | null>(null);
+    const selectorRectOriginRef = useRef<Rect | null>(null);
+    const selectorStartRef = useRef<Point | null>(null);
+    const selectedStrokeIdsRef = useRef<string[]>([]);
+    const selectedImageIdsRef = useRef<string[]>([]);
+    const selectorDragStartRef = useRef<Point | null>(null);
+    const selectorDeltaRef = useRef<Point>({ x: 0, y: 0 });
+    const selectorImageOriginsRef = useRef<Map<string, Point>>(new Map());
+
     // cursor image state
     const [currentTool, setCurrentTool] = useState<Tools>("pen");
 
@@ -68,12 +80,20 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         updateMyPresence({ cursor: { x, y } });
     };
 
-    // clear image selection on tool chagne
+    // clear selection state on tool change
     const onToolChanged = (tool: Tools) => {
         setCurrentTool(tool);
         currentToolRef.current = tool;
         selectedImageIdRef.current = null;
         activeResizeHandleRef.current = null;
+        selectorRectRef.current = null;
+        selectorRectOriginRef.current = null;
+        selectorStartRef.current = null;
+        selectedStrokeIdsRef.current = [];
+        selectedImageIdsRef.current = [];
+        selectorDragStartRef.current = null;
+        selectorDeltaRef.current = { x: 0, y: 0 };
+        selectorImageOriginsRef.current.clear();
     };
 
     // hooks
@@ -84,6 +104,10 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         pastedImagesRef,
         panOffsetRef,
         selectedImageIdRef,
+        selectorRectRef,
+        selectedStrokeIdsRef,
+        selectedImageIdsRef,
+        selectorDeltaRef,
     });
 
     usePastedImagesSync({ pastedImagesRef, pastedImagesMeta });
@@ -102,6 +126,10 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         removeImageMeta,
         undo,
         redo,
+        selectedStrokeIdsRef,
+        selectedImageIdsRef,
+        selectorRectRef,
+        eraseStrokes,
     });
 
     // prevent right click context menu on canvas
@@ -149,10 +177,19 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 panStartRef,
                                 lastPanOffsetRef,
                                 currentToolRef,
+                                strokes,
                                 pastedImagesRef,
                                 selectedImageIdRef,
                                 imageDragOffsetRef,
                                 activeResizeHandleRef,
+                                selectorRectRef,
+                                selectorRectOriginRef,
+                                selectorStartRef,
+                                selectedStrokeIdsRef,
+                                selectedImageIdsRef,
+                                selectorDragStartRef,
+                                selectorDeltaRef,
+                                selectorImageOriginsRef,
                             })
                         }
                         onMouseMove={(e) => {
@@ -170,6 +207,13 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 selectedImageIdRef,
                                 imageDragOffsetRef,
                                 activeResizeHandleRef,
+                                selectorRectRef,
+                                selectorRectOriginRef,
+                                selectorStartRef,
+                                selectedImageIdsRef,
+                                selectorDragStartRef,
+                                selectorDeltaRef,
+                                selectorImageOriginsRef,
                             });
                             handlePresenceUpdate(e);
                         }}
@@ -182,6 +226,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 lastPanOffsetRef,
                                 panOffsetRef,
                                 currentToolRef,
+                                strokes,
                                 onStrokeFinished: addStroke,
                                 pastedImagesRef,
                                 selectedImageIdRef,
@@ -189,6 +234,14 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 activeResizeHandleRef,
                                 onImageMoved: (id, changes) =>
                                     updateImageMeta(id, changes),
+                                selectorRectRef,
+                                selectorStartRef,
+                                selectedStrokeIdsRef,
+                                selectedImageIdsRef,
+                                selectorDragStartRef,
+                                selectorDeltaRef,
+                                selectorImageOriginsRef,
+                                onMoveStrokes: moveStrokes,
                             });
                         }}
                     />
