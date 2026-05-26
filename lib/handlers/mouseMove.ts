@@ -17,6 +17,7 @@ interface HandleMouseMoveProps {
     panStartRef: RefObject<Point | null>;
     panOffsetRef: RefObject<Point>;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     currentToolRef: RefObject<Tools>;
     strokes: readonly Stroke[] | null;
     onErase: (strokeIds: string[]) => void;
@@ -44,6 +45,7 @@ export const handleMouseMove = (() => {
         panStartRef,
         panOffsetRef,
         lastPanOffsetRef,
+        zoomRef,
         currentToolRef,
         strokes,
         onErase,
@@ -73,6 +75,7 @@ export const handleMouseMove = (() => {
                 e,
                 currentStrokeRef,
                 lastPanOffsetRef,
+                zoomRef,
             });
         } else if (
             e.buttons === 1 &&
@@ -83,12 +86,14 @@ export const handleMouseMove = (() => {
                 e,
                 strokes,
                 lastPanOffsetRef,
+                zoomRef,
                 onErase,
             });
         } else if (e.buttons === 1 && currentToolRef.current === "pointer") {
             handlePointerMove({
                 e,
                 lastPanOffsetRef,
+                zoomRef,
                 pastedImagesRef,
                 selectedImageIdRef,
                 activeResizeHandleRef,
@@ -104,11 +109,13 @@ export const handleMouseMove = (() => {
                 e,
                 currentStrokeRef,
                 lastPanOffsetRef,
+                zoomRef,
             });
         } else if (e.buttons === 1 && currentToolRef.current === "selector") {
             handleSelectorMove({
                 e,
                 lastPanOffsetRef,
+                zoomRef,
                 pastedImagesRef,
                 selectorRectRef,
                 selectorRectOriginRef,

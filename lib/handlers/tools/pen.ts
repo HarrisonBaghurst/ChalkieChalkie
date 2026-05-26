@@ -1,6 +1,6 @@
 import { Point, Stroke } from "@/types/strokeTypes";
 import { RefObject } from "react";
-import { getMousePos, getWorldPoint } from "../helpers";
+import { getWorldPoint } from "../helpers";
 import { simplifyRDP } from "@/lib/strokeOptimisation";
 
 interface HandlePenDownProps {
@@ -8,6 +8,7 @@ interface HandlePenDownProps {
     isDrawingRef: RefObject<boolean>;
     currentStrokeRef: RefObject<Stroke | null>;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     currentColourRef: RefObject<string>;
 }
 
@@ -16,18 +17,14 @@ export const handlePenDown = ({
     isDrawingRef,
     currentStrokeRef,
     lastPanOffsetRef,
+    zoomRef,
     currentColourRef,
 }: HandlePenDownProps) => {
     isDrawingRef.current = true;
-    const { x, y } = getMousePos(e);
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
     currentStrokeRef.current = {
         id: crypto.randomUUID(),
-        points: [
-            {
-                x: x - lastPanOffsetRef.current.x,
-                y: y - lastPanOffsetRef.current.y,
-            },
-        ],
+        points: [worldPoint],
         colour: currentColourRef.current,
     };
 };
@@ -36,15 +33,17 @@ interface HandlePenMoveProps {
     e: React.MouseEvent;
     currentStrokeRef: RefObject<Stroke | null>;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
 }
 
 export const handlePenMove = ({
     e,
     currentStrokeRef,
     lastPanOffsetRef,
+    zoomRef,
 }: HandlePenMoveProps) => {
     if (!currentStrokeRef.current) return;
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
 
     if (e.shiftKey && currentStrokeRef.current.points.length > 0) {
         const origin = currentStrokeRef.current.points[0];

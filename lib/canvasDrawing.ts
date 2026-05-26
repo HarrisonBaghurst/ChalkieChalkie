@@ -9,6 +9,7 @@ type DrawToCanvasParameters = {
     pastedImages: PastedImage[];
     canvasRef: RefObject<HTMLCanvasElement | null>;
     panOffset: Point;
+    zoom: number;
     selectedImageId: string | null;
     selectorRect?: Rect | null;
     selectedStrokeIds?: string[];
@@ -23,6 +24,7 @@ const drawToCanvas = ({
     pastedImages,
     canvasRef,
     panOffset,
+    zoom,
     selectedImageId,
     selectorRect,
     selectedStrokeIds,
@@ -50,10 +52,21 @@ const drawToCanvas = ({
         canvas.style.width = `${clientWidth}px`;
         canvas.style.height = `${clientHeight}px`;
     }
-    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 
-    // cear & setup
+    // clear in identity space first so we wipe every device pixel
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // world → device pixel: screen = world * zoom + panOffset; then * dpr for hi-DPI
+    ctx.setTransform(
+        devicePixelRatio * zoom,
+        0,
+        0,
+        devicePixelRatio * zoom,
+        devicePixelRatio * panOffset.x,
+        devicePixelRatio * panOffset.y,
+    );
+
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
 
@@ -61,15 +74,15 @@ const drawToCanvas = ({
     const penStrokes = allStrokes.filter((s) => !s.highlight);
     const highlightStrokes = allStrokes.filter((s) => s.highlight);
 
-    // Draw images
+    // Draw images (world coordinates)
     pastedImages?.forEach((image) => {
         if (image.inverted) {
             ctx.save();
             ctx.filter = "invert(1)";
             ctx.drawImage(
                 image.element,
-                image.x + panOffset.x,
-                image.y + panOffset.y,
+                image.x,
+                image.y,
                 image.width,
                 image.height,
             );
@@ -77,28 +90,25 @@ const drawToCanvas = ({
         } else {
             ctx.drawImage(
                 image.element,
-                image.x + panOffset.x,
-                image.y + panOffset.y,
+                image.x,
+                image.y,
                 image.width,
                 image.height,
             );
         }
 
-        const screenX = image.x + panOffset.x;
-        const screenY = image.y + panOffset.y;
-
         if (image.id === selectedImageId) {
             // border + resize handles (pointer tool single-selection)
             ctx.strokeStyle = "#3a86ff";
             ctx.lineWidth = 1;
-            ctx.strokeRect(screenX, screenY, image.width, image.height);
+            ctx.strokeRect(image.x, image.y, image.width, image.height);
 
             const size = 8;
             const corners = [
-                { x: screenX, y: screenY }, // nw
-                { x: screenX + image.width, y: screenY }, // ne
-                { x: screenX, y: screenY + image.height }, // sw
-                { x: screenX + image.width, y: screenY + image.height }, // se
+                { x: image.x, y: image.y }, // nw
+                { x: image.x + image.width, y: image.y }, // ne
+                { x: image.x, y: image.y + image.height }, // sw
+                { x: image.x + image.width, y: image.y + image.height }, // se
             ];
 
             corners.forEach((corner) => {
@@ -111,7 +121,7 @@ const drawToCanvas = ({
             // border only — selector tool multi-selection (no resize handles)
             ctx.strokeStyle = "#3a86ff";
             ctx.lineWidth = 1;
-            ctx.strokeRect(screenX, screenY, image.width, image.height);
+            ctx.strokeRect(image.x, image.y, image.width, image.height);
         }
     });
 
@@ -122,25 +132,20 @@ const drawToCanvas = ({
         ctx.beginPath();
         ctx.strokeStyle = stroke.colour;
         const pts = stroke.points;
-        ctx.moveTo(pts[0].x + panOffset.x, pts[0].y + panOffset.y);
+        ctx.moveTo(pts[0].x, pts[0].y);
 
         for (let i = 1; i < pts.length - 2; i++) {
-            const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x;
-            const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y;
-            ctx.quadraticCurveTo(
-                pts[i].x + panOffset.x,
-                pts[i].y + panOffset.y,
-                xc,
-                yc,
-            );
+            const xc = (pts[i].x + pts[i + 1].x) / 2;
+            const yc = (pts[i].y + pts[i + 1].y) / 2;
+            ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
         }
 
         const last = pts.length - 1;
         ctx.quadraticCurveTo(
-            pts[last - 1].x + panOffset.x,
-            pts[last - 1].y + panOffset.y,
-            pts[last].x + panOffset.x,
-            pts[last].y + panOffset.y,
+            pts[last - 1].x,
+            pts[last - 1].y,
+            pts[last].x,
+            pts[last].y,
         );
         ctx.stroke();
     }
@@ -155,8 +160,16 @@ const drawToCanvas = ({
         }
 
         const hlCtx = hl.getContext("2d")!;
-        hlCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        hlCtx.setTransform(1, 0, 0, 1, 0, 0);
         hlCtx.clearRect(0, 0, hl.width, hl.height);
+        hlCtx.setTransform(
+            devicePixelRatio * zoom,
+            0,
+            0,
+            devicePixelRatio * zoom,
+            devicePixelRatio * panOffset.x,
+            devicePixelRatio * panOffset.y,
+        );
         hlCtx.lineJoin = "round";
         hlCtx.lineCap = "round";
         hlCtx.lineWidth = 48;
@@ -166,23 +179,18 @@ const drawToCanvas = ({
             hlCtx.beginPath();
             hlCtx.strokeStyle = stroke.colour;
             const pts = stroke.points;
-            hlCtx.moveTo(pts[0].x + panOffset.x, pts[0].y + panOffset.y);
+            hlCtx.moveTo(pts[0].x, pts[0].y);
             for (let i = 1; i < pts.length - 2; i++) {
-                const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x;
-                const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y;
-                hlCtx.quadraticCurveTo(
-                    pts[i].x + panOffset.x,
-                    pts[i].y + panOffset.y,
-                    xc,
-                    yc,
-                );
+                const xc = (pts[i].x + pts[i + 1].x) / 2;
+                const yc = (pts[i].y + pts[i + 1].y) / 2;
+                hlCtx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
             }
             const last = pts.length - 1;
             hlCtx.quadraticCurveTo(
-                pts[last - 1].x + panOffset.x,
-                pts[last - 1].y + panOffset.y,
-                pts[last].x + panOffset.x,
-                pts[last].y + panOffset.y,
+                pts[last - 1].x,
+                pts[last - 1].y,
+                pts[last].x,
+                pts[last].y,
             );
             hlCtx.stroke();
         }
@@ -205,26 +213,23 @@ const drawToCanvas = ({
             if (stroke.points.length < 2) continue;
             ctx.beginPath();
             const pts = stroke.points;
-            ctx.moveTo(
-                pts[0].x + panOffset.x + dx,
-                pts[0].y + panOffset.y + dy,
-            );
+            ctx.moveTo(pts[0].x + dx, pts[0].y + dy);
             for (let i = 1; i < pts.length - 2; i++) {
-                const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x + dx;
-                const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y + dy;
+                const xc = (pts[i].x + pts[i + 1].x) / 2 + dx;
+                const yc = (pts[i].y + pts[i + 1].y) / 2 + dy;
                 ctx.quadraticCurveTo(
-                    pts[i].x + panOffset.x + dx,
-                    pts[i].y + panOffset.y + dy,
+                    pts[i].x + dx,
+                    pts[i].y + dy,
                     xc,
                     yc,
                 );
             }
             const last = pts.length - 1;
             ctx.quadraticCurveTo(
-                pts[last - 1].x + panOffset.x + dx,
-                pts[last - 1].y + panOffset.y + dy,
-                pts[last].x + panOffset.x + dx,
-                pts[last].y + panOffset.y + dy,
+                pts[last - 1].x + dx,
+                pts[last - 1].y + dy,
+                pts[last].x + dx,
+                pts[last].y + dy,
             );
             ctx.stroke();
         }
@@ -237,9 +242,9 @@ const drawToCanvas = ({
         ctx.strokeStyle = "#3a86ff";
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 4]);
-        ctx.strokeRect(r.x + panOffset.x, r.y + panOffset.y, r.width, r.height);
+        ctx.strokeRect(r.x, r.y, r.width, r.height);
         ctx.fillStyle = "rgba(58, 134, 255, 0.07)";
-        ctx.fillRect(r.x + panOffset.x, r.y + panOffset.y, r.width, r.height);
+        ctx.fillRect(r.x, r.y, r.width, r.height);
         ctx.restore();
     }
 };

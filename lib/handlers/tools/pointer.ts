@@ -1,5 +1,5 @@
-import { Ref, RefObject } from "react";
-import { getMousePos, getWorldPoint } from "../helpers";
+import { RefObject } from "react";
+import { getWorldPoint } from "../helpers";
 import { Point } from "@/types/strokeTypes";
 import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
@@ -7,6 +7,7 @@ import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
 interface HandlePointerDownProps {
     e: React.MouseEvent;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     pastedImagesRef: RefObject<PastedImage[]>;
     selectedImageIdRef: RefObject<string | null>;
     activeResizeHandleRef: RefObject<ResizeHandle>;
@@ -16,12 +17,13 @@ interface HandlePointerDownProps {
 export const handlePointerDown = ({
     e,
     lastPanOffsetRef,
+    zoomRef,
     pastedImagesRef,
     selectedImageIdRef,
     activeResizeHandleRef,
     imageDragOffsetRef,
 }: HandlePointerDownProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
     const images = pastedImagesRef.current;
     const img = getImageAtPoint(images, worldPoint);
 
@@ -46,6 +48,7 @@ export const handlePointerDown = ({
 interface HandlePointerMoveProps {
     e: React.MouseEvent;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     pastedImagesRef: RefObject<PastedImage[]>;
     selectedImageIdRef: RefObject<string | null>;
     activeResizeHandleRef: RefObject<ResizeHandle>;
@@ -55,12 +58,13 @@ interface HandlePointerMoveProps {
 export const handlePointerMove = ({
     e,
     lastPanOffsetRef,
+    zoomRef,
     pastedImagesRef,
     selectedImageIdRef,
     activeResizeHandleRef,
     imageDragOffsetRef,
 }: HandlePointerMoveProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
     const images = pastedImagesRef.current;
     const selectedId = selectedImageIdRef.current;
     if (!selectedId) return;

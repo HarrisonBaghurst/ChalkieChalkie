@@ -15,6 +15,7 @@ import {
 interface HandleSelectorDownProps {
     e: React.MouseEvent;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     strokes: readonly Stroke[] | null;
     pastedImagesRef: RefObject<PastedImage[]>;
     selectorRectRef: RefObject<Rect | null>;
@@ -30,6 +31,7 @@ interface HandleSelectorDownProps {
 export const handleSelectorDown = ({
     e,
     lastPanOffsetRef,
+    zoomRef,
     strokes,
     pastedImagesRef,
     selectorRectRef,
@@ -41,7 +43,7 @@ export const handleSelectorDown = ({
     selectorDeltaRef,
     selectorImageOriginsRef,
 }: HandleSelectorDownProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
 
     const hasSelection =
         selectedStrokeIdsRef.current.length > 0 ||
@@ -85,6 +87,7 @@ export const handleSelectorDown = ({
 interface HandleSelectorMoveProps {
     e: React.MouseEvent;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     pastedImagesRef: RefObject<PastedImage[]>;
     selectorRectRef: RefObject<Rect | null>;
     selectorRectOriginRef: RefObject<Rect | null>;
@@ -98,6 +101,7 @@ interface HandleSelectorMoveProps {
 export const handleSelectorMove = ({
     e,
     lastPanOffsetRef,
+    zoomRef,
     pastedImagesRef,
     selectorRectRef,
     selectorRectOriginRef,
@@ -107,7 +111,7 @@ export const handleSelectorMove = ({
     selectorDeltaRef,
     selectorImageOriginsRef,
 }: HandleSelectorMoveProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
 
     if (selectorDragStartRef.current) {
         const dx = worldPoint.x - selectorDragStartRef.current.x;

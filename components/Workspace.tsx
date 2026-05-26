@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Point, Stroke } from "@/types/strokeTypes";
 import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
 import Sidebar from "./Sidebar";
@@ -16,8 +16,13 @@ import CursorLayer from "./CursorLayer";
 import { handleMouseDown } from "@/lib/handlers/mouseDown";
 import { handleMouseMove } from "@/lib/handlers/mouseMove";
 import { handleMouseUp } from "@/lib/handlers/mouseUp";
+import { getMousePos } from "@/lib/handlers/helpers";
 import FullscreenLoader from "./FullscreenLoader";
 import WorkspaceTopbar from "./WorkspaceTopbar";
+
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 4.0;
+const ZOOM_RATIO = 1.1;
 
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -46,6 +51,14 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const panOffsetRef = useRef<Point>({ x: 0, y: 0 });
     const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
     const panStartRef = useRef<Point | null>(null);
+
+    // zoom state
+    const zoomRef = useRef<number>(1);
+    const [zoom, setZoom] = useState<number>(1);
+    const lastMouseScreenRef = useRef<Point | null>(null);
+
+    // pan state mirror — synced from panOffsetRef on pan end + applyZoom, used to redraw remote cursors
+    const [panOffsetState, setPanOffsetState] = useState<Point>({ x: 0, y: 0 });
 
     // image interaction refs
     const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
@@ -76,11 +89,45 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const [_, updateMyPresence] = useMyPresence();
 
     const handlePresenceUpdate = (e: React.MouseEvent) => {
-        const x = Math.round(e.clientX - panOffsetRef.current.x);
-        const y = Math.round(e.clientY - panOffsetRef.current.y);
+        const { x: sx, y: sy } = getMousePos(e);
+        const x = Math.round((sx - panOffsetRef.current.x) / zoomRef.current);
+        const y = Math.round((sy - panOffsetRef.current.y) / zoomRef.current);
         cursorPositionRef.current = { x, y };
         updateMyPresence({ cursor: { x, y } });
     };
+
+    const canvasCenter = (): Point => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+        return { x: rect.width / 2, y: rect.height / 2 };
+    };
+
+    const applyZoom = (rawZoom: number, anchor: Point) => {
+        const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, rawZoom));
+        const old = zoomRef.current;
+        if (newZoom === old) return;
+        const ratio = newZoom / old;
+        const p = panOffsetRef.current;
+        panOffsetRef.current = {
+            x: anchor.x - ratio * (anchor.x - p.x),
+            y: anchor.y - ratio * (anchor.y - p.y),
+        };
+        lastPanOffsetRef.current = { ...panOffsetRef.current };
+        zoomRef.current = newZoom;
+        setZoom(newZoom);
+        setPanOffsetState({ ...panOffsetRef.current });
+    };
+
+    const zoomIn = useCallback(() => {
+        const anchor = lastMouseScreenRef.current ?? canvasCenter();
+        applyZoom(zoomRef.current * ZOOM_RATIO, anchor);
+    }, []);
+
+    const zoomOut = useCallback(() => {
+        const anchor = lastMouseScreenRef.current ?? canvasCenter();
+        applyZoom(zoomRef.current / ZOOM_RATIO, anchor);
+    }, []);
 
     // clear selection state on tool change
     const onToolChanged = (tool: Tools) => {
@@ -105,6 +152,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         currentStrokeRef,
         pastedImagesRef,
         panOffsetRef,
+        zoomRef,
         selectedImageIdRef,
         selectorRectRef,
         selectedStrokeIdsRef,
@@ -142,7 +190,25 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         canvas.addEventListener("contextmenu", preventContextMenu);
         return () =>
             canvas.removeEventListener("contextmenu", preventContextMenu);
-    }, []);
+    }, [isLoaded]);
+
+    // wheel handler — native listener so we can preventDefault (React's onWheel is passive)
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const onWheel = (e: WheelEvent) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const anchor = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            };
+            const factor = e.deltaY < 0 ? ZOOM_RATIO : 1 / ZOOM_RATIO;
+            applyZoom(zoomRef.current * factor, anchor);
+        };
+        canvas.addEventListener("wheel", onWheel, { passive: false });
+        return () => canvas.removeEventListener("wheel", onWheel);
+    }, [isLoaded]);
 
     // lock body scroll when board is mounted
     useEffect(() => {
@@ -156,7 +222,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         <>
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
-                    <CursorLayer />
+                    <CursorLayer zoom={zoom} panOffset={panOffsetState} />
                     <WorkspaceTopbar />
                     <Sidebar
                         currentTool={currentToolRef.current}
@@ -180,6 +246,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 isDrawingRef,
                                 panStartRef,
                                 lastPanOffsetRef,
+                                zoomRef,
                                 currentToolRef,
                                 strokes,
                                 pastedImagesRef,
@@ -204,6 +271,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 panStartRef,
                                 panOffsetRef,
                                 lastPanOffsetRef,
+                                zoomRef,
                                 currentToolRef,
                                 strokes,
                                 onErase: eraseStrokes,
@@ -220,6 +288,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 selectorImageOriginsRef,
                             });
                             handlePresenceUpdate(e);
+                            lastMouseScreenRef.current = getMousePos(e);
                         }}
                         onMouseUp={(e) => {
                             handleMouseUp({
@@ -247,6 +316,9 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                                 selectorImageOriginsRef,
                                 onMoveStrokes: moveStrokes,
                             });
+                            if (e.button === 2) {
+                                setPanOffsetState({ ...panOffsetRef.current });
+                            }
                         }}
                     />
                 </div>

@@ -1,15 +1,23 @@
 import { useOthers } from "@liveblocks/react";
+import { Point } from "@/types/strokeTypes";
 
 // TBD - will update to be different colour per user later
 const COLOR = "#eb7a38";
 
-const CursorLayer = () => {
+interface CursorLayerProps {
+    zoom: number;
+    panOffset: Point;
+}
+
+const CursorLayer = ({ zoom, panOffset }: CursorLayerProps) => {
     const others = useOthers();
 
     return (
         <>
             {others.map(({ connectionId, presence }) => {
                 if (!presence?.cursor) return null;
+                const screenX = presence.cursor.x * zoom + panOffset.x;
+                const screenY = presence.cursor.y * zoom + panOffset.y;
                 return (
                     <svg
                         key={connectionId}
@@ -17,7 +25,7 @@ const CursorLayer = () => {
                             position: "absolute",
                             left: 0,
                             top: 0,
-                            transform: `translate(${presence.cursor.x}px, ${presence.cursor.y}px)`,
+                            transform: `translate(${screenX}px, ${screenY}px)`,
                             transition: "transform 300ms ease-out",
                             pointerEvents: "none",
                             willChange: "transform",

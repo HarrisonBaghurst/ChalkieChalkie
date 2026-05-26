@@ -9,6 +9,7 @@ interface HandleEraserMoveProps {
     e: React.MouseEvent;
     strokes: readonly Stroke[] | null;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     onErase: (StrokeIds: string[]) => void;
 }
 
@@ -16,11 +17,12 @@ export const handleEraserMove = ({
     e,
     strokes,
     lastPanOffsetRef,
+    zoomRef,
     onErase,
 }: HandleEraserMoveProps) => {
     if (!strokes) return;
 
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef });
+    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
 
     const hitStrokeIds = strokes
         .filter((strokes) =>

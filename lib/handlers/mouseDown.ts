@@ -17,6 +17,7 @@ interface HandleMouseDownProps {
     isDrawingRef: RefObject<boolean>;
     panStartRef: RefObject<Point | null>;
     lastPanOffsetRef: RefObject<Point>;
+    zoomRef: RefObject<number>;
     currentToolRef: RefObject<Tools>;
     strokes: readonly Stroke[] | null;
     pastedImagesRef: RefObject<PastedImage[]>;
@@ -41,6 +42,7 @@ export const handleMouseDown = ({
     isDrawingRef,
     panStartRef,
     lastPanOffsetRef,
+    zoomRef,
     currentToolRef,
     strokes,
     pastedImagesRef,
@@ -65,11 +67,13 @@ export const handleMouseDown = ({
             currentColourRef,
             isDrawingRef,
             lastPanOffsetRef,
+            zoomRef,
         });
     } else if (e.buttons === 1 && currentToolRef.current === "pointer") {
         handlePointerDown({
             e,
             lastPanOffsetRef,
+            zoomRef,
             pastedImagesRef,
             selectedImageIdRef,
             activeResizeHandleRef,
@@ -79,6 +83,7 @@ export const handleMouseDown = ({
         handleSelectorDown({
             e,
             lastPanOffsetRef,
+            zoomRef,
             strokes,
             pastedImagesRef,
             selectorRectRef,
@@ -97,6 +102,7 @@ export const handleMouseDown = ({
             highlightColourRef,
             isDrawingRef,
             lastPanOffsetRef,
+            zoomRef,
         });
     } else if (e.buttons === 2) {
         handlePanDown({

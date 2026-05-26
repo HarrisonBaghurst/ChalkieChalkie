@@ -23,13 +23,13 @@
 
 - [ ] Current active and inactive user list
 - [ ] Pen sizes
-- [ ] Highlighter
 - [ ] User name next to cursor
 - [ ] Zooming
 - [ ] run cron job to update liveblocks signed image urls
 
 # Complete tasks
 
+- [x] Highlighter
 - [x] Consistent button styling
 - [x] Invite a user to workspace within the app
 - [x] Edit workspace button
