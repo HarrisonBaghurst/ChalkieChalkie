@@ -7,4 +7,5 @@ export type Stroke = {
     id: string;
     points: Point[];
     colour: string;
+    highlight?: boolean;
 }

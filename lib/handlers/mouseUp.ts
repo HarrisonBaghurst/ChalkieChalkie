@@ -7,6 +7,7 @@ import { handlePenUp } from "./tools/pen";
 import { handlePointerUp } from "./tools/pointer";
 import { handlePanUp } from "./tools/pan";
 import { handleSelectorUp } from "./tools/selector";
+import { handleHighlighterUp } from "./tools/highlighter";
 
 interface HandleMouseUpProps {
     e: React.MouseEvent;
@@ -87,6 +88,17 @@ export const handleMouseUp = ({
             selectorImageOriginsRef,
             onMoveStrokes,
             onMoveImage: onImageMoved,
+        });
+    } else if (
+        e.button === 0 &&
+        currentToolRef.current === "highlighter" &&
+        isDrawingRef.current
+    ) {
+        handleHighlighterUp({
+            e,
+            isDrawingRef,
+            currentStrokeRef,
+            onStrokeFinished,
         });
     } else if (e.button === 2) {
         handlePanUp({

@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { RefObject, useState } from "react";
 import Image from "next/image";
 import ColourSelector from "./ColourSelector";
+import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
 
 interface SidebarButtonProps {
     icon: string;
@@ -10,6 +11,7 @@ interface SidebarButtonProps {
     onSelect?: () => void;
     onAction?: () => void;
     currentColourRef?: RefObject<string>;
+    highlightColourRef?: RefObject<string>;
 }
 
 const SidebarButton = ({
@@ -19,12 +21,16 @@ const SidebarButton = ({
     onSelect,
     onAction,
     currentColourRef,
+    highlightColourRef,
 }: SidebarButtonProps) => {
     const [hovered, setHovered] = useState(false);
     const [showColourSelect, setShowColourSelect] = useState(false);
 
+    const hasColourPicker = isActive && (currentColourRef?.current || highlightColourRef?.current);
+    const activeColour = currentColourRef?.current ?? highlightColourRef?.current;
+
     const handleClick = () => {
-        if (currentColourRef?.current && isActive) {
+        if (hasColourPicker) {
             setShowColourSelect((prev) => !prev);
         }
         onSelect?.();
@@ -47,18 +53,21 @@ const SidebarButton = ({
                 <div
                     className={cn(
                         "absolute rounded-full w-4 h-4 bottom-1/2 translate-y-1/2 -right-12",
-                        currentColourRef?.current && isActive
-                            ? "block"
-                            : "hidden",
+                        hasColourPicker ? "block" : "hidden",
                     )}
-                    style={{
-                        backgroundColor: `${currentColourRef?.current}`,
-                    }}
+                    style={{ backgroundColor: activeColour }}
                 />
                 {showColourSelect && currentColourRef?.current && (
                     <ColourSelector
                         visible={showColourSelect}
                         currentColourRef={currentColourRef}
+                    />
+                )}
+                {showColourSelect && highlightColourRef?.current && (
+                    <ColourSelector
+                        visible={showColourSelect}
+                        currentColourRef={highlightColourRef}
+                        colours={[...HIGHLIGHT_COLOURS]}
                     />
                 )}
             </div>

@@ -14,6 +14,7 @@ type DrawToCanvasParameters = {
     selectedStrokeIds?: string[];
     selectedImageIds?: string[];
     selectorDelta?: Point;
+    highlightCanvasRef?: RefObject<HTMLCanvasElement | null>;
 };
 
 const drawToCanvas = ({
@@ -27,6 +28,7 @@ const drawToCanvas = ({
     selectedStrokeIds,
     selectedImageIds,
     selectorDelta,
+    highlightCanvasRef,
 }: DrawToCanvasParameters) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -56,6 +58,8 @@ const drawToCanvas = ({
     ctx.lineCap = "round";
 
     const allStrokes = currentStroke ? [...strokes, currentStroke] : strokes;
+    const penStrokes = allStrokes.filter((s) => !s.highlight);
+    const highlightStrokes = allStrokes.filter((s) => s.highlight);
 
     // Draw images
     pastedImages?.forEach((image) => {
@@ -111,9 +115,9 @@ const drawToCanvas = ({
         }
     });
 
-    // render all strokes with panning offset
+    // render pen strokes
     ctx.lineWidth = 3;
-    for (const stroke of allStrokes) {
+    for (const stroke of penStrokes) {
         if (stroke.points.length < 2) continue;
         ctx.beginPath();
         ctx.strokeStyle = stroke.colour;
@@ -141,6 +145,55 @@ const drawToCanvas = ({
         ctx.stroke();
     }
 
+    // Highlight strokes — composited at 35% opacity via offscreen canvas so overlaps don't compound
+    if (highlightStrokes.length > 0 && highlightCanvasRef?.current) {
+        const hl = highlightCanvasRef.current;
+
+        if (hl.width !== canvas.width || hl.height !== canvas.height) {
+            hl.width = canvas.width;
+            hl.height = canvas.height;
+        }
+
+        const hlCtx = hl.getContext("2d")!;
+        hlCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        hlCtx.clearRect(0, 0, hl.width, hl.height);
+        hlCtx.lineJoin = "round";
+        hlCtx.lineCap = "round";
+        hlCtx.lineWidth = 48;
+
+        for (const stroke of highlightStrokes) {
+            if (stroke.points.length < 2) continue;
+            hlCtx.beginPath();
+            hlCtx.strokeStyle = stroke.colour;
+            const pts = stroke.points;
+            hlCtx.moveTo(pts[0].x + panOffset.x, pts[0].y + panOffset.y);
+            for (let i = 1; i < pts.length - 2; i++) {
+                const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x;
+                const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y;
+                hlCtx.quadraticCurveTo(
+                    pts[i].x + panOffset.x,
+                    pts[i].y + panOffset.y,
+                    xc,
+                    yc,
+                );
+            }
+            const last = pts.length - 1;
+            hlCtx.quadraticCurveTo(
+                pts[last - 1].x + panOffset.x,
+                pts[last - 1].y + panOffset.y,
+                pts[last].x + panOffset.x,
+                pts[last].y + panOffset.y,
+            );
+            hlCtx.stroke();
+        }
+
+        ctx.save();
+        ctx.resetTransform();
+        ctx.globalAlpha = 0.15;
+        ctx.drawImage(hl, 0, 0);
+        ctx.restore();
+    }
+
     // Selected-stroke highlight pass (selector tool)
     if (selectedStrokeIds && selectedStrokeIds.length > 0) {
         const dx = selectorDelta?.x ?? 0;
@@ -152,7 +205,10 @@ const drawToCanvas = ({
             if (stroke.points.length < 2) continue;
             ctx.beginPath();
             const pts = stroke.points;
-            ctx.moveTo(pts[0].x + panOffset.x + dx, pts[0].y + panOffset.y + dy);
+            ctx.moveTo(
+                pts[0].x + panOffset.x + dx,
+                pts[0].y + panOffset.y + dy,
+            );
             for (let i = 1; i < pts.length - 2; i++) {
                 const xc = (pts[i].x + pts[i + 1].x) / 2 + panOffset.x + dx;
                 const yc = (pts[i].y + pts[i + 1].y) / 2 + panOffset.y + dy;

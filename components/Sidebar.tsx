@@ -1,6 +1,6 @@
 "use client";
 
-import { RefObject, useEffect, useState } from "react";
+import { RefObject } from "react";
 import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import SidebarButton from "./SidebarButton";
@@ -8,12 +8,14 @@ import SidebarButton from "./SidebarButton";
 type SidebarProps = {
     currentTool: Tools;
     currentColourRef: RefObject<string>;
+    highlightColourRef: RefObject<string>;
     onToolChanged: (tool: Tools) => void;
 };
 
 const Sidebar = ({
     currentTool,
     currentColourRef,
+    highlightColourRef,
     onToolChanged,
 }: SidebarProps) => {
     const { undo, redo } = useHistory();
@@ -34,6 +36,13 @@ const Sidebar = ({
                         currentColourRef={currentColourRef}
                     />
                     <SidebarButton
+                        icon={"/icons/highlighter.svg"}
+                        label="highlighter icon"
+                        isActive={currentTool === "highlighter"}
+                        onSelect={() => handleToolChange("highlighter")}
+                        highlightColourRef={highlightColourRef}
+                    />
+                    <SidebarButton
                         icon={"/icons/eraser.svg"}
                         label="eraser icon"
                         isActive={currentTool === "eraser"}
@@ -41,7 +50,7 @@ const Sidebar = ({
                     />
                     <SidebarButton
                         icon={"/icons/pointer.svg"}
-                        label="eraser icon"
+                        label="pointer icon"
                         isActive={currentTool === "pointer"}
                         onSelect={() => handleToolChange("pointer")}
                     />

@@ -8,6 +8,7 @@ import { handlePointerMove } from "./tools/pointer";
 import { handleEraserMove } from "./tools/eraser";
 import { handlePanMove } from "./tools/pan";
 import { handleSelectorMove } from "./tools/selector";
+import { handleHighlighterMove } from "./tools/highlighter";
 
 interface HandleMouseMoveProps {
     e: React.MouseEvent;
@@ -92,6 +93,17 @@ export const handleMouseMove = (() => {
                 selectedImageIdRef,
                 activeResizeHandleRef,
                 imageDragOffsetRef,
+            });
+        } else if (
+            e.buttons === 1 &&
+            currentToolRef.current === "highlighter" &&
+            isDrawingRef.current &&
+            currentStrokeRef.current
+        ) {
+            handleHighlighterMove({
+                e,
+                currentStrokeRef,
+                lastPanOffsetRef,
             });
         } else if (e.buttons === 1 && currentToolRef.current === "selector") {
             handleSelectorMove({

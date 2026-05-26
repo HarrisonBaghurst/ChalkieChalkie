@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Point, Stroke } from "@/types/strokeTypes";
+import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
 import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
 import { toolCursorMap, Tools } from "@/types/toolTypes";
@@ -56,6 +57,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const currentStrokeRef = useRef<Stroke | null>(null);
     const isDrawingRef = useRef(false);
     const currentColourRef = useRef("#eeeeee");
+    const highlightColourRef = useRef<string>(HIGHLIGHT_COLOURS[0]);
 
     // selector refs
     const selectorRectRef = useRef<Rect | null>(null);
@@ -159,6 +161,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                     <Sidebar
                         currentTool={currentToolRef.current}
                         currentColourRef={currentColourRef}
+                        highlightColourRef={highlightColourRef}
                         onToolChanged={onToolChanged}
                     />
                     <canvas
@@ -172,6 +175,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                             handleMouseDown({
                                 e,
                                 currentColourRef,
+                                highlightColourRef,
                                 currentStrokeRef,
                                 isDrawingRef,
                                 panStartRef,

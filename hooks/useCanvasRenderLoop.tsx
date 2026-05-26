@@ -2,7 +2,7 @@ import drawToCanvas from "@/lib/canvasDrawing";
 import { PastedImage } from "@/types/imageTypes";
 import { Rect } from "@/lib/genometry";
 import { Point, Stroke } from "@/types/strokeTypes";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
 
 interface useCanvasRenderLoopProps {
     canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -30,6 +30,12 @@ export const useCanvasRenderLoop = ({
     selectedImageIdsRef,
     selectorDeltaRef,
 }: useCanvasRenderLoopProps) => {
+    const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    useEffect(() => {
+        highlightCanvasRef.current = document.createElement("canvas");
+    }, []);
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -46,6 +52,7 @@ export const useCanvasRenderLoop = ({
                 selectedStrokeIds: selectedStrokeIdsRef.current,
                 selectedImageIds: selectedImageIdsRef.current,
                 selectorDelta: selectorDeltaRef.current,
+                highlightCanvasRef,
             });
 
             if (canvasRef.current) {

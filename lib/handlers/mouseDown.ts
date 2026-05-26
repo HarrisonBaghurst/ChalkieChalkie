@@ -7,10 +7,12 @@ import { handlePenDown } from "./tools/pen";
 import { handlePointerDown } from "./tools/pointer";
 import { handlePanDown } from "./tools/pan";
 import { handleSelectorDown } from "./tools/selector";
+import { handleHighlighterDown } from "./tools/highlighter";
 
 interface HandleMouseDownProps {
     e: React.MouseEvent;
     currentColourRef: RefObject<string>;
+    highlightColourRef: RefObject<string>;
     currentStrokeRef: RefObject<Stroke | null>;
     isDrawingRef: RefObject<boolean>;
     panStartRef: RefObject<Point | null>;
@@ -34,6 +36,7 @@ interface HandleMouseDownProps {
 export const handleMouseDown = ({
     e,
     currentColourRef,
+    highlightColourRef,
     currentStrokeRef,
     isDrawingRef,
     panStartRef,
@@ -86,6 +89,14 @@ export const handleMouseDown = ({
             selectorDragStartRef,
             selectorDeltaRef,
             selectorImageOriginsRef,
+        });
+    } else if (e.buttons === 1 && currentToolRef.current === "highlighter") {
+        handleHighlighterDown({
+            e,
+            currentStrokeRef,
+            highlightColourRef,
+            isDrawingRef,
+            lastPanOffsetRef,
         });
     } else if (e.buttons === 2) {
         handlePanDown({
