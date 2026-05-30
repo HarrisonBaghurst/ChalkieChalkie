@@ -5,9 +5,12 @@ const Actions = () => {
     return (
         <div className="flex gap-8">
             {actions.map((action, i) => (
-                <div key={i} className="bg-white/10 py-3 px-6 rounded-md">
+                <button
+                    key={i}
+                    className="bg-white/10 py-3 px-6 rounded-md cursor-pointer"
+                >
                     {action}
-                </div>
+                </button>
             ))}
         </div>
     );
