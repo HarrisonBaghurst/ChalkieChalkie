@@ -7,7 +7,7 @@ const liveblocks = new Liveblocks({
     secret: process.env.LIVEBLOCKS_SECRET_KEY!,
 });
 
-const INACTIVITY_HOURS = 24;
+const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
 
 /**
  * Delete all workspaces that are more than INACTIVITY_HOURS old from Supabase
