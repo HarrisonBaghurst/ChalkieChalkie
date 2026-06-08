@@ -3,10 +3,22 @@
 import React from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 
 const Sidebar = () => {
     const { user } = useUser();
-    const buttons = ["Workspaces", "Messages"];
+    const buttons = [
+        {
+            text: "Workspaces",
+            icon: "icons/notebook-svgrepo-com.svg",
+            status: true,
+        },
+        {
+            text: "Messages",
+            icon: "icons/messages-1-svgrepo-com.svg",
+            status: false,
+        },
+    ];
 
     return (
         <div className="bg-card-background w-75 h-dvh p-4 flex flex-col gap-6 fixed">
@@ -31,13 +43,20 @@ const Sidebar = () => {
             </div>
             <div className="w-full h-px bg-foreground-third" />
             <div className="flex flex-col gap-4">
-                {buttons.map((text, i) => (
+                {buttons.map((button, i) => (
                     <div
                         key={i}
-                        className="text-foreground-second flex gap-3 items-center"
+                        className={cn(
+                            "text-foreground-second flex gap-4 items-center p-2 rounded-sm",
+                            button.status
+                                ? "bg-background-second cursor-pointer font-inter-bold"
+                                : "opacity-50 cursor-not-allowed",
+                        )}
                     >
-                        <div className="w-6 h-6 rounded-full bg-foreground-third" />
-                        <p className="text-sm">{text}</p>
+                        <div className="relative w-6 h-6">
+                            <Image src={button.icon} alt={button.text} fill />
+                        </div>
+                        <p className="text-sm">{button.text}</p>
                     </div>
                 ))}
             </div>
