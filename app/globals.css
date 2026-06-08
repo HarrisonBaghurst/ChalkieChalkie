@@ -16,7 +16,7 @@
 
 :root {
     --background: #121212;
-    --background-second: #5b5b5b;
+    --background-second: #494949;
 
     --foreground: hsl(0, 0%, 92%);
     --foreground-second: hsl(0, 1%, 84%);
@@ -211,14 +211,19 @@
     .scroll-target {
         scroll-margin-top: 8dvw;
     }
-    .dashboard-hero {
-        background: linear-gradient(
-            150deg,
-            rgba(219, 193, 90, 1) 0%,
-            rgba(245, 139, 47, 1) 35%,
-            rgba(227, 104, 104, 1) 62%,
-            rgba(230, 110, 170, 1) 99%
-        );
+    .gradient-border {
+        border: 2px solid transparent;
+        background:
+            linear-gradient(var(--card-background), var(--card-background))
+                padding-box,
+            linear-gradient(
+                    150deg,
+                    rgba(219, 193, 90, 0.4) 0%,
+                    rgba(245, 139, 47, 0.4) 35%,
+                    rgba(227, 104, 104, 0.4) 62%,
+                    rgba(230, 110, 170, 0.4) 99%
+                )
+                border-box;
     }
 }
 

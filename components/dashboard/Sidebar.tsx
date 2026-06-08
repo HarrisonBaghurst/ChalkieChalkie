@@ -49,8 +49,8 @@ const Sidebar = () => {
                         className={cn(
                             "text-foreground-second flex gap-4 items-center p-2 rounded-sm",
                             button.status
-                                ? "bg-background-second cursor-pointer font-inter-bold"
-                                : "opacity-50 cursor-not-allowed",
+                                ? "bg-background-second/25 cursor-pointer font-inter-bold"
+                                : "opacity-25 cursor-not-allowed",
                         )}
                     >
                         <div className="relative w-6 h-6">
