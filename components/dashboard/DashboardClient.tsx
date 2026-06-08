@@ -7,30 +7,13 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import {
     applyDashboardFilters,
     DASHBOARD_GRACE_MS,
-    SortDirection,
 } from "@/lib/dashboardFilters";
 import { isTutor, viewerIsTutorAcrossAny } from "@/lib/roleStub";
-import Filters from "./Filters";
-import HeroBar from "./HeroBar";
 import Sidebar from "./Sidebar";
 import Next from "./Next";
 import Actions from "./Actions";
 import Upcoming from "./Upcoming";
 import Previous from "./Previous";
-
-const pickCounterparty = (
-    workspace: Workspace,
-    usersMap: Record<string, userInfo>,
-    viewerIsTutor: boolean,
-): userInfo | null => {
-    if (viewerIsTutor) {
-        const firstTuteeId = workspace.collaboratorIds?.find(
-            (id) => !isTutor(id, workspace),
-        );
-        return firstTuteeId ? (usersMap[firstTuteeId] ?? null) : null;
-    }
-    return usersMap[workspace.host] ?? null;
-};
 
 const DashboardClient = () => {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -40,11 +23,7 @@ const DashboardClient = () => {
 
     const [selectedTuteeIds, setSelectedTuteeIds] = useState<string[]>([]);
     const [upcomingSearch, setUpcomingSearch] = useState("");
-    const [upcomingSortDir, setUpcomingSortDir] =
-        useState<SortDirection>("asc");
     const [previousSearch, setPreviousSearch] = useState("");
-    const [previousSortDir, setPreviousSortDir] =
-        useState<SortDirection>("desc");
 
     const now = useMemo(() => new Date(), []);
 
@@ -73,6 +52,7 @@ const DashboardClient = () => {
                     start_time: string;
                     last_activity_at?: string;
                     lastActivity?: string;
+                    feedback?: string | null;
                 };
 
                 const raw: RawRoom[] = await res.json();
@@ -84,6 +64,7 @@ const DashboardClient = () => {
                     host: ws.host_id,
                     startTime: ws.start_time,
                     lastActivity: ws.last_activity_at ?? ws.lastActivity ?? "",
+                    feedback: ws.feedback ?? undefined,
                 }));
                 setWorkspaces(mapped);
 
@@ -132,15 +113,25 @@ const DashboardClient = () => {
         () =>
             workspaces
                 .filter((w) => {
-                    if (!w.startTime) return false;
+                    if (!w.startTime) return true;
                     const t = new Date(w.startTime).getTime();
-                    return !Number.isNaN(t) && t >= cutoff;
+                    if (Number.isNaN(t)) return true;
+                    return t >= cutoff;
                 })
-                .sort(
-                    (a, b) =>
-                        new Date(a.startTime).getTime() -
-                        new Date(b.startTime).getTime(),
-                ),
+                .sort((a, b) => {
+                    const aT = a.startTime
+                        ? new Date(a.startTime).getTime()
+                        : NaN;
+                    const bT = b.startTime
+                        ? new Date(b.startTime).getTime()
+                        : NaN;
+                    const aValid = !Number.isNaN(aT);
+                    const bValid = !Number.isNaN(bT);
+                    if (aValid && !bValid) return -1;
+                    if (!aValid && bValid) return 1;
+                    if (!aValid && !bValid) return 0;
+                    return aT - bT;
+                }),
         [workspaces, cutoff],
     );
 
@@ -182,9 +173,9 @@ const DashboardClient = () => {
                 upcomingAll,
                 upcomingSearch,
                 selectedTuteeIds,
-                upcomingSortDir,
+                "asc",
             ),
-        [upcomingAll, upcomingSearch, selectedTuteeIds, upcomingSortDir],
+        [upcomingAll, upcomingSearch, selectedTuteeIds],
     );
 
     const previousFiltered = useMemo(
@@ -193,31 +184,41 @@ const DashboardClient = () => {
                 previousAll,
                 previousSearch,
                 selectedTuteeIds,
-                previousSortDir,
+                "desc",
             ),
-        [previousAll, previousSearch, selectedTuteeIds, previousSortDir],
+        [previousAll, previousSearch, selectedTuteeIds],
     );
 
     const nextWorkspace = upcomingAll[0] ?? null;
-    const nextCounterparty = nextWorkspace
-        ? pickCounterparty(nextWorkspace, usersMap, viewerIsTutor)
-        : null;
-
-    const toggleUpcomingSort = () =>
-        setUpcomingSortDir((p) => (p === "asc" ? "desc" : "asc"));
-    const togglePreviousSort = () =>
-        setPreviousSortDir((p) => (p === "asc" ? "desc" : "asc"));
 
     return (
         <div className="flex">
             <Sidebar />
             <div className="ml-75 w-full h-full p-16 flex flex-col gap-6">
-                <Next />
+                <Next workspace={nextWorkspace} />
                 <Actions />
                 <div className="h-px w-full bg-foreground-third" />
                 <div className="flex gap-6 w-full">
-                    <Upcoming />
-                    <Previous />
+                    <Upcoming
+                        workspaces={upcomingFiltered}
+                        usersMap={usersMap}
+                        viewerIsTutor={viewerIsTutor}
+                        tutees={tutees}
+                        selectedTuteeIds={selectedTuteeIds}
+                        onChangeSelectedTuteeIds={setSelectedTuteeIds}
+                        search={upcomingSearch}
+                        onChangeSearch={setUpcomingSearch}
+                    />
+                    <Previous
+                        workspaces={previousFiltered}
+                        usersMap={usersMap}
+                        viewerIsTutor={viewerIsTutor}
+                        tutees={tutees}
+                        selectedTuteeIds={selectedTuteeIds}
+                        onChangeSelectedTuteeIds={setSelectedTuteeIds}
+                        search={previousSearch}
+                        onChangeSearch={setPreviousSearch}
+                    />
                 </div>
             </div>
         </div>

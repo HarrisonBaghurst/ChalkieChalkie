@@ -21,4 +21,5 @@ export type Workspace = {
     title: string;
     description: string;
     startTime: string;
+    feedback?: string;
 };

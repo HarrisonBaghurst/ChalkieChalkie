@@ -7,7 +7,7 @@ const Sidebar = () => {
         <div className="bg-card-background w-75 h-dvh p-4 flex flex-col gap-6 fixed">
             <div className="flex gap-4 items-center">
                 <div className="w-10 h-10 rounded-full bg-foreground" />
-                <div className="font-inter-bold flex flex-col">
+                <div className="font-inter-bold flex flex-col leading-tight">
                     <p>Harrison's</p>
                     <p>Chalkie Chalkie</p>
                 </div>

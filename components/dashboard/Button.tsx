@@ -7,7 +7,10 @@ type ButtonProps = {
 
 const Button = ({ text, onClick }: ButtonProps) => {
     return (
-        <button className="text-background bg-foreground rounded-sm py-2 px-5 text-xs cursor-pointer">
+        <button
+            onClick={onClick}
+            className="text-background bg-foreground rounded-sm py-2 px-5 text-xs cursor-pointer"
+        >
             {text}
         </button>
     );

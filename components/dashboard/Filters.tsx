@@ -44,10 +44,11 @@ const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
     return (
         <div ref={ref} className="relative">
             <button
-                disabled={disabled}
+                disabled={!!disabled}
+                suppressHydrationWarning
                 onClick={() => setOpen((p) => !p)}
                 className={cn(
-                    "border-2 border-white/10 py-3 px-4 rounded-md w-75 flex items-center justify-between cursor-pointer",
+                    "border border-foreground-third py-2 px-3 rounded-md w-full flex items-center justify-between cursor-pointer text-sm",
                     disabled && "cursor-not-allowed text-foreground-third",
                 )}
             >

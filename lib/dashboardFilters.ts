@@ -26,8 +26,13 @@ export const applyDashboardFilters = (
     }
 
     result.sort((a, b) => {
-        const aTime = a.startTime ? new Date(a.startTime).getTime() : 0;
-        const bTime = b.startTime ? new Date(b.startTime).getTime() : 0;
+        const aTime = a.startTime ? new Date(a.startTime).getTime() : NaN;
+        const bTime = b.startTime ? new Date(b.startTime).getTime() : NaN;
+        const aValid = !Number.isNaN(aTime);
+        const bValid = !Number.isNaN(bTime);
+        if (aValid && !bValid) return -1;
+        if (!aValid && bValid) return 1;
+        if (!aValid && !bValid) return 0;
         const diff = aTime - bTime;
         return sortDir === "asc" ? diff : -diff;
     });
