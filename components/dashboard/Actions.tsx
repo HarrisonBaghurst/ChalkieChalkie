@@ -1,16 +1,12 @@
 import React from "react";
+import Button from "./Button";
 
 const Actions = () => {
-    const actions = ["Schedule Session", "Add New Tutee"];
+    const buttons = ["Create Workspace", "Add New Tutee"];
     return (
-        <div className="flex gap-8">
-            {actions.map((action, i) => (
-                <button
-                    key={i}
-                    className="bg-white/10 py-3 px-6 rounded-md cursor-pointer"
-                >
-                    {action}
-                </button>
+        <div className="flex gap-6">
+            {buttons.map((text, i) => (
+                <Button key={i} text={text} onClick={() => {}} />
             ))}
         </div>
     );

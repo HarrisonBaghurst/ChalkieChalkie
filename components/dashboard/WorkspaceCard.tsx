@@ -1,75 +1,44 @@
-import Image from "next/image";
 import React from "react";
-import { Workspace } from "@/types/userTypes";
+import Button from "./Button";
 
-interface WorkspaceCardProps {
-    workspace: Workspace;
-    counterpartyImage: string | null;
-    counterpartyName: string | null;
-}
-
-const WEEKDAYS = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-];
-
-const formatCardDate = (iso: string | null) => {
-    if (!iso) return { primary: "Not scheduled", secondary: "" };
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime()))
-        return { primary: "Not scheduled", secondary: "" };
-    const weekday = WEEKDAYS[d.getDay()];
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mo = String(d.getMonth() + 1).padStart(2, "0");
-    const yy = String(d.getFullYear()).slice(-2);
-    return { primary: `${weekday} • ${hh}:${mm}`, secondary: `${dd}/${mo}/${yy}` };
-};
-
-const WorkspaceCard = ({
-    workspace,
-    counterpartyImage,
-    counterpartyName,
-}: WorkspaceCardProps) => {
-    const { primary, secondary } = formatCardDate(workspace.startTime);
+const WorkspaceCard = ({ description }: { description: Boolean }) => {
     return (
-        <div className="flex justify-between items-center">
-            <div className="flex gap-4 items-center">
-                <div className="relative w-12 h-12 bg-white/10 rounded-full overflow-hidden">
-                    {counterpartyImage && (
-                        <Image
-                            src={counterpartyImage}
-                            alt={counterpartyName ?? "Member"}
-                            fill
-                            sizes="48px"
-                            className="object-cover"
-                        />
-                    )}
-                </div>
-                <div>
-                    <div>{workspace.title}</div>
-                    <div className="text-sm text-foreground-third">
-                        {workspace.description || "No description"}
+        <div className="flex flex-col gap-4">
+            <div className="h-px w-full bg-foreground-third" />
+            <div className="flex justify-between">
+                <div className="flex gap-4 items-center">
+                    <div className="w-10 h-10 bg-foreground-third rounded-full" />
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm font-inter-bold">
+                            Harrison Baghurst 55
+                        </p>
+                        <p className="text-xs text-foreground-third max-w-65">
+                            This is a thing that I would like to say because
+                            there will be a description here
+                        </p>
                     </div>
                 </div>
-            </div>
-            <div className="flex gap-8 justify-end items-center">
-                <div className="flex flex-col">
-                    <div>{primary}</div>
-                    <div className="text-sm text-foreground-third">
-                        {secondary}
+                <div className="flex gap-4 items-center">
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm font-inter-bold">
+                            Thursday 20:30
+                        </p>
+                        <p className="text-xs text-foreground-third text-right">
+                            19/12/26
+                        </p>
                     </div>
+                    <Button text="Join" onClick={() => {}} />
+                    <Button text="Edit" onClick={() => {}} />
                 </div>
-                <button className="bg-white/10 rounded-md py-2 px-4 cursor-pointer">
-                    Edit
-                </button>
             </div>
+            {description == true && (
+                <div className="text-xs text-foreground-third">
+                    Name here did a good join in today's lesson with good effort
+                    but struggled with some topics. We managed to cover a good
+                    number of topics and will continue with pythagoras next
+                    lesson.
+                </div>
+            )}
         </div>
     );
 };

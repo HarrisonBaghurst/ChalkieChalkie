@@ -10,11 +10,13 @@ import {
     SortDirection,
 } from "@/lib/dashboardFilters";
 import { isTutor, viewerIsTutorAcrossAny } from "@/lib/roleStub";
-import Actions from "./Actions";
 import Filters from "./Filters";
+import HeroBar from "./HeroBar";
+import Sidebar from "./Sidebar";
 import Next from "./Next";
-import Previous from "./Previous";
+import Actions from "./Actions";
 import Upcoming from "./Upcoming";
+import Previous from "./Previous";
 
 const pickCounterparty = (
     workspace: Workspace,
@@ -38,9 +40,11 @@ const DashboardClient = () => {
 
     const [selectedTuteeIds, setSelectedTuteeIds] = useState<string[]>([]);
     const [upcomingSearch, setUpcomingSearch] = useState("");
-    const [upcomingSortDir, setUpcomingSortDir] = useState<SortDirection>("asc");
+    const [upcomingSortDir, setUpcomingSortDir] =
+        useState<SortDirection>("asc");
     const [previousSearch, setPreviousSearch] = useState("");
-    const [previousSortDir, setPreviousSortDir] = useState<SortDirection>("desc");
+    const [previousSortDir, setPreviousSortDir] =
+        useState<SortDirection>("desc");
 
     const now = useMemo(() => new Date(), []);
 
@@ -151,7 +155,8 @@ const DashboardClient = () => {
     );
 
     const viewerIsTutor = useMemo(
-        () => viewerIsTutorAcrossAny(user?.id, [...upcomingAll, ...previousAll]),
+        () =>
+            viewerIsTutorAcrossAny(user?.id, [...upcomingAll, ...previousAll]),
         [user?.id, upcomingAll, previousAll],
     );
 
@@ -204,46 +209,15 @@ const DashboardClient = () => {
         setPreviousSortDir((p) => (p === "asc" ? "desc" : "asc"));
 
     return (
-        <div className="p-16 flex flex-col gap-16">
-            <Next
-                workspace={nextWorkspace}
-                counterpartyImage={nextCounterparty?.imageUrl ?? null}
-                counterpartyName={
-                    nextCounterparty
-                        ? `${nextCounterparty.firstName} ${nextCounterparty.lastName}`
-                        : null
-                }
-            />
-            <div className="flex flex-col gap-8">
-                {viewerIsTutor && (
-                    <div className="flex items-center justify-between">
-                        <Actions />
-                        <Filters
-                            tutees={tutees}
-                            selectedIds={selectedTuteeIds}
-                            onChange={setSelectedTuteeIds}
-                        />
-                    </div>
-                )}
-                <div className="flex gap-8">
-                    <Upcoming
-                        workspaces={upcomingFiltered}
-                        usersMap={usersMap}
-                        viewerIsTutor={viewerIsTutor}
-                        search={upcomingSearch}
-                        onSearchChange={setUpcomingSearch}
-                        sortDir={upcomingSortDir}
-                        onToggleSort={toggleUpcomingSort}
-                    />
-                    <Previous
-                        workspaces={previousFiltered}
-                        usersMap={usersMap}
-                        viewerIsTutor={viewerIsTutor}
-                        search={previousSearch}
-                        onSearchChange={setPreviousSearch}
-                        sortDir={previousSortDir}
-                        onToggleSort={togglePreviousSort}
-                    />
+        <div className="flex">
+            <Sidebar />
+            <div className="ml-75 w-full h-full p-16 flex flex-col gap-6">
+                <Next />
+                <Actions />
+                <div className="h-px w-full bg-foreground-third" />
+                <div className="flex gap-6 w-full">
+                    <Upcoming />
+                    <Previous />
                 </div>
             </div>
         </div>
