@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
+import WorkspaceModal from "./WorkspaceModal";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { formatSessionTime } from "@/lib/textUtils";
 
@@ -11,14 +12,33 @@ type WorkspaceCardProps = {
     workspace: Workspace;
     tutee: userInfo | null;
     showFeedback: boolean;
+    usersMap: Record<string, userInfo>;
+    friends: userInfo[];
+    onUpdated: (workspace: Workspace, collaborators: userInfo[]) => void;
 };
 
 const WorkspaceCard = ({
     workspace,
     tutee,
     showFeedback,
+    usersMap,
+    friends,
+    onUpdated,
 }: WorkspaceCardProps) => {
     const router = useRouter();
+    const [editOpen, setEditOpen] = useState(false);
+
+    const collaborators = useMemo<userInfo[]>(() => {
+        const ordered = [
+            workspace.host,
+            ...(workspace.collaboratorIds ?? []).filter(
+                (id) => id !== workspace.host,
+            ),
+        ];
+        return ordered
+            .map((id) => usersMap[id])
+            .filter((u): u is userInfo => !!u);
+    }, [workspace.host, workspace.collaboratorIds, usersMap]);
 
     return (
         <div className="flex flex-col gap-4">
@@ -69,7 +89,7 @@ const WorkspaceCard = ({
                         text="Join"
                         onClick={() => router.push(`/board/${workspace.id}`)}
                     />
-                    <Button text="Edit" onClick={() => {}} />
+                    <Button text="Edit" onClick={() => setEditOpen(true)} />
                 </div>
             </div>
             {showFeedback && workspace.feedback && (
@@ -77,6 +97,13 @@ const WorkspaceCard = ({
                     {workspace.feedback}
                 </div>
             )}
+            <WorkspaceModal
+                open={editOpen}
+                mode={{ kind: "edit", workspace, collaborators }}
+                friends={friends}
+                onClose={() => setEditOpen(false)}
+                onSubmitted={onUpdated}
+            />
         </div>
     );
 };

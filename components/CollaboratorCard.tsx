@@ -18,12 +18,12 @@ const CollaboratorCard = ({
     return (
         <div className="flex justify-between items-center">
             <div className="flex gap-3 items-center p-2 rounded-full border border-transparent">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                <div className="relative w-8 h-8 rounded-full overflow-hidden">
                     <Image src={image} alt={`${firstName} icon`} fill />
                 </div>
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col">
                     <div className="text-base text-foreground">{`${firstName} ${lastName}`}</div>
-                    <div className="text-sm text-foreground-third">
+                    <div className="text-xs text-foreground-third">
                         {email ? email : "Unknown email"}
                     </div>
                 </div>

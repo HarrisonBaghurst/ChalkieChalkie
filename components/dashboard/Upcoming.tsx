@@ -15,6 +15,11 @@ type UpcomingProps = {
     onChangeSelectedTuteeIds: (ids: string[]) => void;
     search: string;
     onChangeSearch: (s: string) => void;
+    friends: userInfo[];
+    onWorkspaceUpdated: (
+        workspace: Workspace,
+        collaborators: userInfo[],
+    ) => void;
 };
 
 const Upcoming = ({
@@ -26,6 +31,8 @@ const Upcoming = ({
     onChangeSelectedTuteeIds,
     search,
     onChangeSearch,
+    friends,
+    onWorkspaceUpdated,
 }: UpcomingProps) => {
     return (
         <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
@@ -58,6 +65,9 @@ const Upcoming = ({
                             workspace={w}
                             tutee={pickCounterparty(w, usersMap, viewerIsTutor)}
                             showFeedback={false}
+                            usersMap={usersMap}
+                            friends={friends}
+                            onUpdated={onWorkspaceUpdated}
                         />
                     ))
                 )}

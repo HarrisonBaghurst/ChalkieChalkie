@@ -46,7 +46,8 @@ export async function PATCH(req: Request) {
 
     const body = await req.json();
 
-    const { roomId, title, description, collaborators, startTime } = body;
+    const { roomId, title, description, collaborators, startTime, feedback } =
+        body;
 
     if (!roomId) {
         return new Response("roomId is required", { status: 400 });
@@ -74,6 +75,7 @@ export async function PATCH(req: Request) {
             description,
             user_ids: userIds,
             start_time: startTime,
+            feedback,
         })
         .eq("id", roomId)
         .select()
@@ -90,15 +92,25 @@ export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return new Response("Unauthorised", { status: 401 });
 
-    const { roomId } = await req.json();
+    const body = await req.json();
+    const { roomId, title, description, collaborators, startTime, feedback } =
+        body;
     if (!roomId) return new Response("roomId is required", { status: 400 });
+
+    const userIds: string[] = Array.from(
+        new Set([userId, ...(collaborators || [])]),
+    );
 
     const { data, error } = await supabaseAdmin
         .from("Room")
         .insert({
             id: roomId,
             host_id: userId,
-            user_ids: [userId],
+            user_ids: userIds,
+            title: title ?? null,
+            description: description ?? null,
+            start_time: startTime ?? null,
+            feedback: feedback ?? null,
             last_activity_at: new Date(),
         })
         .select()

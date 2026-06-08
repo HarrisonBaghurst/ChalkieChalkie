@@ -20,6 +20,7 @@ const DashboardClient = () => {
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [usersInfo, setUsersInfo] = useState<userInfo[]>([]);
+    const [friends, setFriends] = useState<userInfo[]>([]);
 
     const [selectedTuteeIds, setSelectedTuteeIds] = useState<string[]>([]);
     const [upcomingSearch, setUpcomingSearch] = useState("");
@@ -29,6 +30,23 @@ const DashboardClient = () => {
 
     useEffect(() => {
         if (!isLoaded || !isSignedIn) return;
+
+        const fetchFriends = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
+                );
+                if (!res.ok) {
+                    console.error("Failed to fetch friends");
+                    return;
+                }
+                const data = await res.json();
+                setFriends(data.friends ?? []);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchFriends();
 
         const fetchAll = async () => {
             try {
@@ -191,12 +209,32 @@ const DashboardClient = () => {
 
     const nextWorkspace = upcomingAll[0] ?? null;
 
+    const mergeUsers = (incoming: userInfo[]) => {
+        setUsersInfo((prev) => {
+            const byId = new Map(prev.map((u) => [u.id, u]));
+            incoming.forEach((u) => byId.set(u.id, u));
+            return Array.from(byId.values());
+        });
+    };
+
+    const handleCreated = (ws: Workspace, collaborators: userInfo[]) => {
+        setWorkspaces((prev) => [...prev, ws]);
+        mergeUsers(collaborators);
+    };
+
+    const handleUpdated = (ws: Workspace, collaborators: userInfo[]) => {
+        setWorkspaces((prev) =>
+            prev.map((w) => (w.id === ws.id ? ws : w)),
+        );
+        mergeUsers(collaborators);
+    };
+
     return (
         <div className="flex">
             <Sidebar />
             <div className="ml-75 w-full h-full p-16 flex flex-col gap-6">
                 <Next workspace={nextWorkspace} />
-                <Actions />
+                <Actions friends={friends} onCreated={handleCreated} />
                 <div className="h-px w-full bg-foreground-third" />
                 <div className="flex gap-6 w-full">
                     <Upcoming
@@ -208,6 +246,8 @@ const DashboardClient = () => {
                         onChangeSelectedTuteeIds={setSelectedTuteeIds}
                         search={upcomingSearch}
                         onChangeSearch={setUpcomingSearch}
+                        friends={friends}
+                        onWorkspaceUpdated={handleUpdated}
                     />
                     <Previous
                         workspaces={previousFiltered}
@@ -218,6 +258,8 @@ const DashboardClient = () => {
                         onChangeSelectedTuteeIds={setSelectedTuteeIds}
                         search={previousSearch}
                         onChangeSearch={setPreviousSearch}
+                        friends={friends}
+                        onWorkspaceUpdated={handleUpdated}
                     />
                 </div>
             </div>

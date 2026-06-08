@@ -1,13 +1,32 @@
-import React from "react";
-import Button from "./Button";
+"use client";
 
-const Actions = () => {
-    const buttons = ["Create Workspace", "Add New Tutee"];
+import React, { useState } from "react";
+import Button from "./Button";
+import WorkspaceModal from "./WorkspaceModal";
+import { userInfo, Workspace } from "@/types/userTypes";
+
+type ActionsProps = {
+    friends: userInfo[];
+    onCreated: (workspace: Workspace, collaborators: userInfo[]) => void;
+};
+
+const Actions = ({ friends, onCreated }: ActionsProps) => {
+    const [createOpen, setCreateOpen] = useState(false);
+
     return (
         <div className="flex gap-6">
-            {buttons.map((text, i) => (
-                <Button key={i} text={text} onClick={() => {}} />
-            ))}
+            <Button
+                text="Create Workspace"
+                onClick={() => setCreateOpen(true)}
+            />
+            <Button text="Add New Tutee" onClick={() => {}} />
+            <WorkspaceModal
+                open={createOpen}
+                mode={{ kind: "create" }}
+                friends={friends}
+                onClose={() => setCreateOpen(false)}
+                onSubmitted={onCreated}
+            />
         </div>
     );
 };
