@@ -1,3 +1,8 @@
+// TODO: "friend" semantics are unimplemented. This route currently returns
+// the first 50 users in the Clerk tenant for any authenticated tutor, which
+// exposes name + email of arbitrary users. Replace with a real friend relation
+// (mutual workspace membership, invite graph, or explicit table) before
+// scaling beyond the initial user base. Known and deferred.
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { requireTutor } from "@/lib/serverRole";
 import { auth, clerkClient } from "@clerk/nextjs/server";
@@ -8,7 +13,7 @@ export type FriendMetadata = {
     firstName: string | null;
     lastName: string | null;
     imageUrl: string;
-    email: string;
+    email: string | null;
 };
 
 /**
@@ -52,15 +57,16 @@ export async function GET(req: Request) {
                     firstName: user.firstName,
                     lastName: user.lastName,
                     imageUrl: user.imageUrl,
-                    email: user.emailAddresses[0].emailAddress,
+                    email: user.emailAddresses[0]?.emailAddress ?? null,
                 }),
             );
 
         return NextResponse.json({ friends });
     } catch (err) {
-        console.error(err);
+        // TODO: centralise via errorResponse helper
+        console.error("[users/friends] Unexpected error:", err);
         return NextResponse.json(
-            { error: "internal server error" },
+            { error: "Internal server error" },
             { status: 500 },
         );
     }

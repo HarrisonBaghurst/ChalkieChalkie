@@ -16,15 +16,15 @@ const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
  * @route /api/cron/remove-unused-rooms
  */
 export async function GET(request: Request) {
-    // defense-in-depth rate limit before any work
-    const blocked = await enforceRateLimit(request, "cron");
-    if (blocked) return blocked;
-
     // verify caller is Vercel cron (auto-injects this header when CRON_SECRET is set)
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response("Unauthorised", { status: 401 });
     }
+
+    // defense-in-depth rate limit after auth so unauth traffic doesn't hit Upstash
+    const blocked = await enforceRateLimit(request, "cron");
+    if (blocked) return blocked;
 
     const cutoff = new Date(
         Date.now() - INACTIVITY_HOURS * 60 * 60 * 1000,
@@ -50,6 +50,10 @@ export async function GET(request: Request) {
     let deletedCount = 0;
     for (const room of rooms) {
         try {
+            // delete liveblocks room first; if this fails, the supabase row
+            // stays so the next cron run retries cleanly
+            await liveblocks.deleteRoom(room.id);
+
             // delete images in supabase storage
             const { data: files, error: listError } =
                 await supabaseAdmin.storage
@@ -75,8 +79,7 @@ export async function GET(request: Request) {
                 }
             }
 
-            // delete room from liveblocks and supabase database
-            await liveblocks.deleteRoom(room.id);
+            // delete supabase row last to keep state recoverable on failure
             await supabaseAdmin.from("Room").delete().eq("id", room.id);
             deletedCount++;
         } catch (err) {

@@ -26,7 +26,9 @@ export async function GET(req: Request) {
 
     // ensure data is retrieved correctly
     if (error) {
-        return new Response(error.message, { status: 500 });
+        // TODO: centralise via errorResponse helper
+        console.error("[users/workspaces] Supabase error:", error);
+        return new Response("Internal server error", { status: 500 });
     }
 
     // return board data

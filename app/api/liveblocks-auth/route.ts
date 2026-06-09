@@ -22,14 +22,13 @@ export async function POST(request: NextRequest) {
 
     // get session from Clerk
     const { userId } = await auth();
-    const user = await currentUser();
 
     // if no user is logged in, block the request
-    if (!userId || !user) {
+    if (!userId) {
         return new Response("Unauthorised", { status: 401 });
     }
 
-    // per-user limit
+    // per-user limit before any further Clerk round-trips
     const userBlocked = await enforceRateLimit(
         request,
         "liveblocks-auth:user",
@@ -38,7 +37,16 @@ export async function POST(request: NextRequest) {
     if (userBlocked) return userBlocked;
 
     // get the room ID from client request
-    const { room } = await request.json();
+    let room: unknown;
+    try {
+        ({ room } = await request.json());
+    } catch {
+        return new Response("Invalid JSON body", { status: 400 });
+    }
+
+    if (typeof room !== "string" || !room) {
+        return new Response("Invalid room", { status: 400 });
+    }
 
     // ensure user is a collaborator in the workspace
     const { data: roomData, error } = await supabaseAdmin
@@ -52,6 +60,12 @@ export async function POST(request: NextRequest) {
         return new Response("Forbidden", { status: 403 });
     }
 
+    // fetch full user record only after auth + rate-limit + membership checks pass
+    const user = await currentUser();
+    if (!user) {
+        return new Response("Unauthorised", { status: 401 });
+    }
+
     // call Supabase function to handle data at room join
     await supabaseAdmin.rpc("upsert_room", {
         p_id: room,
@@ -62,14 +76,12 @@ export async function POST(request: NextRequest) {
     // create a Liveblocks session with Clerk user data
     const session = liveblocks.prepareSession(userId, {
         userInfo: {
-            email: user.emailAddresses[0].emailAddress,
+            email: user.emailAddresses[0]?.emailAddress ?? "",
         },
     });
 
     // grant access
-    if (room) {
-        session.allow(room, session.FULL_ACCESS);
-    }
+    session.allow(room, session.FULL_ACCESS);
 
     // authorise and return
     const { status, body } = await session.authorize();

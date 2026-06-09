@@ -3,12 +3,36 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
+// alphanumeric, dash, underscore — matches UUIDs and crypto.randomUUID output
+const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
+const ID_MAX_LENGTH = 64;
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME_TYPES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/gif",
+]);
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
+
+function isSafeId(value: unknown): value is string {
+    return (
+        typeof value === "string" &&
+        value.length > 0 &&
+        value.length <= ID_MAX_LENGTH &&
+        SAFE_ID_REGEX.test(value)
+    );
+}
+
 /**
  * Upload pasted image to database
  *
  * @route api/workspaces/[workspaceId]/images
  */
-export async function POST(req: NextRequest) {
+export async function POST(
+    req: NextRequest,
+    { params }: { params: Promise<{ workspaceId: string }> },
+) {
     const { userId } = await auth();
     if (!userId) {
         return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
@@ -17,16 +41,73 @@ export async function POST(req: NextRequest) {
     const blocked = await enforceRateLimit(req, "workspace-image:upload", userId);
     if (blocked) return blocked;
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const imageId = formData.get("imageId") as string;
-    const workspaceId = formData.get("workspaceId") as string;
+    const { workspaceId: urlWorkspaceId } = await params;
+    if (!isSafeId(urlWorkspaceId)) {
+        return NextResponse.json(
+            { error: "Invalid workspaceId" },
+            { status: 400 },
+        );
+    }
 
-    // verfiy user is a member of the workspace
+    let formData: FormData;
+    try {
+        formData = await req.formData();
+    } catch {
+        return NextResponse.json(
+            { error: "Invalid form data" },
+            { status: 400 },
+        );
+    }
+
+    const file = formData.get("file");
+    const imageId = formData.get("imageId");
+    const bodyWorkspaceId = formData.get("workspaceId");
+
+    if (!isSafeId(imageId)) {
+        return NextResponse.json(
+            { error: "Invalid imageId" },
+            { status: 400 },
+        );
+    }
+
+    // if the client sent a workspaceId in the form, it must match the URL
+    if (
+        bodyWorkspaceId !== null &&
+        bodyWorkspaceId !== "" &&
+        bodyWorkspaceId !== urlWorkspaceId
+    ) {
+        return NextResponse.json(
+            { error: "workspaceId in body must match URL" },
+            { status: 400 },
+        );
+    }
+
+    if (!(file instanceof File)) {
+        return NextResponse.json(
+            { error: "File is required" },
+            { status: 400 },
+        );
+    }
+
+    if (!ALLOWED_MIME_TYPES.has(file.type)) {
+        return NextResponse.json(
+            { error: "Unsupported file type" },
+            { status: 415 },
+        );
+    }
+
+    if (file.size > MAX_FILE_BYTES) {
+        return NextResponse.json(
+            { error: "File too large" },
+            { status: 413 },
+        );
+    }
+
+    // verify user is a member of the workspace
     const { data } = await supabaseAdmin
         .from("Room")
         .select("user_ids")
-        .eq("id", workspaceId)
+        .eq("id", urlWorkspaceId)
         .contains("user_ids", [userId])
         .single();
 
@@ -36,27 +117,30 @@ export async function POST(req: NextRequest) {
 
     // upload to supabase storage
     const buffer = Buffer.from(await file.arrayBuffer());
-    const path = `${workspaceId}/${imageId}`;
+    const path = `${urlWorkspaceId}/${imageId}`;
 
     const { error: uploadError } = await supabaseAdmin.storage
         .from("workspace-images")
         .upload(path, buffer, { contentType: file.type });
 
     if (uploadError) {
+        // TODO: centralise via errorResponse helper
+        console.error("[workspace-image:upload] Supabase error:", uploadError);
         return NextResponse.json(
-            { error: uploadError.message },
+            { error: "Failed to upload image" },
             { status: 500 },
         );
     }
 
-    // generate a signed url - valid for 7 days
     const { data: signedData, error: signedError } = await supabaseAdmin.storage
         .from("workspace-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 7);
+        .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
 
     if (signedError) {
+        // TODO: centralise via errorResponse helper
+        console.error("[workspace-image:upload] Signed URL error:", signedError);
         return NextResponse.json(
-            { error: signedError.message },
+            { error: "Failed to sign image url" },
             { status: 500 },
         );
     }
@@ -64,20 +148,52 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: signedData.signedUrl });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ workspaceId: string }> },
+) {
     const { userId } = await auth();
     if (!userId) {
-        return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
     }
 
     const blocked = await enforceRateLimit(req, "workspace-image:delete", userId);
     if (blocked) return blocked;
 
-    const { imageId, workspaceId } = await req.json();
-
-    if (!imageId || !workspaceId) {
+    const { workspaceId: urlWorkspaceId } = await params;
+    if (!isSafeId(urlWorkspaceId)) {
         return NextResponse.json(
-            { error: "Missing ID or workspace" },
+            { error: "Invalid workspaceId" },
+            { status: 400 },
+        );
+    }
+
+    let body: { imageId?: unknown; workspaceId?: unknown };
+    try {
+        body = await req.json();
+    } catch {
+        return NextResponse.json(
+            { error: "Invalid JSON body" },
+            { status: 400 },
+        );
+    }
+
+    const { imageId, workspaceId: bodyWorkspaceId } = body;
+
+    if (!isSafeId(imageId)) {
+        return NextResponse.json(
+            { error: "Invalid imageId" },
+            { status: 400 },
+        );
+    }
+
+    if (
+        bodyWorkspaceId !== undefined &&
+        bodyWorkspaceId !== null &&
+        bodyWorkspaceId !== urlWorkspaceId
+    ) {
+        return NextResponse.json(
+            { error: "workspaceId in body must match URL" },
             { status: 400 },
         );
     }
@@ -86,7 +202,7 @@ export async function DELETE(req: NextRequest) {
     const { data } = await supabaseAdmin
         .from("Room")
         .select("user_ids")
-        .eq("id", workspaceId)
+        .eq("id", urlWorkspaceId)
         .contains("user_ids", [userId])
         .single();
 
@@ -94,15 +210,17 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const path = `${workspaceId}/${imageId}`;
+    const path = `${urlWorkspaceId}/${imageId}`;
 
     const { error: deleteError } = await supabaseAdmin.storage
         .from("workspace-images")
         .remove([path]);
 
     if (deleteError) {
+        // TODO: centralise via errorResponse helper
+        console.error("[workspace-image:delete] Supabase error:", deleteError);
         return NextResponse.json(
-            { error: deleteError.message },
+            { error: "Failed to delete image" },
             { status: 500 },
         );
     }
