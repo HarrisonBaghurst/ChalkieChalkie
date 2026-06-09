@@ -53,6 +53,7 @@ const WorkspaceCard = ({
                                 fill
                                 sizes="40px"
                                 className="object-cover"
+                                unoptimized
                             />
                         </div>
                     ) : (
