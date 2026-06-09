@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,6 +13,9 @@ export async function POST(req: NextRequest) {
     if (!userId) {
         return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
     }
+
+    const blocked = await enforceRateLimit(req, "workspace-image:upload", userId);
+    if (blocked) return blocked;
 
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -65,6 +69,9 @@ export async function DELETE(req: NextRequest) {
     if (!userId) {
         return NextResponse.json({ error: "unauthorised" }, { status: 401 });
     }
+
+    const blocked = await enforceRateLimit(req, "workspace-image:delete", userId);
+    if (blocked) return blocked;
 
     const { imageId, workspaceId } = await req.json();
 

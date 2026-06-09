@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Liveblocks } from "@liveblocks/node";
 
@@ -14,7 +15,17 @@ const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
  *
  * @route /api/cron/remove-unused-rooms
  */
-export async function GET() {
+export async function GET(request: Request) {
+    // defense-in-depth rate limit before any work
+    const blocked = await enforceRateLimit(request, "cron");
+    if (blocked) return blocked;
+
+    // verify caller is Vercel cron (auto-injects this header when CRON_SECRET is set)
+    const authHeader = request.headers.get("authorization");
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return new Response("Unauthorised", { status: 401 });
+    }
+
     const cutoff = new Date(
         Date.now() - INACTIVITY_HOURS * 60 * 60 * 1000,
     ).toISOString();

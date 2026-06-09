@@ -1,3 +1,5 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
+import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 
@@ -7,7 +9,7 @@ import { auth } from "@clerk/nextjs/server";
  * @route api/workspaces/[workspaceId]
  */
 export async function GET(
-    _req: Request,
+    req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
 ) {
     const { userId } = await auth();
@@ -15,6 +17,9 @@ export async function GET(
     if (!userId) {
         return new Response("Unauthorised", { status: 401 });
     }
+
+    const blocked = await enforceRateLimit(req, "workspace:get", userId);
+    if (blocked) return blocked;
 
     const { workspaceId } = await params;
 
@@ -44,6 +49,13 @@ export async function PATCH(req: Request) {
         return new Response("Unauthorised", { status: 401 });
     }
 
+    const blocked = await enforceRateLimit(req, "workspace:patch", userId);
+    if (blocked) return blocked;
+
+    // tutor-only action
+    const forbidden = await requireTutor(userId);
+    if (forbidden) return forbidden;
+
     const body = await req.json();
 
     const { roomId, title, description, collaborators, startTime, feedback } =
@@ -57,14 +69,14 @@ export async function PATCH(req: Request) {
         new Set([userId, ...(collaborators || [])]),
     );
 
-    // ensure user has right to change room details
+    // only the host of the workspace may edit it
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
         .from("Room")
         .select("id, host_id")
         .eq("id", roomId)
         .single();
 
-    if (fetchError || !existingRoom) {
+    if (fetchError || !existingRoom || existingRoom.host_id !== userId) {
         return new Response("Forbidden", { status: 403 });
     }
 
@@ -91,6 +103,13 @@ export async function PATCH(req: Request) {
 export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return new Response("Unauthorised", { status: 401 });
+
+    const blocked = await enforceRateLimit(req, "workspace:create", userId);
+    if (blocked) return blocked;
+
+    // tutor-only action
+    const forbidden = await requireTutor(userId);
+    if (forbidden) return forbidden;
 
     const body = await req.json();
     const { roomId, title, description, collaborators, startTime, feedback } =

@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -10,6 +11,9 @@ interface ContactPayload {
 }
 
 export async function POST(req: NextRequest) {
+    const blocked = await enforceRateLimit(req, "contact");
+    if (blocked) return blocked;
+
     try {
         const payload = (await req.json()) as ContactPayload;
         const { title, body } = payload;

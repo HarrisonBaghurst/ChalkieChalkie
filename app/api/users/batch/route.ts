@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
 import { auth, clerkClient, EmailAddress } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
@@ -12,6 +13,14 @@ type RequestBody = {
  */
 export async function POST(req: Request) {
     try {
+        const { userId } = await auth();
+        if (!userId) {
+            return new Response("Unauthorised", { status: 401 });
+        }
+
+        const blocked = await enforceRateLimit(req, "users:batch", userId);
+        if (blocked) return blocked;
+
         const body: RequestBody = await req.json();
 
         if (!body.userIds || !Array.isArray(body.userIds)) {
@@ -40,12 +49,6 @@ export async function POST(req: Request) {
             imageUrl: u.imageUrl,
             email: u.emailAddresses[0].emailAddress,
         }));
-
-        const { isAuthenticated } = await auth();
-
-        if (!isAuthenticated) {
-            return new Response("Unauthorised", { status: 401 });
-        }
 
         return new NextResponse(JSON.stringify({ users }), {
             headers: {

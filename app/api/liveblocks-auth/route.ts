@@ -1,3 +1,4 @@
+import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Liveblocks } from "@liveblocks/node";
@@ -15,6 +16,10 @@ const liveblocks = new Liveblocks({
  * @route api/liveblocks-auth
  */
 export async function POST(request: NextRequest) {
+    // per-IP guard before the auth call (cheap defense against floods)
+    const ipBlocked = await enforceRateLimit(request, "liveblocks-auth:ip");
+    if (ipBlocked) return ipBlocked;
+
     // get session from Clerk
     const { userId } = await auth();
     const user = await currentUser();
@@ -23,6 +28,14 @@ export async function POST(request: NextRequest) {
     if (!userId || !user) {
         return new Response("Unauthorised", { status: 401 });
     }
+
+    // per-user limit
+    const userBlocked = await enforceRateLimit(
+        request,
+        "liveblocks-auth:user",
+        userId,
+    );
+    if (userBlocked) return userBlocked;
 
     // get the room ID from client request
     const { room } = await request.json();

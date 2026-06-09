@@ -1,3 +1,5 @@
+export type UserRole = "tutor" | "student";
+
 export type userInfo = {
     id: string;
     firstName: string;

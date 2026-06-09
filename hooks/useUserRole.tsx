@@ -1,8 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-
-export type UserRole = "tutor" | "student";
+import { UserRole } from "@/types/userTypes";
 
 export const useUserRole = (): UserRole => {
     const { user } = useUser();
