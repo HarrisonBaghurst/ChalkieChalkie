@@ -14,7 +14,7 @@ const Next = ({ workspace }: NextProps) => {
     const router = useRouter();
 
     return (
-        <div className="w-220 bg-background-second p-4 rounded-xl flex justify-between gradient-border">
+        <div className="w-220 bg-card-background border-2 p-4 rounded-xl flex justify-between gradient-border">
             <div className="flex flex-col gap-2">
                 <p className="text-xs text-foreground-second font-inter-bold">
                     COMING UP NEXT
