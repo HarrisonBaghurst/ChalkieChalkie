@@ -9,6 +9,7 @@ import {
     DASHBOARD_GRACE_MS,
 } from "@/lib/dashboardFilters";
 import { isTutor, viewerIsTutorAcrossAny } from "@/lib/roleStub";
+import { useUserRole } from "@/hooks/useUserRole";
 import Sidebar from "./Sidebar";
 import Next from "./Next";
 import Actions from "./Actions";
@@ -17,6 +18,7 @@ import Previous from "./Previous";
 
 const DashboardClient = () => {
     const { isLoaded, isSignedIn, user } = useUser();
+    const role = useUserRole();
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [usersInfo, setUsersInfo] = useState<userInfo[]>([]);
@@ -31,22 +33,24 @@ const DashboardClient = () => {
     useEffect(() => {
         if (!isLoaded || !isSignedIn) return;
 
-        const fetchFriends = async () => {
-            try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
-                );
-                if (!res.ok) {
-                    console.error("Failed to fetch friends");
-                    return;
+        if (role === "tutor") {
+            const fetchFriends = async () => {
+                try {
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
+                    );
+                    if (!res.ok) {
+                        console.error("Failed to fetch friends");
+                        return;
+                    }
+                    const data = await res.json();
+                    setFriends(data.friends ?? []);
+                } catch (err) {
+                    console.error(err);
                 }
-                const data = await res.json();
-                setFriends(data.friends ?? []);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        fetchFriends();
+            };
+            fetchFriends();
+        }
 
         const fetchAll = async () => {
             try {
@@ -118,7 +122,7 @@ const DashboardClient = () => {
         };
 
         fetchAll();
-    }, [isLoaded, isSignedIn]);
+    }, [isLoaded, isSignedIn, role]);
 
     const usersMap = useMemo(
         () => Object.fromEntries(usersInfo.map((u) => [u.id, u])),
