@@ -7,6 +7,7 @@ import Button from "./Button";
 import WorkspaceModal from "./WorkspaceModal";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { formatSessionTime } from "@/lib/textUtils";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type WorkspaceCardProps = {
     workspace: Workspace;
@@ -27,6 +28,7 @@ const WorkspaceCard = ({
 }: WorkspaceCardProps) => {
     const router = useRouter();
     const [editOpen, setEditOpen] = useState(false);
+    const role = useUserRole();
 
     const collaborators = useMemo<userInfo[]>(() => {
         const ordered = [
@@ -90,7 +92,12 @@ const WorkspaceCard = ({
                         text="Join"
                         onClick={() => router.push(`/board/${workspace.id}`)}
                     />
-                    <Button text="Edit" onClick={() => setEditOpen(true)} />
+                    {role === "tutor" && (
+                        <Button
+                            text="Edit"
+                            onClick={() => setEditOpen(true)}
+                        />
+                    )}
                 </div>
             </div>
             {showFeedback && workspace.feedback && (
@@ -98,13 +105,15 @@ const WorkspaceCard = ({
                     {workspace.feedback}
                 </div>
             )}
-            <WorkspaceModal
-                open={editOpen}
-                mode={{ kind: "edit", workspace, collaborators }}
-                friends={friends}
-                onClose={() => setEditOpen(false)}
-                onSubmitted={onUpdated}
-            />
+            {role === "tutor" && (
+                <WorkspaceModal
+                    open={editOpen}
+                    mode={{ kind: "edit", workspace, collaborators }}
+                    friends={friends}
+                    onClose={() => setEditOpen(false)}
+                    onSubmitted={onUpdated}
+                />
+            )}
         </div>
     );
 };

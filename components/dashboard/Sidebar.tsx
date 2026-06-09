@@ -31,6 +31,7 @@ const Sidebar = () => {
                             fill
                             sizes="40px"
                             className="object-cover"
+                            unoptimized
                         />
                     </div>
                 ) : (

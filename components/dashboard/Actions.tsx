@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Button from "./Button";
 import WorkspaceModal from "./WorkspaceModal";
 import { userInfo, Workspace } from "@/types/userTypes";
+import { useUserRole } from "@/hooks/useUserRole";
 
 type ActionsProps = {
     friends: userInfo[];
@@ -12,6 +13,9 @@ type ActionsProps = {
 
 const Actions = ({ friends, onCreated }: ActionsProps) => {
     const [createOpen, setCreateOpen] = useState(false);
+    const role = useUserRole();
+
+    if (role !== "tutor") return null;
 
     return (
         <div className="flex gap-6">
