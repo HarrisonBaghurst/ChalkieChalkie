@@ -1,0 +1,121 @@
+{
+    "_about": "Mock dashboard data used when the ENVIRONMENT env var is set to 'testing'. Edit anything in this file freely - the dashboard will pick up the changes on next reload. 'users' supplies the profile info shown on each card. 'upcomingLessons' populates the Upcoming column (its startTime should be in the future). 'pastLessons' populates the Previous column (its startTime should be in the past) and supports a 'feedback' field. Each lesson's 'host' and 'collaboratorIds' must reference ids that exist in 'users'.",
+
+    "users": [
+        {
+            "id": "example-user-1",
+            "firstName": "Eleanor",
+            "lastName": "Greene",
+            "imageUrl": "",
+            "email": "eleanor.greene@example.com"
+        },
+        {
+            "id": "example-user-2",
+            "firstName": "Alex",
+            "lastName": "Carter",
+            "imageUrl": "",
+            "email": "alex.carter@example.com"
+        }
+    ],
+
+    "upcomingLessons": [
+        {
+            "id": "test-upcoming-1",
+            "title": "Algebra Fundamentals 6",
+            "description": "Introduction to systems of linear equations using substitution and elimination.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-06-12T16:00:00Z",
+            "lastActivity": "2026-06-10T16:00:00Z"
+        },
+        {
+            "id": "test-upcoming-2",
+            "title": "Algebra Fundamentals 7",
+            "description": "Properties of exponents and an introduction to exponential growth and decay.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-06-19T16:00:00Z",
+            "lastActivity": "2026-06-10T16:00:00Z"
+        },
+        {
+            "id": "test-upcoming-3",
+            "title": "Algebra Fundamentals 8",
+            "description": "Adding, subtracting, and multiplying polynomial expressions.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-06-26T16:00:00Z",
+            "lastActivity": "2026-06-10T16:00:00Z"
+        },
+        {
+            "id": "test-upcoming-4",
+            "title": "Algebra Fundamentals 9",
+            "description": "Factoring quadratic expressions, including special products and grouping.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-07-03T16:00:00Z",
+            "lastActivity": "2026-06-10T16:00:00Z"
+        },
+        {
+            "id": "test-upcoming-5",
+            "title": "Algebra Fundamentals 10",
+            "description": "Solving quadratic equations by factoring, completing the square, and the quadratic formula.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-07-10T16:00:00Z",
+            "lastActivity": "2026-06-10T16:00:00Z"
+        }
+    ],
+
+    "pastLessons": [
+        {
+            "id": "test-past-1",
+            "title": "Algebra Fundamentals 1",
+            "description": "Introduction to variables, expressions, and the language of algebra.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-05-08T16:00:00Z",
+            "lastActivity": "2026-05-08T17:00:00Z",
+            "feedback": "Strong start — clearly grasped the difference between variables and constants. Practice substituting values into expressions before next lesson."
+        },
+        {
+            "id": "test-past-2",
+            "title": "Algebra Fundamentals 2",
+            "description": "Techniques for solving single-variable linear equations and word problems.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-05-15T16:00:00Z",
+            "lastActivity": "2026-05-15T17:00:00Z",
+            "feedback": "Confident with one-step equations. Take more care with sign changes when moving terms across the equals sign."
+        },
+        {
+            "id": "test-past-3",
+            "title": "Algebra Fundamentals 3",
+            "description": "Working with linear inequalities and representing solutions on number lines.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-05-22T16:00:00Z",
+            "lastActivity": "2026-05-22T17:00:00Z",
+            "feedback": "Inequalities are clicking, especially the flip rule when multiplying by negatives. Try the worded problems in the textbook for extra practice."
+        },
+        {
+            "id": "test-past-4",
+            "title": "Algebra Fundamentals 4",
+            "description": "Understanding the concept of a function — domain, range, and basic graphs.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-05-29T16:00:00Z",
+            "lastActivity": "2026-05-29T17:00:00Z",
+            "feedback": "Good intuitive understanding of functions. Spend some time on identifying domain and range directly from graphs."
+        },
+        {
+            "id": "test-past-5",
+            "title": "Algebra Fundamentals 5",
+            "description": "Slope, y-intercept, and constructing equations of linear functions.",
+            "host": "example-user-1",
+            "collaboratorIds": ["example-user-1", "example-user-2"],
+            "startTime": "2026-06-05T16:00:00Z",
+            "lastActivity": "2026-06-05T17:00:00Z",
+            "feedback": "Excellent work plotting lines from slope-intercept form. We'll build directly on this when we tackle systems of equations next time."
+        }
+    ]
+}
