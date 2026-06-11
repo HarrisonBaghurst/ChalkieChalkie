@@ -175,7 +175,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     useImagePaste({ workspaceId, canvasStateRef, addImageMeta });
 
     useKeybinds({
-        workspaceId,
         canvasStateRef,
         removeImageMeta,
         undo,

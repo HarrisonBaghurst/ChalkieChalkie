@@ -1,9 +1,7 @@
 import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect } from "react";
-import { toast } from "sonner";
 
 interface UseKeybindsProps {
-    workspaceId: string;
     canvasStateRef: RefObject<CanvasState>;
     removeImageMeta: (id: string) => void;
     undo: () => void;
@@ -12,7 +10,6 @@ interface UseKeybindsProps {
 }
 
 export const useKeybinds = ({
-    workspaceId,
     canvasStateRef,
     removeImageMeta,
     undo,
@@ -20,11 +17,20 @@ export const useKeybinds = ({
     eraseStrokes,
 }: UseKeybindsProps) => {
     useEffect(() => {
-        // TODO: this listener fires while typing in inputs (e.g. the
-        // WorkspaceTopbar title field) — Backspace deletes selected
-        // images/strokes and Ctrl+Z hits the canvas history. Bail out early
-        // when event.target is an input/textarea/contenteditable.
-        const onKeypress = async (event: KeyboardEvent) => {
+        const onKeypress = (event: KeyboardEvent) => {
+            // Ignore keybinds while typing in a text field (e.g. the
+            // WorkspaceTopbar title input) so Backspace/Ctrl+Z don't leak
+            // into canvas selections and history.
+            const target = event.target as HTMLElement | null;
+            if (
+                target &&
+                (target.tagName === "INPUT" ||
+                    target.tagName === "TEXTAREA" ||
+                    target.isContentEditable)
+            ) {
+                return;
+            }
+
             const state = canvasStateRef.current;
             if (event.ctrlKey && event.key === "z") {
                 event.preventDefault();
@@ -43,26 +49,13 @@ export const useKeybinds = ({
                     state.selectedStrokeIds = [];
                 }
 
-                // Delete selector-selected images
-                // TODO: deleting an image removes the storage blob
-                // immediately, but Ctrl+Z restores the Liveblocks meta and
-                // shows a broken image. Defer blob deletion to the cleanup
-                // cron (only remove the meta here) so undo works.
+                // Delete selector-selected images. Only the Liveblocks meta is
+                // removed here; the storage blob is left for the cleanup cron
+                // so that Ctrl+Z can restore the image without breaking.
                 const selectorImageIds = [...state.selectedImageIds];
                 if (selectorImageIds.length > 0) {
                     for (const id of selectorImageIds) {
                         removeImageMeta(id);
-                        fetch(
-                            `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
-                            {
-                                method: "DELETE",
-                                body: JSON.stringify({ imageId: id, workspaceId }),
-                            },
-                        ).catch(() =>
-                            toast.error("Failed to delete image.", {
-                                description: "Please reload page and try again.",
-                            }),
-                        );
                     }
                     state.pastedImages = state.pastedImages.filter(
                         (img) => !selectorImageIds.includes(img.id),
@@ -75,28 +68,14 @@ export const useKeybinds = ({
                     state.selectorRect = null;
                 }
 
-                // Delete pointer-tool single-selected image
+                // Delete pointer-tool single-selected image (meta only).
                 const id = state.selectedImageId;
                 if (id && !selectorImageIds.includes(id)) {
                     removeImageMeta(id);
-                    try {
-                        await fetch(
-                            `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
-                            {
-                                method: "DELETE",
-                                body: JSON.stringify({ imageId: id, workspaceId }),
-                            },
-                        );
-                        state.pastedImages = state.pastedImages.filter(
-                            (img) => img.id != id,
-                        );
-                        state.selectedImageId = null;
-                    } catch (err) {
-                        console.error("Failed to delete image:", err);
-                        toast.error("Failed to delete image.", {
-                            description: "Please reload page and try again.",
-                        });
-                    }
+                    state.pastedImages = state.pastedImages.filter(
+                        (img) => img.id != id,
+                    );
+                    state.selectedImageId = null;
                 }
             }
         };

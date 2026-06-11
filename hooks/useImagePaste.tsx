@@ -66,6 +66,7 @@ export const usePastedImagesSync = ({
                     local.y = meta.y;
                     local.width = meta.width;
                     local.height = meta.height;
+                    local.inverted = meta.inverted;
                 }
             } else {
                 const img = new Image();
@@ -78,6 +79,7 @@ export const usePastedImagesSync = ({
                         width: meta.width,
                         height: meta.height,
                         url: meta.url,
+                        inverted: meta.inverted,
                     });
                 };
                 img.src = meta.url;
@@ -117,6 +119,8 @@ export const useImagePaste = ({
                     img.src = blobUrl;
                 });
 
+                const inverted = shouldInvert(img);
+
                 canvasStateRef.current.pastedImages.push({
                     id: imageId,
                     element: img,
@@ -125,7 +129,7 @@ export const useImagePaste = ({
                     width: img.naturalWidth,
                     height: img.naturalHeight,
                     url: blobUrl,
-                    inverted: shouldInvert(img),
+                    inverted,
                 });
 
                 (async () => {
@@ -140,10 +144,12 @@ export const useImagePaste = ({
                             { method: "POST", body: formData },
                         );
 
-                        // TODO: no res.ok check — a 4xx/5xx response here
-                        // commits { url: undefined } into shared Liveblocks
-                        // storage for every user. Validate the response
-                        // before calling addImageMeta.
+                        if (!res.ok) {
+                            throw new Error(
+                                `Image upload failed: ${res.status}`,
+                            );
+                        }
+
                         const { url: permanentUrl } = await res.json();
 
                         const local = canvasStateRef.current.pastedImages.find(
@@ -159,10 +165,6 @@ export const useImagePaste = ({
                             newImg.src = permanentUrl;
                         }
 
-                        // TODO: `inverted` is computed locally (shouldInvert)
-                        // but omitted from this meta and not copied in
-                        // usePastedImagesSync — remote users and reloads see
-                        // the un-inverted image. Include it here and sync it.
                         addImageMeta({
                             id: imageId,
                             url: permanentUrl,
@@ -170,6 +172,7 @@ export const useImagePaste = ({
                             y,
                             width: img.naturalWidth,
                             height: img.naturalHeight,
+                            inverted,
                         });
                     } catch (err) {
                         console.error("Failed to upload image:", err);
