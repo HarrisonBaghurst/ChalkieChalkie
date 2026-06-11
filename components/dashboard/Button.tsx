@@ -1,15 +1,22 @@
+import { cn } from "@/lib/utils";
 import React from "react";
 
 type ButtonProps = {
     text: string;
     onClick: () => void;
+    size?: "regular" | "large";
 };
 
-const Button = ({ text, onClick }: ButtonProps) => {
+const Button = ({ text, onClick, size }: ButtonProps) => {
     return (
         <button
             onClick={onClick}
-            className="text-background bg-foreground rounded-sm py-2 px-5 text-xs cursor-pointer"
+            className={cn(
+                "text-background bg-foreground rounded-sm cursor-pointer",
+                size && size == "large"
+                    ? "py-2.5 px-7 text-md"
+                    : "py-2 px-5 text-xs",
+            )}
         >
             {text}
         </button>
