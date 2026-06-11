@@ -24,7 +24,7 @@ const Footer = () => {
                 </h2>
             </div>
             <div className="mx-[10%] flex gap-16">
-                <SendMessage />
+                {/*<SendMessage />*/}
                 <div />
                 <div className="flex flex-col gap-4 text-foreground-second">
                     {LINKS[0].map((link, i) => (
