@@ -1,5 +1,6 @@
 "use client";
 import Button from "@/components/dashboard/Button";
+import Image from "next/image";
 
 const page = () => {
     return (
@@ -42,6 +43,16 @@ const page = () => {
                 <div className="text-xs text-foreground-third flex gap-8">
                     <p>© Chalkie Chalkie 2026</p>
                     <p>Privacy Policy</p>
+                </div>
+            </div>
+            <div className="absolute right-24 border-2 border-white/10 top-1/2 -translate-y-1/2 w-fit h-fit rounded-lg -skew-3 -rotate-3">
+                <div className="relative w-240 h-140 rounded-lg overflow-hidden">
+                    <Image
+                        src={"/imgs/dashboardExample.webp"}
+                        alt="dashboard example"
+                        fill
+                        priority
+                    />
                 </div>
             </div>
         </div>
