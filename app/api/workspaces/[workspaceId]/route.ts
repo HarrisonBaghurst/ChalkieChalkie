@@ -133,6 +133,11 @@ export async function GET(
  *
  * @route api/workspaces/[workspaceId]
  */
+// TODO: PATCH currently overwrites every column — missing body fields are
+// coalesced to null and user_ids is rebuilt as [host, ...collaborators], so a
+// title-only rename (e.g. WorkspaceTopbar's commitEdit) wipes collaborators,
+// description, start_time and feedback. Build the update object only from
+// fields actually present in the body (true PATCH semantics).
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -211,6 +216,9 @@ export async function PATCH(
     return Response.json(data);
 }
 
+// TODO: workspace creation lives at POST /api/workspaces/[workspaceId] but
+// ignores the URL id (and any client-supplied roomId). Move to POST
+// /api/workspaces and update callers (Workspaces.tsx createBoard, dashboard).
 export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return new Response("Unauthorised", { status: 401 });

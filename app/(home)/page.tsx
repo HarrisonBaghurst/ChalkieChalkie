@@ -1,5 +1,6 @@
-"use client";
-import Button from "@/components/dashboard/Button";
+import BetaSignUpButton from "@/components/home/BetaSignUpButton";
+import ContactButton from "@/components/home/ContactButton";
+import HeroLoginButton from "@/components/home/HeroLoginButton";
 import Image from "next/image";
 
 const page = () => {
@@ -15,12 +16,8 @@ const page = () => {
                     progress through Chalkie Chalkie.
                 </p>
                 <div className="flex gap-12">
-                    <Button
-                        text="Join Private Beta"
-                        onClick={() => {}}
-                        size="large"
-                    />
-                    <Button text="Login" onClick={() => {}} size="large" />
+                    <BetaSignUpButton />
+                    <HeroLoginButton />
                 </div>
             </div>
             <div className="flex flex-col gap-6">
@@ -34,10 +31,7 @@ const page = () => {
                         feature, please submit them here.
                     </p>
                     <div className="flex justify-end">
-                        <Button
-                            text="Contact Chalkie Chalkie"
-                            onClick={() => {}}
-                        />
+                        <ContactButton />
                     </div>
                 </div>
                 <div className="text-xs text-foreground-third flex gap-8">

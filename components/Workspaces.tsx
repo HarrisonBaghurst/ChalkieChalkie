@@ -111,6 +111,12 @@ const applyFiltersAndSort = (
 
 // MAIN COMPONENT ---------------------------------------------------------------------------------
 
+// TODO(refactor): this component and dashboard/DashboardClient.tsx duplicate
+// the same data layer — both fetch /api/users/workspaces + /api/users/batch,
+// both inline-map snake_case → camelCase, and there are parallel filter
+// implementations (here vs lib/dashboardFilters.ts) plus duplicate
+// WorkspaceCard/Button components. Extract a shared API client + mapping
+// (or SWR/React Query) once the dashboard design settles.
 const Workspaces = () => {
     const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
     const [loading, setLoading] = useState(true);

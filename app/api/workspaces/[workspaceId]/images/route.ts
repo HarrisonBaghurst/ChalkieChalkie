@@ -13,6 +13,10 @@ const ALLOWED_MIME_TYPES = new Set([
     "image/webp",
     "image/gif",
 ]);
+// TODO: this signed URL is stored permanently in Liveblocks meta, but rooms
+// that stay *active* past 14 days outlive it and show broken images (the cron
+// only deletes inactive rooms). Store the storage path in the meta instead
+// and resolve/refresh signed URLs client-side at load time.
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
 
 function isSafeId(value: unknown): value is string {

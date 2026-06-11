@@ -29,6 +29,10 @@ export const useKeybinds = ({
     eraseStrokes,
 }: UseKeybindsProps) => {
     useEffect(() => {
+        // TODO: this listener fires while typing in inputs (e.g. the
+        // WorkspaceTopbar title field) — Backspace deletes selected
+        // images/strokes and Ctrl+Z hits the canvas history. Bail out early
+        // when event.target is an input/textarea/contenteditable.
         const onKeypress = async (event: KeyboardEvent) => {
             if (event.ctrlKey && event.key === "z") {
                 event.preventDefault();
@@ -48,6 +52,10 @@ export const useKeybinds = ({
                 }
 
                 // Delete selector-selected images
+                // TODO: deleting an image removes the storage blob
+                // immediately, but Ctrl+Z restores the Liveblocks meta and
+                // shows a broken image. Defer blob deletion to the cleanup
+                // cron (only remove the meta here) so undo works.
                 const selectorImageIds = [...selectedImageIdsRef.current];
                 if (selectorImageIds.length > 0) {
                     for (const id of selectorImageIds) {

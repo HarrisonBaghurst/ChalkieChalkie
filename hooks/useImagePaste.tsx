@@ -141,6 +141,10 @@ export const useImagePaste = ({
                             { method: "POST", body: formData },
                         );
 
+                        // TODO: no res.ok check — a 4xx/5xx response here
+                        // commits { url: undefined } into shared Liveblocks
+                        // storage for every user. Validate the response
+                        // before calling addImageMeta.
                         const { url: permanentUrl } = await res.json();
 
                         const local = pastedImagesRef.current.find(
@@ -156,6 +160,10 @@ export const useImagePaste = ({
                             newImg.src = permanentUrl;
                         }
 
+                        // TODO: `inverted` is computed locally (shouldInvert)
+                        // but omitted from this meta and not copied in
+                        // usePastedImagesSync — remote users and reloads see
+                        // the un-inverted image. Include it here and sync it.
                         addImageMeta({
                             id: imageId,
                             url: permanentUrl,

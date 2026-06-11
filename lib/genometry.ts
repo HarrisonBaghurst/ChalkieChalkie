@@ -1,5 +1,10 @@
 import { Point, Stroke } from "@/types/strokeTypes";
 
+// TODO: hit-testing here is point-based, but strokes are RDP-simplified on
+// commit (a straight line stores only its 2 endpoints), so the eraser
+// (StrokeIntersectPoints) and selector (strokeIntersectsRect) miss the middle
+// of long straight segments. Use point-to-segment distance and segment-rect
+// intersection over consecutive point pairs instead.
 export function StrokeIntersectPoints(
     stroke: Stroke,
     point: Point,

@@ -44,8 +44,21 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
 
     const isLoaded = strokes !== null;
 
+    // TODO(refactor): consolidate the ~20 individual refs below into a single
+    // CanvasState object held in one ref, and replace the duplicated per-tool
+    // if/else dispatch in lib/handlers/mouse{Down,Move,Up}.ts with a
+    // tool-strategy registry (Record<Tools, { onDown, onMove, onUp }>) —
+    // adding a tool currently touches 4+ files and every handler redeclares a
+    // near-identical 20-field props interface.
+
     // local image element cache
     const pastedImagesRef = useRef<PastedImage[]>([]);
+
+    // TODO(refactor): camera state is split across panOffsetRef,
+    // lastPanOffsetRef, panOffsetState and zoomRef/zoom — getWorldPoint reads
+    // lastPanOffsetRef, drawing reads panOffsetRef and CursorLayer reads the
+    // state mirror (so remote cursors freeze mid-pan). Unify into a single
+    // viewport object with one source of truth.
 
     // panning refs
     const panOffsetRef = useRef<Point>({ x: 0, y: 0 });

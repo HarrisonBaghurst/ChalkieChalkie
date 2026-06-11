@@ -23,6 +23,9 @@ type DashboardClientProps = {
     };
 };
 
+// TODO(refactor): duplicates the workspace/users fetching + snake_case
+// mapping in components/Workspaces.tsx — see the TODO there; extract a shared
+// API client once one of the two surfaces is retired.
 const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
     const role = useUserRole();

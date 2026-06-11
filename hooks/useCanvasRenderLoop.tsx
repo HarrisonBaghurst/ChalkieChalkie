@@ -42,6 +42,11 @@ export const useCanvasRenderLoop = ({
         highlightCanvasRef.current = document.createElement("canvas");
     }, []);
 
+    // TODO: leak — this effect re-runs on every `strokes` change but cleanup
+    // only cancels the initial frame id; the self-requeuing loop keeps
+    // running, so N stroke updates leave N+1 concurrent rAF loops. Track the
+    // latest frame id each frame (or use a cancelled flag) so cleanup actually
+    // stops the loop.
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
