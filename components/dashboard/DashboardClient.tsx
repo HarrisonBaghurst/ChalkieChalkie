@@ -16,12 +16,23 @@ import Actions from "./Actions";
 import Upcoming from "./Upcoming";
 import Previous from "./Previous";
 
-const DashboardClient = () => {
+type DashboardClientProps = {
+    testData?: {
+        workspaces: Workspace[];
+        users: userInfo[];
+    };
+};
+
+const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
     const role = useUserRole();
 
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-    const [usersInfo, setUsersInfo] = useState<userInfo[]>([]);
+    const [workspaces, setWorkspaces] = useState<Workspace[]>(
+        testData?.workspaces ?? [],
+    );
+    const [usersInfo, setUsersInfo] = useState<userInfo[]>(
+        testData?.users ?? [],
+    );
     const [friends, setFriends] = useState<userInfo[]>([]);
 
     const [selectedTuteeIds, setSelectedTuteeIds] = useState<string[]>([]);
@@ -32,6 +43,7 @@ const DashboardClient = () => {
 
     useEffect(() => {
         if (!isLoaded || !isSignedIn) return;
+        if (testData) return;
 
         if (role === "tutor") {
             const fetchFriends = async () => {
@@ -122,7 +134,7 @@ const DashboardClient = () => {
         };
 
         fetchAll();
-    }, [isLoaded, isSignedIn, role]);
+    }, [isLoaded, isSignedIn, role, testData]);
 
     const usersMap = useMemo(
         () => Object.fromEntries(usersInfo.map((u) => [u.id, u])),
