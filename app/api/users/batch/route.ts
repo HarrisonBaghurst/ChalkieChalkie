@@ -1,3 +1,4 @@
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth, clerkClient } from "@clerk/nextjs/server";
@@ -55,18 +56,13 @@ export async function POST(req: Request) {
 
         // intersect requested IDs with users who share a workspace with the
         // caller (prevents authenticated PII enumeration of arbitrary users)
-        // TODO: centralise via errorResponse helper
         const { data: rooms, error: roomsError } = await supabaseAdmin
             .from("Room")
             .select("user_ids")
             .contains("user_ids", [userId]);
 
         if (roomsError) {
-            console.error("[users/batch] Failed to fetch rooms:", roomsError);
-            return NextResponse.json(
-                { error: "Internal server error" },
-                { status: 500 },
-            );
+            return errorResponse("users:batch", roomsError, 500, { userId });
         }
 
         const allowedIds = new Set<string>();
@@ -102,10 +98,6 @@ export async function POST(req: Request) {
             },
         });
     } catch (err) {
-        console.error("[users/batch] Unexpected error:", err);
-        return NextResponse.json(
-            { error: "Failed to fetch users" },
-            { status: 500 },
-        );
+        return errorResponse("users:batch", err, 500);
     }
 }

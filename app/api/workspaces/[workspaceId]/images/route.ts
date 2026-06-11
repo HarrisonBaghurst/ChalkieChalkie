@@ -1,3 +1,4 @@
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -128,12 +129,10 @@ export async function POST(
         .upload(path, buffer, { contentType: file.type });
 
     if (uploadError) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace-image:upload] Supabase error:", uploadError);
-        return NextResponse.json(
-            { error: "Failed to upload image" },
-            { status: 500 },
-        );
+        return errorResponse("workspace-image:upload", uploadError, 500, {
+            userId,
+            publicMessage: "Failed to upload image",
+        });
     }
 
     const { data: signedData, error: signedError } = await supabaseAdmin.storage
@@ -141,12 +140,10 @@ export async function POST(
         .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
 
     if (signedError) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace-image:upload] Signed URL error:", signedError);
-        return NextResponse.json(
-            { error: "Failed to sign image url" },
-            { status: 500 },
-        );
+        return errorResponse("workspace-image:sign", signedError, 500, {
+            userId,
+            publicMessage: "Failed to sign image url",
+        });
     }
 
     return NextResponse.json({ url: signedData.signedUrl });
@@ -221,12 +218,10 @@ export async function DELETE(
         .remove([path]);
 
     if (deleteError) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace-image:delete] Supabase error:", deleteError);
-        return NextResponse.json(
-            { error: "Failed to delete image" },
-            { status: 500 },
-        );
+        return errorResponse("workspace-image:delete", deleteError, 500, {
+            userId,
+            publicMessage: "Failed to delete image",
+        });
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

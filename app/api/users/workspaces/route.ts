@@ -1,3 +1,4 @@
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -26,9 +27,7 @@ export async function GET(req: Request) {
 
     // ensure data is retrieved correctly
     if (error) {
-        // TODO: centralise via errorResponse helper
-        console.error("[users/workspaces] Supabase error:", error);
-        return new Response("Internal server error", { status: 500 });
+        return errorResponse("users:workspaces", error, 500, { userId });
     }
 
     // return board data

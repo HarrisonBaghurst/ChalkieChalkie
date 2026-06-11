@@ -1,3 +1,4 @@
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
@@ -49,7 +50,6 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        // TODO: centralise via errorResponse helper
         const { data, error } = await resend.emails.send({
             from: "Chalkie Chalkie <onboarding@resend.dev>",
             to: [contactEmail],
@@ -58,19 +58,11 @@ export async function POST(req: NextRequest) {
         });
 
         if (error) {
-            console.error("[contact] Resend error:", error);
-            return NextResponse.json(
-                { error: "Internal server error" },
-                { status: 500 },
-            );
+            return errorResponse("contact:resend", error, 500);
         }
 
         return NextResponse.json(data, { status: 200 });
     } catch (error) {
-        console.error("[contact] Unexpected error:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 },
-        );
+        return errorResponse("contact", error, 500);
     }
 }

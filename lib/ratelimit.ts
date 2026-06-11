@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { reportError } from "@/lib/errorResponse";
 
 type KeyBy = "userId" | "ip";
 type Duration = `${number} ${"s" | "m" | "h" | "d"}`;
@@ -68,9 +69,9 @@ function getIp(req: Request): string {
  * For userId-keyed limits, pass the authenticated Clerk userId.
  * For ip-keyed limits, the userId argument is ignored.
  *
- * Fail-open: if Upstash is unreachable the request is allowed through.
- * TODO: wire this fail-open branch into an error reporting service
- * (e.g. Sentry) so silent Upstash outages are visible.
+ * Fail-open: if Upstash is unreachable the request is allowed through, and
+ * the outage is reported via reportError so silent failures are visible in
+ * the error_logs table.
  */
 export async function enforceRateLimit(
     req: Request,
@@ -102,8 +103,8 @@ export async function enforceRateLimit(
             },
         );
     } catch (err) {
-        // TODO: report to error monitoring service
-        console.error(`[ratelimit] Upstash error for key "${key}":`, err);
+        // Upstash unreachable: fail open, but surface the outage in error_logs.
+        await reportError(`ratelimit:upstash:${key}`, err);
         return null;
     }
 }

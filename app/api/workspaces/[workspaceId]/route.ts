@@ -1,3 +1,4 @@
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -35,9 +36,7 @@ export async function GET(
         .single();
 
     if (error) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace:get] Supabase error:", error);
-        return new Response("Internal server error", { status: 500 });
+        return errorResponse("workspace:get", error, 500, { userId });
     }
 
     return Response.json(data);
@@ -126,9 +125,7 @@ export async function PATCH(
         .single();
 
     if (error) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace:patch] Supabase error:", error);
-        return new Response("Internal server error", { status: 500 });
+        return errorResponse("workspace:patch", error, 500, { userId });
     }
 
     return Response.json(data);

@@ -3,6 +3,7 @@
 // exposes name + email of arbitrary users. Replace with a real friend relation
 // (mutual workspace membership, invite graph, or explicit table) before
 // scaling beyond the initial user base. Known and deferred.
+import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { requireTutor } from "@/lib/serverRole";
 import { auth, clerkClient } from "@clerk/nextjs/server";
@@ -63,11 +64,6 @@ export async function GET(req: Request) {
 
         return NextResponse.json({ friends });
     } catch (err) {
-        // TODO: centralise via errorResponse helper
-        console.error("[users/friends] Unexpected error:", err);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 },
-        );
+        return errorResponse("users:friends", err, 500);
     }
 }
