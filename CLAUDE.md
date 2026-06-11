@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 Always address me by name at the beginning of a responce (Harrison).
 Always interview and never make blind assumptions.
+Give all plans concisely.
 
 ## Project Overview
 
