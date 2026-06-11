@@ -1,48 +1,24 @@
-import { RefObject } from "react";
+import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { getMousePos } from "../helpers";
-import { Point } from "@/types/strokeTypes";
 
-interface HandlePanDownProps {
-    e: React.MouseEvent;
-    panStartRef: RefObject<Point | null>;
-}
-
-export const handlePanDown = ({ e, panStartRef }: HandlePanDownProps) => {
-    panStartRef.current = getMousePos(e);
-};
-
-interface HandlePanMoveProps {
-    e: React.MouseEvent;
-    panOffsetRef: RefObject<Point>;
-    lastPanOffsetRef: RefObject<Point>;
-    panStartRef: RefObject<Point | null>;
-}
-
-export const handlePanMove = ({
-    e,
-    panOffsetRef,
-    lastPanOffsetRef,
-    panStartRef,
-}: HandlePanMoveProps) => {
-    if (!panStartRef.current) return;
-    const { x, y } = getMousePos(e);
-    panOffsetRef.current = {
-        x: lastPanOffsetRef.current.x + (x - panStartRef.current.x),
-        y: lastPanOffsetRef.current.y + (y - panStartRef.current.y),
+const onDown = ({ e, state }: ToolContext) => {
+    state.panOrigin = {
+        startScreen: getMousePos(e),
+        startOffset: { ...state.viewport.offset },
     };
 };
 
-interface HandlePanUpProps {
-    panStartRef: RefObject<Point | null>;
-    lastPanOffsetRef: RefObject<Point>;
-    panOffsetRef: RefObject<Point>;
-}
-
-export const handlePanUp = ({
-    panStartRef,
-    lastPanOffsetRef,
-    panOffsetRef,
-}: HandlePanUpProps) => {
-    panStartRef.current = null;
-    lastPanOffsetRef.current = { ...panOffsetRef.current };
+const onMove = ({ e, state }: ToolContext) => {
+    if (!state.panOrigin) return;
+    const { x, y } = getMousePos(e);
+    state.viewport.offset = {
+        x: state.panOrigin.startOffset.x + (x - state.panOrigin.startScreen.x),
+        y: state.panOrigin.startOffset.y + (y - state.panOrigin.startScreen.y),
+    };
 };
+
+const onUp = ({ state }: ToolContext) => {
+    state.panOrigin = null;
+};
+
+export const panStrategy: ToolStrategy = { onDown, onMove, onUp };

@@ -1,84 +1,47 @@
-import { Point, Stroke } from "@/types/strokeTypes";
-import { RefObject } from "react";
+import { Stroke } from "@/types/strokeTypes";
+import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { getWorldPoint } from "../helpers";
 import { simplifyRDP } from "@/lib/strokeOptimisation";
 
-interface HandleHighlighterDownProps {
-    e: React.MouseEvent;
-    isDrawingRef: RefObject<boolean>;
-    currentStrokeRef: RefObject<Stroke | null>;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-    highlightColourRef: RefObject<string>;
-}
-
-export const handleHighlighterDown = ({
-    e,
-    isDrawingRef,
-    currentStrokeRef,
-    lastPanOffsetRef,
-    zoomRef,
-    highlightColourRef,
-}: HandleHighlighterDownProps) => {
-    isDrawingRef.current = true;
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
-    currentStrokeRef.current = {
+const onDown = ({ e, state }: ToolContext) => {
+    state.isDrawing = true;
+    const worldPoint = getWorldPoint(e, state.viewport);
+    state.currentStroke = {
         id: crypto.randomUUID(),
         points: [worldPoint],
-        colour: highlightColourRef.current,
+        colour: state.highlightColour,
         highlight: true,
     };
 };
 
-interface HandleHighlighterMoveProps {
-    e: React.MouseEvent;
-    currentStrokeRef: RefObject<Stroke | null>;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-}
+const onMove = ({ e, state }: ToolContext) => {
+    if (!state.isDrawing || !state.currentStroke) return;
+    const worldPoint = getWorldPoint(e, state.viewport);
 
-export const handleHighlighterMove = ({
-    e,
-    currentStrokeRef,
-    lastPanOffsetRef,
-    zoomRef,
-}: HandleHighlighterMoveProps) => {
-    if (!currentStrokeRef.current) return;
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
-
-    if (e.shiftKey && currentStrokeRef.current.points.length > 0) {
-        const origin = currentStrokeRef.current.points[0];
-        currentStrokeRef.current.points = [origin, worldPoint];
+    if (e.shiftKey && state.currentStroke.points.length > 0) {
+        const origin = state.currentStroke.points[0];
+        state.currentStroke.points = [origin, worldPoint];
     } else {
-        currentStrokeRef.current.points.push(worldPoint);
+        state.currentStroke.points.push(worldPoint);
     }
 };
 
-interface HandleHighlighterUpProps {
-    e: React.MouseEvent;
-    isDrawingRef: RefObject<boolean>;
-    currentStrokeRef: RefObject<Stroke | null>;
-    onStrokeFinished: (stroke: Stroke) => void;
-}
-
-export const handleHighlighterUp = ({
-    e,
-    isDrawingRef,
-    currentStrokeRef,
-    onStrokeFinished,
-}: HandleHighlighterUpProps) => {
-    isDrawingRef.current = false;
-    if (currentStrokeRef.current) {
+const onUp = ({ e, state, callbacks }: ToolContext) => {
+    if (!state.isDrawing) return;
+    state.isDrawing = false;
+    if (state.currentStroke) {
         const simplified = e.shiftKey
-            ? currentStrokeRef.current.points
-            : simplifyRDP(currentStrokeRef.current.points, 1);
+            ? state.currentStroke.points
+            : simplifyRDP(state.currentStroke.points, 1);
         const newStroke: Stroke = {
             id: crypto.randomUUID(),
             points: simplified,
-            colour: currentStrokeRef.current.colour,
+            colour: state.currentStroke.colour,
             highlight: true,
         };
-        onStrokeFinished(newStroke);
-        currentStrokeRef.current = null;
+        callbacks.onStrokeFinished(newStroke);
+        state.currentStroke = null;
     }
 };
+
+export const highlighterStrategy: ToolStrategy = { onDown, onMove, onUp };

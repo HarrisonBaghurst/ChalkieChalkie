@@ -1,12 +1,11 @@
-import { PastedImage, PastedImageMeta } from "@/types/imageTypes";
-import { Point } from "@/types/strokeTypes";
+import { PastedImageMeta } from "@/types/imageTypes";
+import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect } from "react";
 import { toast } from "sonner";
 
 interface UseImagePasteProps {
     workspaceId: string;
-    cursorPositionRef: RefObject<Point>;
-    pastedImagesRef: RefObject<PastedImage[]>;
+    canvasStateRef: RefObject<CanvasState>;
     pastedImagesMeta: readonly PastedImageMeta[] | null;
     addImageMeta: (meta: PastedImageMeta) => void;
 }
@@ -46,19 +45,20 @@ function shouldInvert(img: HTMLImageElement): boolean {
 // _____ hooks ____________________________________________________________________________________
 
 export const usePastedImagesSync = ({
-    pastedImagesRef,
+    canvasStateRef,
     pastedImagesMeta,
-}: Pick<UseImagePasteProps, "pastedImagesRef" | "pastedImagesMeta">) => {
+}: Pick<UseImagePasteProps, "canvasStateRef" | "pastedImagesMeta">) => {
     useEffect(() => {
         if (!pastedImagesMeta) return;
 
+        const state = canvasStateRef.current;
         const existingIds = new Set(
-            pastedImagesRef.current.map((img) => img.id),
+            state.pastedImages.map((img) => img.id),
         );
 
         pastedImagesMeta.forEach((meta) => {
             if (existingIds.has(meta.id)) {
-                const local = pastedImagesRef.current.find(
+                const local = state.pastedImages.find(
                     (img) => img.id === meta.id,
                 );
                 if (local) {
@@ -70,7 +70,7 @@ export const usePastedImagesSync = ({
             } else {
                 const img = new Image();
                 img.onload = () => {
-                    pastedImagesRef.current.push({
+                    state.pastedImages.push({
                         id: meta.id,
                         element: img,
                         x: meta.x,
@@ -85,7 +85,7 @@ export const usePastedImagesSync = ({
         });
 
         const metaIds = new Set(pastedImagesMeta.map((m) => m.id));
-        pastedImagesRef.current = pastedImagesRef.current.filter((img) => {
+        state.pastedImages = state.pastedImages.filter((img) => {
             return metaIds.has(img.id);
         });
     }, [pastedImagesMeta]);
@@ -93,9 +93,8 @@ export const usePastedImagesSync = ({
 
 export const useImagePaste = ({
     workspaceId,
-    cursorPositionRef,
+    canvasStateRef,
     addImageMeta,
-    pastedImagesRef,
 }: Omit<UseImagePasteProps, "pastedImagesMeta">) => {
     useEffect(() => {
         const handlePaste = async (e: ClipboardEvent) => {
@@ -109,7 +108,7 @@ export const useImagePaste = ({
                 if (!file) continue;
 
                 const imageId = crypto.randomUUID();
-                const { x, y } = cursorPositionRef.current;
+                const { x, y } = canvasStateRef.current.cursorPosition;
                 const blobUrl = URL.createObjectURL(file);
 
                 const img = new Image();
@@ -118,7 +117,7 @@ export const useImagePaste = ({
                     img.src = blobUrl;
                 });
 
-                pastedImagesRef.current.push({
+                canvasStateRef.current.pastedImages.push({
                     id: imageId,
                     element: img,
                     x,
@@ -147,7 +146,7 @@ export const useImagePaste = ({
                         // before calling addImageMeta.
                         const { url: permanentUrl } = await res.json();
 
-                        const local = pastedImagesRef.current.find(
+                        const local = canvasStateRef.current.pastedImages.find(
                             (i) => i.id === imageId,
                         );
                         if (local) {
@@ -177,8 +176,8 @@ export const useImagePaste = ({
                         toast.error("Failed to upload image.", {
                             description: "Please reload page and try again.",
                         });
-                        pastedImagesRef.current =
-                            pastedImagesRef.current.filter(
+                        canvasStateRef.current.pastedImages =
+                            canvasStateRef.current.pastedImages.filter(
                                 (i) => i.id !== imageId,
                             );
                         URL.revokeObjectURL(blobUrl);

@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Point, Stroke } from "@/types/strokeTypes";
+import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Point } from "@/types/strokeTypes";
 import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
 import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
 import { toolCursorMap, Tools } from "@/types/toolTypes";
-import { PastedImage, ResizeHandle } from "@/types/imageTypes";
-import { Rect } from "@/lib/genometry";
+import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
@@ -26,7 +25,6 @@ const ZOOM_RATIO = 1.1;
 
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const currentToolRef = useRef<Tools>("pen");
 
     // Liveblocks state and mutations
     const {
@@ -44,68 +42,81 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
 
     const isLoaded = strokes !== null;
 
-    // TODO(refactor): consolidate the ~20 individual refs below into a single
-    // CanvasState object held in one ref, and replace the duplicated per-tool
-    // if/else dispatch in lib/handlers/mouse{Down,Move,Up}.ts with a
-    // tool-strategy registry (Record<Tools, { onDown, onMove, onUp }>) —
-    // adding a tool currently touches 4+ files and every handler redeclares a
-    // near-identical 20-field props interface.
+    // single source of truth for all mutable canvas interaction state — tools,
+    // drawing, selection, images and the camera (viewport) all live here so
+    // handlers receive one ref instead of ~20 individual ones
+    const canvasStateRef = useRef<CanvasState>({
+        viewport: { offset: { x: 0, y: 0 }, zoom: 1 },
+        panOrigin: null,
+        lastMouseScreen: null,
+        currentStroke: null,
+        isDrawing: false,
+        currentColour: "#eeeeee",
+        highlightColour: HIGHLIGHT_COLOURS[0],
+        tool: "pen",
+        cursorPosition: { x: 0, y: 0 },
+        selectedImageId: null,
+        imageDragOffset: null,
+        activeResizeHandle: null,
+        pastedImages: [],
+        selectorRect: null,
+        selectorRectOrigin: null,
+        selectorStart: null,
+        selectedStrokeIds: [],
+        selectedImageIds: [],
+        selectorDragStart: null,
+        selectorDelta: { x: 0, y: 0 },
+        selectorImageOrigins: new Map(),
+    });
 
-    // local image element cache
-    const pastedImagesRef = useRef<PastedImage[]>([]);
-
-    // TODO(refactor): camera state is split across panOffsetRef,
-    // lastPanOffsetRef, panOffsetState and zoomRef/zoom — getWorldPoint reads
-    // lastPanOffsetRef, drawing reads panOffsetRef and CursorLayer reads the
-    // state mirror (so remote cursors freeze mid-pan). Unify into a single
-    // viewport object with one source of truth.
-
-    // panning refs
-    const panOffsetRef = useRef<Point>({ x: 0, y: 0 });
-    const lastPanOffsetRef = useRef<Point>({ x: 0, y: 0 });
-    const panStartRef = useRef<Point | null>(null);
-
-    // zoom state
-    const zoomRef = useRef<number>(1);
-    const [zoom, setZoom] = useState<number>(1);
-    const lastMouseScreenRef = useRef<Point | null>(null);
-
-    // pan state mirror — synced from panOffsetRef on pan end + applyZoom, used to redraw remote cursors
-    const [panOffsetState, setPanOffsetState] = useState<Point>({ x: 0, y: 0 });
-
-    // image interaction refs
-    const cursorPositionRef = useRef<Point>({ x: 0, y: 0 });
-    const selectedImageIdRef = useRef<string | null>(null);
-    const imageDragOffsetRef = useRef<Point | null>(null);
-    const activeResizeHandleRef = useRef<ResizeHandle>(null);
-
-    // drawing refs
-    const currentStrokeRef = useRef<Stroke | null>(null);
-    const isDrawingRef = useRef(false);
-    const currentColourRef = useRef("#eeeeee");
-    const highlightColourRef = useRef<string>(HIGHLIGHT_COLOURS[0]);
-
-    // selector refs
-    const selectorRectRef = useRef<Rect | null>(null);
-    const selectorRectOriginRef = useRef<Rect | null>(null);
-    const selectorStartRef = useRef<Point | null>(null);
-    const selectedStrokeIdsRef = useRef<string[]>([]);
-    const selectedImageIdsRef = useRef<string[]>([]);
-    const selectorDragStartRef = useRef<Point | null>(null);
-    const selectorDeltaRef = useRef<Point>({ x: 0, y: 0 });
-    const selectorImageOriginsRef = useRef<Map<string, Point>>(new Map());
-
-    // cursor image state
+    // reactive tool, drives cursor styling + Sidebar active highlight
     const [currentTool, setCurrentTool] = useState<Tools>("pen");
+
+    // thin RefObject adapters so the Sidebar/ColourSelector subtree can read and
+    // write the colours that live inside canvasStateRef (one source of truth)
+    const currentColourRef = useMemo<RefObject<string>>(
+        () => ({
+            get current() {
+                return canvasStateRef.current.currentColour;
+            },
+            set current(value: string) {
+                canvasStateRef.current.currentColour = value;
+            },
+        }),
+        [],
+    );
+    const highlightColourRef = useMemo<RefObject<string>>(
+        () => ({
+            get current() {
+                return canvasStateRef.current.highlightColour;
+            },
+            set current(value: string) {
+                canvasStateRef.current.highlightColour = value;
+            },
+        }),
+        [],
+    );
+
+    // Liveblocks mutations handed to the tool strategies
+    const callbacks = useMemo<ToolCallbacks>(
+        () => ({
+            onErase: eraseStrokes,
+            onStrokeFinished: addStroke,
+            onImageMoved: (id, changes) => updateImageMeta(id, changes),
+            onMoveStrokes: moveStrokes,
+        }),
+        [eraseStrokes, addStroke, updateImageMeta, moveStrokes],
+    );
 
     // live presence
     const [_, updateMyPresence] = useMyPresence();
 
     const handlePresenceUpdate = (e: React.MouseEvent) => {
         const { x: sx, y: sy } = getMousePos(e);
-        const x = Math.round((sx - panOffsetRef.current.x) / zoomRef.current);
-        const y = Math.round((sy - panOffsetRef.current.y) / zoomRef.current);
-        cursorPositionRef.current = { x, y };
+        const { offset, zoom } = canvasStateRef.current.viewport;
+        const x = Math.round((sx - offset.x) / zoom);
+        const y = Math.round((sy - offset.y) / zoom);
+        canvasStateRef.current.cursorPosition = { x, y };
         updateMyPresence({ cursor: { x, y } });
     };
 
@@ -117,81 +128,58 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     };
 
     const applyZoom = (rawZoom: number, anchor: Point) => {
+        const vp = canvasStateRef.current.viewport;
         const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, rawZoom));
-        const old = zoomRef.current;
+        const old = vp.zoom;
         if (newZoom === old) return;
         const ratio = newZoom / old;
-        const p = panOffsetRef.current;
-        panOffsetRef.current = {
-            x: anchor.x - ratio * (anchor.x - p.x),
-            y: anchor.y - ratio * (anchor.y - p.y),
+        vp.offset = {
+            x: anchor.x - ratio * (anchor.x - vp.offset.x),
+            y: anchor.y - ratio * (anchor.y - vp.offset.y),
         };
-        lastPanOffsetRef.current = { ...panOffsetRef.current };
-        zoomRef.current = newZoom;
-        setZoom(newZoom);
-        setPanOffsetState({ ...panOffsetRef.current });
+        vp.zoom = newZoom;
     };
 
     const zoomIn = useCallback(() => {
-        const anchor = lastMouseScreenRef.current ?? canvasCenter();
-        applyZoom(zoomRef.current * ZOOM_RATIO, anchor);
+        const anchor = canvasStateRef.current.lastMouseScreen ?? canvasCenter();
+        applyZoom(canvasStateRef.current.viewport.zoom * ZOOM_RATIO, anchor);
     }, []);
 
     const zoomOut = useCallback(() => {
-        const anchor = lastMouseScreenRef.current ?? canvasCenter();
-        applyZoom(zoomRef.current / ZOOM_RATIO, anchor);
+        const anchor = canvasStateRef.current.lastMouseScreen ?? canvasCenter();
+        applyZoom(canvasStateRef.current.viewport.zoom / ZOOM_RATIO, anchor);
     }, []);
 
     // clear selection state on tool change
     const onToolChanged = (tool: Tools) => {
         setCurrentTool(tool);
-        currentToolRef.current = tool;
-        selectedImageIdRef.current = null;
-        activeResizeHandleRef.current = null;
-        selectorRectRef.current = null;
-        selectorRectOriginRef.current = null;
-        selectorStartRef.current = null;
-        selectedStrokeIdsRef.current = [];
-        selectedImageIdsRef.current = [];
-        selectorDragStartRef.current = null;
-        selectorDeltaRef.current = { x: 0, y: 0 };
-        selectorImageOriginsRef.current.clear();
+        const state = canvasStateRef.current;
+        state.tool = tool;
+        state.selectedImageId = null;
+        state.activeResizeHandle = null;
+        state.selectorRect = null;
+        state.selectorRectOrigin = null;
+        state.selectorStart = null;
+        state.selectedStrokeIds = [];
+        state.selectedImageIds = [];
+        state.selectorDragStart = null;
+        state.selectorDelta = { x: 0, y: 0 };
+        state.selectorImageOrigins.clear();
     };
 
     // hooks
-    useCanvasRenderLoop({
-        canvasRef,
-        strokes,
-        currentStrokeRef,
-        pastedImagesRef,
-        panOffsetRef,
-        zoomRef,
-        selectedImageIdRef,
-        selectorRectRef,
-        selectedStrokeIdsRef,
-        selectedImageIdsRef,
-        selectorDeltaRef,
-    });
+    useCanvasRenderLoop({ canvasRef, canvasStateRef, strokes });
 
-    usePastedImagesSync({ pastedImagesRef, pastedImagesMeta });
+    usePastedImagesSync({ canvasStateRef, pastedImagesMeta });
 
-    useImagePaste({
-        workspaceId,
-        cursorPositionRef,
-        pastedImagesRef,
-        addImageMeta,
-    });
+    useImagePaste({ workspaceId, canvasStateRef, addImageMeta });
 
     useKeybinds({
         workspaceId,
-        selectedImageIdRef,
-        pastedImagesRef,
+        canvasStateRef,
         removeImageMeta,
         undo,
         redo,
-        selectedStrokeIdsRef,
-        selectedImageIdsRef,
-        selectorRectRef,
         eraseStrokes,
     });
 
@@ -217,7 +205,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                 y: e.clientY - rect.top,
             };
             const factor = e.deltaY < 0 ? ZOOM_RATIO : 1 / ZOOM_RATIO;
-            applyZoom(zoomRef.current * factor, anchor);
+            applyZoom(canvasStateRef.current.viewport.zoom * factor, anchor);
         };
         canvas.addEventListener("wheel", onWheel, { passive: false });
         return () => canvas.removeEventListener("wheel", onWheel);
@@ -235,10 +223,10 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         <>
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
-                    <CursorLayer zoom={zoom} panOffset={panOffsetState} />
+                    <CursorLayer canvasStateRef={canvasStateRef} />
                     <WorkspaceTopbar />
                     <Sidebar
-                        currentTool={currentToolRef.current}
+                        currentTool={currentTool}
                         currentColourRef={currentColourRef}
                         highlightColourRef={highlightColourRef}
                         onToolChanged={onToolChanged}
@@ -251,88 +239,16 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) =>
-                            handleMouseDown({
-                                e,
-                                currentColourRef,
-                                highlightColourRef,
-                                currentStrokeRef,
-                                isDrawingRef,
-                                panStartRef,
-                                lastPanOffsetRef,
-                                zoomRef,
-                                currentToolRef,
-                                strokes,
-                                pastedImagesRef,
-                                selectedImageIdRef,
-                                imageDragOffsetRef,
-                                activeResizeHandleRef,
-                                selectorRectRef,
-                                selectorRectOriginRef,
-                                selectorStartRef,
-                                selectedStrokeIdsRef,
-                                selectedImageIdsRef,
-                                selectorDragStartRef,
-                                selectorDeltaRef,
-                                selectorImageOriginsRef,
-                            })
+                            handleMouseDown({ e, canvasStateRef, strokes, callbacks })
                         }
                         onMouseMove={(e) => {
-                            handleMouseMove({
-                                e,
-                                currentStrokeRef,
-                                isDrawingRef,
-                                panStartRef,
-                                panOffsetRef,
-                                lastPanOffsetRef,
-                                zoomRef,
-                                currentToolRef,
-                                strokes,
-                                onErase: eraseStrokes,
-                                pastedImagesRef,
-                                selectedImageIdRef,
-                                imageDragOffsetRef,
-                                activeResizeHandleRef,
-                                selectorRectRef,
-                                selectorRectOriginRef,
-                                selectorStartRef,
-                                selectedImageIdsRef,
-                                selectorDragStartRef,
-                                selectorDeltaRef,
-                                selectorImageOriginsRef,
-                            });
+                            handleMouseMove({ e, canvasStateRef, strokes, callbacks });
                             handlePresenceUpdate(e);
-                            lastMouseScreenRef.current = getMousePos(e);
+                            canvasStateRef.current.lastMouseScreen = getMousePos(e);
                         }}
-                        onMouseUp={(e) => {
-                            handleMouseUp({
-                                e,
-                                isDrawingRef,
-                                currentStrokeRef,
-                                panStartRef,
-                                lastPanOffsetRef,
-                                panOffsetRef,
-                                currentToolRef,
-                                strokes,
-                                onStrokeFinished: addStroke,
-                                pastedImagesRef,
-                                selectedImageIdRef,
-                                imageDragOffsetRef,
-                                activeResizeHandleRef,
-                                onImageMoved: (id, changes) =>
-                                    updateImageMeta(id, changes),
-                                selectorRectRef,
-                                selectorStartRef,
-                                selectedStrokeIdsRef,
-                                selectedImageIdsRef,
-                                selectorDragStartRef,
-                                selectorDeltaRef,
-                                selectorImageOriginsRef,
-                                onMoveStrokes: moveStrokes,
-                            });
-                            if (e.button === 2) {
-                                setPanOffsetState({ ...panOffsetRef.current });
-                            }
-                        }}
+                        onMouseUp={(e) =>
+                            handleMouseUp({ e, canvasStateRef, strokes, callbacks })
+                        }
                     />
                 </div>
             ) : (

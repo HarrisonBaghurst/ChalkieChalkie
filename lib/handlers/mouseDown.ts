@@ -1,113 +1,34 @@
-import { PastedImage, ResizeHandle } from "@/types/imageTypes";
-import { Rect } from "@/lib/genometry";
-import { Point, Stroke } from "@/types/strokeTypes";
-import { Tools } from "@/types/toolTypes";
 import { RefObject } from "react";
-import { handlePenDown } from "./tools/pen";
-import { handlePointerDown } from "./tools/pointer";
-import { handlePanDown } from "./tools/pan";
-import { handleSelectorDown } from "./tools/selector";
-import { handleHighlighterDown } from "./tools/highlighter";
+import { Stroke } from "@/types/strokeTypes";
+import { CanvasState, ToolCallbacks, ToolContext } from "@/types/canvasStateTypes";
+import { toolStrategies } from "./toolStrategies";
+import { panStrategy } from "./tools/pan";
 
 interface HandleMouseDownProps {
     e: React.MouseEvent;
-    currentColourRef: RefObject<string>;
-    highlightColourRef: RefObject<string>;
-    currentStrokeRef: RefObject<Stroke | null>;
-    isDrawingRef: RefObject<boolean>;
-    panStartRef: RefObject<Point | null>;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-    currentToolRef: RefObject<Tools>;
+    canvasStateRef: RefObject<CanvasState>;
     strokes: readonly Stroke[] | null;
-    pastedImagesRef: RefObject<PastedImage[]>;
-    selectedImageIdRef: RefObject<string | null>;
-    imageDragOffsetRef: RefObject<Point | null>;
-    activeResizeHandleRef: RefObject<ResizeHandle>;
-    selectorRectRef: RefObject<Rect | null>;
-    selectorRectOriginRef: RefObject<Rect | null>;
-    selectorStartRef: RefObject<Point | null>;
-    selectedStrokeIdsRef: RefObject<string[]>;
-    selectedImageIdsRef: RefObject<string[]>;
-    selectorDragStartRef: RefObject<Point | null>;
-    selectorDeltaRef: RefObject<Point>;
-    selectorImageOriginsRef: RefObject<Map<string, Point>>;
+    callbacks: ToolCallbacks;
 }
 
 export const handleMouseDown = ({
     e,
-    currentColourRef,
-    highlightColourRef,
-    currentStrokeRef,
-    isDrawingRef,
-    panStartRef,
-    lastPanOffsetRef,
-    zoomRef,
-    currentToolRef,
+    canvasStateRef,
     strokes,
-    pastedImagesRef,
-    selectedImageIdRef,
-    imageDragOffsetRef,
-    activeResizeHandleRef,
-    selectorRectRef,
-    selectorRectOriginRef,
-    selectorStartRef,
-    selectedStrokeIdsRef,
-    selectedImageIdsRef,
-    selectorDragStartRef,
-    selectorDeltaRef,
-    selectorImageOriginsRef,
+    callbacks,
 }: HandleMouseDownProps) => {
     e.preventDefault();
 
-    if (e.buttons === 1 && currentToolRef.current === "pen") {
-        handlePenDown({
-            e,
-            currentStrokeRef,
-            currentColourRef,
-            isDrawingRef,
-            lastPanOffsetRef,
-            zoomRef,
-        });
-    } else if (e.buttons === 1 && currentToolRef.current === "pointer") {
-        handlePointerDown({
-            e,
-            lastPanOffsetRef,
-            zoomRef,
-            pastedImagesRef,
-            selectedImageIdRef,
-            activeResizeHandleRef,
-            imageDragOffsetRef,
-        });
-    } else if (e.buttons === 1 && currentToolRef.current === "selector") {
-        handleSelectorDown({
-            e,
-            lastPanOffsetRef,
-            zoomRef,
-            strokes,
-            pastedImagesRef,
-            selectorRectRef,
-            selectorRectOriginRef,
-            selectorStartRef,
-            selectedStrokeIdsRef,
-            selectedImageIdsRef,
-            selectorDragStartRef,
-            selectorDeltaRef,
-            selectorImageOriginsRef,
-        });
-    } else if (e.buttons === 1 && currentToolRef.current === "highlighter") {
-        handleHighlighterDown({
-            e,
-            currentStrokeRef,
-            highlightColourRef,
-            isDrawingRef,
-            lastPanOffsetRef,
-            zoomRef,
-        });
-    } else if (e.buttons === 2) {
-        handlePanDown({
-            e,
-            panStartRef,
-        });
+    const state = canvasStateRef.current;
+    const ctx: ToolContext = { e, state, strokes, callbacks };
+
+    // right button → pan, regardless of active tool
+    if (e.buttons === 2) {
+        panStrategy.onDown?.(ctx);
+        return;
+    }
+
+    if (e.buttons === 1) {
+        toolStrategies[state.tool].onDown?.(ctx);
     }
 };

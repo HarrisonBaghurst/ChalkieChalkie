@@ -1,36 +1,23 @@
 import { StrokeIntersectPoints } from "@/lib/genometry";
-import { Point, Stroke } from "@/types/strokeTypes";
+import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { getWorldPoint } from "../helpers";
-import { RefObject } from "react";
 
 const ERASER_RADIUS = 10;
 
-interface HandleEraserMoveProps {
-    e: React.MouseEvent;
-    strokes: readonly Stroke[] | null;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-    onErase: (StrokeIds: string[]) => void;
-}
-
-export const handleEraserMove = ({
-    e,
-    strokes,
-    lastPanOffsetRef,
-    zoomRef,
-    onErase,
-}: HandleEraserMoveProps) => {
+const onMove = ({ e, state, strokes, callbacks }: ToolContext) => {
     if (!strokes) return;
 
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
+    const worldPoint = getWorldPoint(e, state.viewport);
 
     const hitStrokeIds = strokes
-        .filter((strokes) =>
-            StrokeIntersectPoints(strokes, worldPoint, ERASER_RADIUS),
+        .filter((stroke) =>
+            StrokeIntersectPoints(stroke, worldPoint, ERASER_RADIUS),
         )
         .map((stroke) => stroke.id);
 
     if (hitStrokeIds.length >= 1) {
-        onErase(hitStrokeIds);
+        callbacks.onErase(hitStrokeIds);
     }
 };
+
+export const eraserStrategy: ToolStrategy = { onMove };

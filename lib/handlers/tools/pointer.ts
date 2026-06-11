@@ -1,79 +1,39 @@
-import { RefObject } from "react";
+import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { getWorldPoint } from "../helpers";
-import { Point } from "@/types/strokeTypes";
-import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
 
-interface HandlePointerDownProps {
-    e: React.MouseEvent;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-    pastedImagesRef: RefObject<PastedImage[]>;
-    selectedImageIdRef: RefObject<string | null>;
-    activeResizeHandleRef: RefObject<ResizeHandle>;
-    imageDragOffsetRef: RefObject<Point | null>;
-}
-
-export const handlePointerDown = ({
-    e,
-    lastPanOffsetRef,
-    zoomRef,
-    pastedImagesRef,
-    selectedImageIdRef,
-    activeResizeHandleRef,
-    imageDragOffsetRef,
-}: HandlePointerDownProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
-    const images = pastedImagesRef.current;
-    const img = getImageAtPoint(images, worldPoint);
+const onDown = ({ e, state }: ToolContext) => {
+    const worldPoint = getWorldPoint(e, state.viewport);
+    const img = getImageAtPoint(state.pastedImages, worldPoint);
 
     if (img) {
-        selectedImageIdRef.current = img.id;
+        state.selectedImageId = img.id;
 
         const handle = getResizeHandleAtPoint(img, worldPoint);
         if (handle) {
-            activeResizeHandleRef.current = handle;
+            state.activeResizeHandle = handle;
             return;
         }
 
-        imageDragOffsetRef.current = {
+        state.imageDragOffset = {
             x: worldPoint.x - img.x,
             y: worldPoint.y - img.y,
         };
     } else {
-        selectedImageIdRef.current = null;
+        state.selectedImageId = null;
     }
 };
 
-interface HandlePointerMoveProps {
-    e: React.MouseEvent;
-    lastPanOffsetRef: RefObject<Point>;
-    zoomRef: RefObject<number>;
-    pastedImagesRef: RefObject<PastedImage[]>;
-    selectedImageIdRef: RefObject<string | null>;
-    activeResizeHandleRef: RefObject<ResizeHandle>;
-    imageDragOffsetRef: RefObject<Point | null>;
-}
-
-export const handlePointerMove = ({
-    e,
-    lastPanOffsetRef,
-    zoomRef,
-    pastedImagesRef,
-    selectedImageIdRef,
-    activeResizeHandleRef,
-    imageDragOffsetRef,
-}: HandlePointerMoveProps) => {
-    const worldPoint = getWorldPoint({ e, lastPanOffsetRef, zoomRef });
-    const images = pastedImagesRef.current;
-    const selectedId = selectedImageIdRef.current;
+const onMove = ({ e, state }: ToolContext) => {
+    const worldPoint = getWorldPoint(e, state.viewport);
+    const selectedId = state.selectedImageId;
     if (!selectedId) return;
 
-    const img = images.find((i) => i.id === selectedId);
+    const img = state.pastedImages.find((i) => i.id === selectedId);
     if (!img) return;
 
     // resizing
-    if (activeResizeHandleRef.current) {
+    if (state.activeResizeHandle) {
         const MIN_SIZE = 20;
 
         const right = img.x + img.width;
@@ -81,7 +41,7 @@ export const handlePointerMove = ({
 
         const aspectRatio = img.width / img.height;
 
-        switch (activeResizeHandleRef.current) {
+        switch (state.activeResizeHandle) {
             case "se": {
                 let newWidth = worldPoint.x - img.x;
                 newWidth = Math.max(MIN_SIZE, newWidth);
@@ -128,28 +88,18 @@ export const handlePointerMove = ({
     }
 
     // dragging
-    else if (imageDragOffsetRef.current) {
-        img.x = worldPoint.x - imageDragOffsetRef.current.x;
-        img.y = worldPoint.y - imageDragOffsetRef.current.y;
+    else if (state.imageDragOffset) {
+        img.x = worldPoint.x - state.imageDragOffset.x;
+        img.y = worldPoint.y - state.imageDragOffset.y;
     }
 };
 
-interface HandlePointerUpProps {
-    selectedImageIdRef: RefObject<string | null>;
-    pastedImagesRef: RefObject<PastedImage[]>;
-    onImageMoved: (id: string, changes: Partial<PastedImageMeta>) => void;
-}
-
-export const handlePointerUp = ({
-    selectedImageIdRef,
-    pastedImagesRef,
-    onImageMoved,
-}: HandlePointerUpProps) => {
-    const id = selectedImageIdRef.current;
+const onUp = ({ state, callbacks }: ToolContext) => {
+    const id = state.selectedImageId;
     if (id) {
-        const img = pastedImagesRef.current.find((i) => i.id === id);
+        const img = state.pastedImages.find((i) => i.id === id);
         if (img) {
-            onImageMoved(id, {
+            callbacks.onImageMoved(id, {
                 x: img.x,
                 y: img.y,
                 width: img.width,
@@ -158,3 +108,5 @@ export const handlePointerUp = ({
         }
     }
 };
+
+export const pointerStrategy: ToolStrategy = { onDown, onMove, onUp };

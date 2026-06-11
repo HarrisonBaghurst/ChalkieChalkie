@@ -1,26 +1,60 @@
 import { useOthers } from "@liveblocks/react";
-import { Point } from "@/types/strokeTypes";
+import { RefObject, useEffect, useRef } from "react";
+import { CanvasState } from "@/types/canvasStateTypes";
 
 // TBD - will update to be different colour per user later
 const COLOR = "#eb7a38";
 
 interface CursorLayerProps {
-    zoom: number;
-    panOffset: Point;
+    canvasStateRef: RefObject<CanvasState>;
 }
 
-const CursorLayer = ({ zoom, panOffset }: CursorLayerProps) => {
+const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
     const others = useOthers();
+
+    // keep latest others without restarting the rAF loop on every presence tick
+    const othersRef = useRef(others);
+    othersRef.current = others;
+    const svgRefs = useRef<Map<number, SVGSVGElement | null>>(new Map());
+
+    // drive cursor transforms off the viewport ref each frame so remote cursors
+    // track smoothly while THIS user pans/zooms (single source of truth, no
+    // stale state mirror that freezes mid-pan)
+    useEffect(() => {
+        let cancelled = false;
+        const update = () => {
+            if (cancelled) return;
+            const { offset, zoom } = canvasStateRef.current.viewport;
+            othersRef.current.forEach(({ connectionId, presence }) => {
+                const el = svgRefs.current.get(connectionId);
+                if (!el || !presence?.cursor) return;
+                const screenX = presence.cursor.x * zoom + offset.x;
+                const screenY = presence.cursor.y * zoom + offset.y;
+                el.style.transform = `translate(${screenX}px, ${screenY}px)`;
+            });
+            requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+        return () => {
+            cancelled = true;
+        };
+    }, [canvasStateRef]);
+
+    const { offset, zoom } = canvasStateRef.current.viewport;
 
     return (
         <>
             {others.map(({ connectionId, presence }) => {
                 if (!presence?.cursor) return null;
-                const screenX = presence.cursor.x * zoom + panOffset.x;
-                const screenY = presence.cursor.y * zoom + panOffset.y;
+                // initial transform from current viewport; rAF keeps it fresh
+                const screenX = presence.cursor.x * zoom + offset.x;
+                const screenY = presence.cursor.y * zoom + offset.y;
                 return (
                     <svg
                         key={connectionId}
+                        ref={(el) => {
+                            svgRefs.current.set(connectionId, el);
+                        }}
                         style={{
                             position: "absolute",
                             left: 0,

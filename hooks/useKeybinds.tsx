@@ -1,31 +1,22 @@
-import { PastedImage } from "@/types/imageTypes";
-import { Rect } from "@/lib/genometry";
+import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect } from "react";
 import { toast } from "sonner";
 
 interface UseKeybindsProps {
     workspaceId: string;
-    selectedImageIdRef: RefObject<string | null>;
-    pastedImagesRef: RefObject<PastedImage[]>;
+    canvasStateRef: RefObject<CanvasState>;
     removeImageMeta: (id: string) => void;
     undo: () => void;
     redo: () => void;
-    selectedStrokeIdsRef: RefObject<string[]>;
-    selectedImageIdsRef: RefObject<string[]>;
-    selectorRectRef: RefObject<Rect | null>;
     eraseStrokes: (ids: string[]) => void;
 }
 
 export const useKeybinds = ({
     workspaceId,
-    selectedImageIdRef,
-    pastedImagesRef,
+    canvasStateRef,
     removeImageMeta,
     undo,
     redo,
-    selectedStrokeIdsRef,
-    selectedImageIdsRef,
-    selectorRectRef,
     eraseStrokes,
 }: UseKeybindsProps) => {
     useEffect(() => {
@@ -34,6 +25,7 @@ export const useKeybinds = ({
         // images/strokes and Ctrl+Z hits the canvas history. Bail out early
         // when event.target is an input/textarea/contenteditable.
         const onKeypress = async (event: KeyboardEvent) => {
+            const state = canvasStateRef.current;
             if (event.ctrlKey && event.key === "z") {
                 event.preventDefault();
                 undo();
@@ -43,12 +35,12 @@ export const useKeybinds = ({
             } else if (event.key === "Delete" || event.key === "Backspace") {
                 // Delete selector-selected strokes
                 const hadSelectorSelection =
-                    selectedStrokeIdsRef.current.length > 0 ||
-                    selectedImageIdsRef.current.length > 0;
+                    state.selectedStrokeIds.length > 0 ||
+                    state.selectedImageIds.length > 0;
 
-                if (selectedStrokeIdsRef.current.length > 0) {
-                    eraseStrokes([...selectedStrokeIdsRef.current]);
-                    selectedStrokeIdsRef.current = [];
+                if (state.selectedStrokeIds.length > 0) {
+                    eraseStrokes([...state.selectedStrokeIds]);
+                    state.selectedStrokeIds = [];
                 }
 
                 // Delete selector-selected images
@@ -56,7 +48,7 @@ export const useKeybinds = ({
                 // immediately, but Ctrl+Z restores the Liveblocks meta and
                 // shows a broken image. Defer blob deletion to the cleanup
                 // cron (only remove the meta here) so undo works.
-                const selectorImageIds = [...selectedImageIdsRef.current];
+                const selectorImageIds = [...state.selectedImageIds];
                 if (selectorImageIds.length > 0) {
                     for (const id of selectorImageIds) {
                         removeImageMeta(id);
@@ -72,19 +64,19 @@ export const useKeybinds = ({
                             }),
                         );
                     }
-                    pastedImagesRef.current = pastedImagesRef.current.filter(
+                    state.pastedImages = state.pastedImages.filter(
                         (img) => !selectorImageIds.includes(img.id),
                     );
-                    selectedImageIdsRef.current = [];
+                    state.selectedImageIds = [];
                 }
 
                 // Clear the selection box if the selector had a selection
                 if (hadSelectorSelection) {
-                    selectorRectRef.current = null;
+                    state.selectorRect = null;
                 }
 
                 // Delete pointer-tool single-selected image
-                const id = selectedImageIdRef.current;
+                const id = state.selectedImageId;
                 if (id && !selectorImageIds.includes(id)) {
                     removeImageMeta(id);
                     try {
@@ -95,10 +87,10 @@ export const useKeybinds = ({
                                 body: JSON.stringify({ imageId: id, workspaceId }),
                             },
                         );
-                        pastedImagesRef.current = pastedImagesRef.current.filter(
+                        state.pastedImages = state.pastedImages.filter(
                             (img) => img.id != id,
                         );
-                        selectedImageIdRef.current = null;
+                        state.selectedImageId = null;
                     } catch (err) {
                         console.error("Failed to delete image:", err);
                         toast.error("Failed to delete image.", {
