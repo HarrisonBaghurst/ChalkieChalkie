@@ -6,7 +6,6 @@ import { userInfo, Workspace, WorkspaceEditData } from "@/types/userTypes";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
 import Button from "./Button";
 import Combobox from "./Combobox";
 import { toast } from "sonner";
@@ -136,16 +135,13 @@ const Workspaces = () => {
         if (!user) return;
         setCreatingWorkspace(true);
 
-        const id = uuidv4();
-
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${id}`,
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        roomId: id,
                         title: "New Workspace",
                     }),
                 },

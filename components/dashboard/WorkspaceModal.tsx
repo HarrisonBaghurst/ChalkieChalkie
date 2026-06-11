@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 import { cn } from "@/lib/utils";
 import { userInfo, Workspace } from "@/types/userTypes";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
@@ -125,10 +124,8 @@ const WorkspaceModal = ({
         setSubmitting(true);
 
         const isCreate = mode.kind === "create";
-        const roomId = isCreate ? uuidv4() : mode.workspace.id;
 
         const body = {
-            roomId,
             title: form.title,
             description: form.description,
             startTime: form.startTime ? form.startTime.toISOString() : null,
@@ -136,15 +133,16 @@ const WorkspaceModal = ({
             feedback: form.feedback,
         };
 
+        const url = isCreate
+            ? `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces`
+            : `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${mode.workspace.id}`;
+
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${roomId}`,
-                {
-                    method: isCreate ? "POST" : "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                },
-            );
+            const res = await fetch(url, {
+                method: isCreate ? "POST" : "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
 
             if (!res.ok) {
                 toast.error(

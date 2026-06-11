@@ -2,95 +2,10 @@ import { enforceRateLimit } from "@/lib/ratelimit";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
-import { randomUUID } from "crypto";
-
-const MAX_TITLE_LENGTH = 100;
-const MAX_DESCRIPTION_LENGTH = 500;
-const MAX_FEEDBACK_LENGTH = 2000;
-const MAX_COLLABORATORS = 100;
-const CLERK_USER_ID_REGEX = /^user_[a-zA-Z0-9]+$/;
-
-type WorkspaceBody = {
-    title?: unknown;
-    description?: unknown;
-    collaborators?: unknown;
-    startTime?: unknown;
-    feedback?: unknown;
-    roomId?: unknown;
-};
-
-type ValidatedFields = {
-    title: string | null;
-    description: string | null;
-    feedback: string | null;
-    startTime: string | null;
-    collaborators: string[];
-};
-
-/**
- * Parse + validate the optional workspace fields. Returns a 400 Response on
- * the first validation failure, or a ValidatedFields object on success.
- */
-function validateWorkspaceBody(body: WorkspaceBody): ValidatedFields | Response {
-    const { title, description, collaborators, startTime, feedback } = body;
-
-    if (
-        title !== undefined &&
-        title !== null &&
-        (typeof title !== "string" || title.length > MAX_TITLE_LENGTH)
-    ) {
-        return new Response("Invalid title", { status: 400 });
-    }
-
-    if (
-        description !== undefined &&
-        description !== null &&
-        (typeof description !== "string" ||
-            description.length > MAX_DESCRIPTION_LENGTH)
-    ) {
-        return new Response("Invalid description", { status: 400 });
-    }
-
-    if (
-        feedback !== undefined &&
-        feedback !== null &&
-        (typeof feedback !== "string" || feedback.length > MAX_FEEDBACK_LENGTH)
-    ) {
-        return new Response("Invalid feedback", { status: 400 });
-    }
-
-    if (
-        startTime !== undefined &&
-        startTime !== null &&
-        typeof startTime !== "string"
-    ) {
-        return new Response("Invalid startTime", { status: 400 });
-    }
-
-    let collaboratorIds: string[] = [];
-    if (collaborators !== undefined && collaborators !== null) {
-        if (!Array.isArray(collaborators)) {
-            return new Response("Invalid collaborators", { status: 400 });
-        }
-        if (collaborators.length > MAX_COLLABORATORS) {
-            return new Response("Too many collaborators", { status: 400 });
-        }
-        for (const id of collaborators) {
-            if (typeof id !== "string" || !CLERK_USER_ID_REGEX.test(id)) {
-                return new Response("Invalid collaborator id", { status: 400 });
-            }
-        }
-        collaboratorIds = collaborators as string[];
-    }
-
-    return {
-        title: (title as string | null | undefined) ?? null,
-        description: (description as string | null | undefined) ?? null,
-        feedback: (feedback as string | null | undefined) ?? null,
-        startTime: (startTime as string | null | undefined) ?? null,
-        collaborators: collaboratorIds,
-    };
-}
+import {
+    validateWorkspaceBody,
+    type WorkspaceBody,
+} from "../_shared";
 
 /**
  * Retrieve workspace data given ID for authenticated user
@@ -129,15 +44,11 @@ export async function GET(
 }
 
 /**
- * Update workspace details in database
+ * Update workspace details in database. True PATCH semantics: only fields
+ * actually present in the request body are written to the row.
  *
  * @route api/workspaces/[workspaceId]
  */
-// TODO: PATCH currently overwrites every column — missing body fields are
-// coalesced to null and user_ids is rebuilt as [host, ...collaborators], so a
-// title-only rename (e.g. WorkspaceTopbar's commitEdit) wipes collaborators,
-// description, start_time and feedback. Build the update object only from
-// fields actually present in the body (true PATCH semantics).
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -179,9 +90,22 @@ export async function PATCH(
     const validated = validateWorkspaceBody(body);
     if (validated instanceof Response) return validated;
 
-    const userIds: string[] = Array.from(
-        new Set([userId, ...validated.collaborators]),
-    );
+    // Build the update payload from keys actually present in the body, so a
+    // partial PATCH only touches the columns the caller specified.
+    const update: Record<string, unknown> = {};
+    if ("title" in body) update.title = validated.title;
+    if ("description" in body) update.description = validated.description;
+    if ("startTime" in body) update.start_time = validated.startTime;
+    if ("feedback" in body) update.feedback = validated.feedback;
+    if ("collaborators" in body) {
+        update.user_ids = Array.from(
+            new Set([userId, ...validated.collaborators]),
+        );
+    }
+
+    if (Object.keys(update).length === 0) {
+        return new Response("No fields to update", { status: 400 });
+    }
 
     // only the host of the workspace may edit it
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
@@ -196,13 +120,7 @@ export async function PATCH(
 
     const { data, error } = await supabaseAdmin
         .from("Room")
-        .update({
-            title: validated.title,
-            description: validated.description,
-            user_ids: userIds,
-            start_time: validated.startTime,
-            feedback: validated.feedback,
-        })
+        .update(update)
         .eq("id", roomId)
         .select()
         .single();
@@ -210,65 +128,6 @@ export async function PATCH(
     if (error) {
         // TODO: centralise via errorResponse helper
         console.error("[workspace:patch] Supabase error:", error);
-        return new Response("Internal server error", { status: 500 });
-    }
-
-    return Response.json(data);
-}
-
-// TODO: workspace creation lives at POST /api/workspaces/[workspaceId] but
-// ignores the URL id (and any client-supplied roomId). Move to POST
-// /api/workspaces and update callers (Workspaces.tsx createBoard, dashboard).
-export async function POST(req: Request) {
-    const { userId } = await auth();
-    if (!userId) return new Response("Unauthorised", { status: 401 });
-
-    const blocked = await enforceRateLimit(req, "workspace:create", userId);
-    if (blocked) return blocked;
-
-    // tutor-only action
-    const forbidden = await requireTutor(userId);
-    if (forbidden) return forbidden;
-
-    let body: WorkspaceBody;
-    try {
-        body = (await req.json()) as WorkspaceBody;
-    } catch {
-        return new Response("Invalid JSON body", { status: 400 });
-    }
-
-    const validated = validateWorkspaceBody(body);
-    if (validated instanceof Response) return validated;
-
-    // server-generated id; any client-supplied roomId is ignored
-    const roomId = randomUUID();
-
-    const userIds: string[] = Array.from(
-        new Set([userId, ...validated.collaborators]),
-    );
-
-    const { data, error } = await supabaseAdmin
-        .from("Room")
-        .insert({
-            id: roomId,
-            host_id: userId,
-            user_ids: userIds,
-            title: validated.title,
-            description: validated.description,
-            start_time: validated.startTime,
-            feedback: validated.feedback,
-            last_activity_at: new Date(),
-        })
-        .select()
-        .single();
-
-    if (error) {
-        // TODO: centralise via errorResponse helper
-        console.error("[workspace:create] Supabase error:", error);
-        // Postgres unique violation on the primary key
-        if ((error as { code?: string }).code === "23505") {
-            return new Response("Conflict", { status: 409 });
-        }
         return new Response("Internal server error", { status: 500 });
     }
 

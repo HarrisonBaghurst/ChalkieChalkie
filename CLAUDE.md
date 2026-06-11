@@ -1,6 +1,8 @@
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Always address me by name at the beginning of a responce (Harrison).
+Always interview and never make blind assumptions.
 
 ## Project Overview
 
@@ -22,6 +24,7 @@ No test suite exists in this project.
 ## Required Environment Variables
 
 Create `.env.local` with:
+
 - `NEXT_PUBLIC_LIVE_BLOCKS_API_KEY`, `LIVEBLOCKS_SECRET_KEY`
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
 - `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
