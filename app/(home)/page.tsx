@@ -7,7 +7,7 @@ const page = () => {
     return (
         <div className="mx-32 my-24 h-[calc(100%-12rem)] flex flex-col w-135 justify-between">
             <div className="flex flex-col gap-10">
-                <h1 className="text-7xl font-inter-bold w-full leading-20">
+                <h1 className="text-6xl font-inter-bold w-full leading-18">
                     Where Effort Becomes Understanding
                 </h1>
                 <p className="text-foreground-second text-lg leading-relaxed">
@@ -39,7 +39,7 @@ const page = () => {
                     <p>Privacy Policy</p>
                 </div>
             </div>
-            <div className="absolute right-16 border-2 border-white/10 top-[calc(50%-3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="absolute left-224 border-2 border-white/10 top-[calc(50%-3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
@@ -49,7 +49,7 @@ const page = () => {
                     />
                 </div>
             </div>
-            <div className="absolute right-40 border-2 border-white/10 top-[calc(50%+3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="absolute left-200 border-2 border-white/10 top-[calc(50%+3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}

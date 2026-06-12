@@ -15,6 +15,7 @@ import Next from "./Next";
 import Actions from "./Actions";
 import Upcoming from "./Upcoming";
 import Previous from "./Previous";
+import DashboardSkeleton from "./skeletons/DashboardSkeleton";
 
 type DashboardClientProps = {
     testData?: {
@@ -37,6 +38,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
         testData?.users ?? [],
     );
     const [friends, setFriends] = useState<userInfo[]>([]);
+    const [loading, setLoading] = useState(!testData);
 
     const [selectedCollaboratorIds, setSelectedCollaboratorIds] = useState<
         string[]
@@ -135,6 +137,8 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                 setUsersInfo(usersData.users ?? []);
             } catch (err) {
                 console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -257,41 +261,51 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
         <div className="flex">
             <Sidebar />
             <div className="ml-75 w-full h-full p-16 flex flex-col gap-6">
-                <Next workspace={nextWorkspace} />
-                <Actions friends={friends} onCreated={handleCreated} />
-                <div className="h-px w-full bg-foreground-third" />
-                <div className="flex gap-6 w-full">
-                    <Upcoming
-                        workspaces={upcomingFiltered}
-                        usersMap={usersMap}
-                        viewerIsHost={viewerIsHost}
-                        collaborators={collaborators}
-                        selectedCollaboratorIds={selectedCollaboratorIds}
-                        onChangeSelectedCollaboratorIds={
-                            setSelectedCollaboratorIds
-                        }
-                        search={upcomingSearch}
-                        onChangeSearch={setUpcomingSearch}
-                        friends={friends}
-                        onWorkspaceUpdated={handleUpdated}
-                        onWorkspaceDeleted={handleDeleted}
-                    />
-                    <Previous
-                        workspaces={previousFiltered}
-                        usersMap={usersMap}
-                        viewerIsHost={viewerIsHost}
-                        collaborators={collaborators}
-                        selectedCollaboratorIds={selectedCollaboratorIds}
-                        onChangeSelectedCollaboratorIds={
-                            setSelectedCollaboratorIds
-                        }
-                        search={previousSearch}
-                        onChangeSearch={setPreviousSearch}
-                        friends={friends}
-                        onWorkspaceUpdated={handleUpdated}
-                        onWorkspaceDeleted={handleDeleted}
-                    />
-                </div>
+                {loading || !isLoaded ? (
+                    <DashboardSkeleton />
+                ) : (
+                    <>
+                        <Next workspace={nextWorkspace} />
+                        <Actions friends={friends} onCreated={handleCreated} />
+                        <div className="h-px w-full bg-foreground-third" />
+                        <div className="flex gap-6 w-full">
+                            <Upcoming
+                                workspaces={upcomingFiltered}
+                                usersMap={usersMap}
+                                viewerIsHost={viewerIsHost}
+                                collaborators={collaborators}
+                                selectedCollaboratorIds={
+                                    selectedCollaboratorIds
+                                }
+                                onChangeSelectedCollaboratorIds={
+                                    setSelectedCollaboratorIds
+                                }
+                                search={upcomingSearch}
+                                onChangeSearch={setUpcomingSearch}
+                                friends={friends}
+                                onWorkspaceUpdated={handleUpdated}
+                                onWorkspaceDeleted={handleDeleted}
+                            />
+                            <Previous
+                                workspaces={previousFiltered}
+                                usersMap={usersMap}
+                                viewerIsHost={viewerIsHost}
+                                collaborators={collaborators}
+                                selectedCollaboratorIds={
+                                    selectedCollaboratorIds
+                                }
+                                onChangeSelectedCollaboratorIds={
+                                    setSelectedCollaboratorIds
+                                }
+                                search={previousSearch}
+                                onChangeSearch={setPreviousSearch}
+                                friends={friends}
+                                onWorkspaceUpdated={handleUpdated}
+                                onWorkspaceDeleted={handleDeleted}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
