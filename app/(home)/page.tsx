@@ -39,13 +39,22 @@ const page = () => {
                     <p>Privacy Policy</p>
                 </div>
             </div>
-            <div className="absolute right-24 border-2 border-white/10 top-1/2 -translate-y-1/2 w-fit h-fit rounded-lg -skew-3 -rotate-3">
+            <div className="absolute right-16 border-2 border-white/10 top-[calc(50%-3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
                         alt="dashboard example"
                         fill
                         priority
+                    />
+                </div>
+            </div>
+            <div className="absolute right-40 border-2 border-white/10 top-[calc(50%+3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
+                <div className="relative w-240 h-140 rounded-lg overflow-hidden">
+                    <Image
+                        src={"/imgs/dashboardExample.webp"}
+                        alt="dashboard example"
+                        fill
                     />
                 </div>
             </div>
