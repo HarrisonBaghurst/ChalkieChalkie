@@ -3,7 +3,7 @@ import { SignedIn, UserButton } from "@clerk/nextjs";
 import Button from "../dashboard/Button";
 import { useRouter } from "next/navigation";
 
-const NavbarClient = () => {
+const NavbarClient = ({ isInWorkspace }: { isInWorkspace: boolean }) => {
     const router = useRouter();
 
     const handleDashboardRedirect = () => {
@@ -13,10 +13,12 @@ const NavbarClient = () => {
     return (
         <SignedIn>
             <div className="flex gap-4 items-center">
-                <Button
-                    text="Open Dashboard"
-                    onClick={handleDashboardRedirect}
-                />
+                {!isInWorkspace && (
+                    <Button
+                        text="Open Dashboard"
+                        onClick={handleDashboardRedirect}
+                    />
+                )}
                 <UserButton
                     appearance={{
                         elements: {

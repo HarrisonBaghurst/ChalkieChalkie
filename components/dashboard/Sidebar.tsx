@@ -12,13 +12,13 @@ const Sidebar = () => {
         [
             {
                 text: "Workspaces",
-                icon: "icons/notebook-svgrepo-com.svg",
+                icon: "/icons/notebook-svgrepo-com.svg",
                 status: true,
                 link: null,
             },
             {
                 text: "Messages",
-                icon: "icons/messages-1-svgrepo-com.svg",
+                icon: "/icons/messages-1-svgrepo-com.svg",
                 status: false,
                 link: null,
             },
@@ -26,7 +26,7 @@ const Sidebar = () => {
         [
             {
                 text: "Return Home",
-                icon: "icons/home-10-svgrepo-com.svg",
+                icon: "/icons/home-10-svgrepo-com.svg",
                 status: true,
                 link: "/",
             },

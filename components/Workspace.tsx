@@ -1,9 +1,15 @@
 "use client";
 
-import { RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    RefObject,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { Point } from "@/types/strokeTypes";
 import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
-import Sidebar from "./Sidebar";
 import { useMyPresence } from "@liveblocks/react";
 import { toolCursorMap, Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
@@ -17,7 +23,8 @@ import { handleMouseMove } from "@/lib/handlers/mouseMove";
 import { handleMouseUp } from "@/lib/handlers/mouseUp";
 import { getMousePos } from "@/lib/handlers/helpers";
 import FullscreenLoader from "./FullscreenLoader";
-import WorkspaceTopbar from "./WorkspaceTopbar";
+import Navbar from "./home/Navbar";
+import Toolbar from "./Toolbar";
 
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4.0;
@@ -223,8 +230,8 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
                     <CursorLayer canvasStateRef={canvasStateRef} />
-                    <WorkspaceTopbar />
-                    <Sidebar
+                    <Navbar />
+                    <Toolbar
                         currentTool={currentTool}
                         currentColourRef={currentColourRef}
                         highlightColourRef={highlightColourRef}
@@ -238,15 +245,31 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) =>
-                            handleMouseDown({ e, canvasStateRef, strokes, callbacks })
+                            handleMouseDown({
+                                e,
+                                canvasStateRef,
+                                strokes,
+                                callbacks,
+                            })
                         }
                         onMouseMove={(e) => {
-                            handleMouseMove({ e, canvasStateRef, strokes, callbacks });
+                            handleMouseMove({
+                                e,
+                                canvasStateRef,
+                                strokes,
+                                callbacks,
+                            });
                             handlePresenceUpdate(e);
-                            canvasStateRef.current.lastMouseScreen = getMousePos(e);
+                            canvasStateRef.current.lastMouseScreen =
+                                getMousePos(e);
                         }}
                         onMouseUp={(e) =>
-                            handleMouseUp({ e, canvasStateRef, strokes, callbacks })
+                            handleMouseUp({
+                                e,
+                                canvasStateRef,
+                                strokes,
+                                callbacks,
+                            })
                         }
                     />
                 </div>

@@ -225,6 +225,20 @@
                 )
                 border-box;
     }
+    .gradient-border-bright {
+        border: 2px solid transparent;
+        background:
+            linear-gradient(var(--card-background), var(--card-background))
+                padding-box,
+            linear-gradient(
+                    150deg,
+                    rgba(219, 193, 90, 1) 0%,
+                    rgba(245, 139, 47, 1) 35%,
+                    rgba(227, 104, 104, 1) 62%,
+                    rgba(230, 110, 170, 1) 99%
+                )
+                border-box;
+    }
     .gradient-background {
         background: linear-gradient(
             150deg,

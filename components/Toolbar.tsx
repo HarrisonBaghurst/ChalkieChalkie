@@ -3,21 +3,21 @@
 import { RefObject } from "react";
 import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
-import SidebarButton from "./SidebarButton";
+import ToolbarButton from "./ToolbarButton";
 
-type SidebarProps = {
+type ToolbarProps = {
     currentTool: Tools;
     currentColourRef: RefObject<string>;
     highlightColourRef: RefObject<string>;
     onToolChanged: (tool: Tools) => void;
 };
 
-const Sidebar = ({
+const Toolbar = ({
     currentTool,
     currentColourRef,
     highlightColourRef,
     onToolChanged,
-}: SidebarProps) => {
+}: ToolbarProps) => {
     const { undo, redo } = useHistory();
 
     const handleToolChange = (tool: Tools) => {
@@ -26,49 +26,49 @@ const Sidebar = ({
 
     return (
         <>
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-[#0d0d0a] rounded-full border border-[color-mix(in_oklab,var(--color-white)_5%,transparent)] flex flex-col gap-2">
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background rounded-lg flex flex-col gap-2">
                 <div className="flex flex-col gap-2 p-2">
-                    <SidebarButton
+                    <ToolbarButton
                         icon={"/icons/pen.svg"}
                         label="pen icon"
                         isActive={currentTool === "pen"}
                         onSelect={() => handleToolChange("pen")}
                         currentColourRef={currentColourRef}
                     />
-                    <SidebarButton
+                    <ToolbarButton
                         icon={"/icons/highlighter.svg"}
                         label="highlighter icon"
                         isActive={currentTool === "highlighter"}
                         onSelect={() => handleToolChange("highlighter")}
                         highlightColourRef={highlightColourRef}
                     />
-                    <SidebarButton
+                    <ToolbarButton
                         icon={"/icons/eraser.svg"}
                         label="eraser icon"
                         isActive={currentTool === "eraser"}
                         onSelect={() => handleToolChange("eraser")}
                     />
-                    <SidebarButton
+                    <ToolbarButton
                         icon={"/icons/pointer.svg"}
                         label="pointer icon"
                         isActive={currentTool === "pointer"}
                         onSelect={() => handleToolChange("pointer")}
                     />
-                    <SidebarButton
+                    <ToolbarButton
                         icon={"/icons/selector.svg"}
                         label="selector icon"
                         isActive={currentTool === "selector"}
                         onSelect={() => handleToolChange("selector")}
                     />
                 </div>
-                <div className="w-full h-px bg-white/5" />
+                <div className="w-full h-px bg-foreground-third" />
                 <div className="flex flex-col gap-2 p-2">
-                    <SidebarButton
+                    <ToolbarButton
                         icon="/icons/undo.svg"
                         label="undo"
                         onAction={undo}
                     />
-                    <SidebarButton
+                    <ToolbarButton
                         icon="/icons/redo.svg"
                         label="redo"
                         onAction={redo}
@@ -79,4 +79,4 @@ const Sidebar = ({
     );
 };
 
-export default Sidebar;
+export default Toolbar;

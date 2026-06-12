@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import Image from "next/image";
 import ColourSelector from "./ColourSelector";
 import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
 
-interface SidebarButtonProps {
+interface ToolbarButtonProps {
     icon: string;
     label: string;
     isActive?: boolean;
@@ -14,7 +14,7 @@ interface SidebarButtonProps {
     highlightColourRef?: RefObject<string>;
 }
 
-const SidebarButton = ({
+const ToolbarButton = ({
     icon,
     label,
     isActive,
@@ -22,12 +22,19 @@ const SidebarButton = ({
     onAction,
     currentColourRef,
     highlightColourRef,
-}: SidebarButtonProps) => {
-    const [hovered, setHovered] = useState(false);
+}: ToolbarButtonProps) => {
     const [showColourSelect, setShowColourSelect] = useState(false);
 
-    const hasColourPicker = isActive && (currentColourRef?.current || highlightColourRef?.current);
-    const activeColour = currentColourRef?.current ?? highlightColourRef?.current;
+    // Close the colour selector when this tool is no longer active
+    // (e.g. the user switched to a different tool).
+    useEffect(() => {
+        if (!isActive) setShowColourSelect(false);
+    }, [isActive]);
+
+    const hasColourPicker =
+        isActive && (currentColourRef?.current || highlightColourRef?.current);
+    const activeColour =
+        currentColourRef?.current ?? highlightColourRef?.current;
 
     const handleClick = () => {
         if (hasColourPicker) {
@@ -39,14 +46,13 @@ const SidebarButton = ({
 
     return (
         <button
-            className="cursor-pointer w-12 h-12 rounded-full flex items-center justify-center border-white/5 transition-colors duration-150"
-            style={{
-                border: `2px solid ${isActive ? "#777777" : hovered ? "#444444" : "#191916"}`,
-                backgroundColor: `${isActive ? "#1b1b1c" : "transparent"}`,
-            }}
+            className={cn(
+                "cursor-pointer w-12 h-12 rounded-sm flex items-center justify-center duration-150 border-2 transition-colors",
+                isActive
+                    ? "gradient-border-bright"
+                    : "border-foreground-third hover:border-foreground-second bg-transparent",
+            )}
             onClick={() => handleClick()}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
         >
             <div className="relative w-6 h-6">
                 <Image src={icon} alt={label} fill />
@@ -75,4 +81,4 @@ const SidebarButton = ({
     );
 };
 
-export default SidebarButton;
+export default ToolbarButton;
