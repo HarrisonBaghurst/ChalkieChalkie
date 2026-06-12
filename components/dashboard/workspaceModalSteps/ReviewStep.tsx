@@ -18,8 +18,8 @@ const Row = ({
     children: React.ReactNode;
 }) => (
     <div className="flex flex-col gap-1">
-        <div className="text-xs text-foreground-third">{label}</div>
-        <div className="text-sm">{children}</div>
+        <div className="text-caption text-foreground-third">{label}</div>
+        <div className="text-secondary">{children}</div>
     </div>
 );
 
@@ -56,7 +56,7 @@ const ReviewStep = ({
                             <div key={c.email}>
                                 {c.firstName} {c.lastName}
                                 {i === 0 && (
-                                    <span className="text-foreground-third text-xs ml-2">
+                                    <span className="text-foreground-third text-caption ml-2">
                                         (owner)
                                     </span>
                                 )}

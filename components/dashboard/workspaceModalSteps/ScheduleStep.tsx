@@ -12,7 +12,7 @@ const ScheduleStep = ({ value, onChange }: ScheduleStepProps) => {
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
-                    <div className="text-xs text-foreground-third">
+                    <div className="text-caption text-foreground-third">
                         START TIME
                     </div>
                 </div>

@@ -72,15 +72,15 @@ const WorkspaceCard = ({
                     )}
                     <div className="flex flex-col gap-1">
                         {workspace.title ? (
-                            <p className="text-sm font-inter-bold">
+                            <p className="text-secondary font-inter-bold">
                                 {workspace.title}
                             </p>
                         ) : (
-                            <p className="text-sm font-inter-bold text-foreground-third">
+                            <p className="text-secondary font-inter-bold text-foreground-third">
                                 Untitled workspace
                             </p>
                         )}
-                        <p className="text-xs text-foreground-third max-w-65">
+                        <p className="text-caption text-foreground-third max-w-65">
                             {workspace.description
                                 ? workspace.description
                                 : "No description"}
@@ -89,11 +89,11 @@ const WorkspaceCard = ({
                 </div>
                 <div className="flex gap-4 items-center">
                     {workspace.startTime ? (
-                        <p className="text-sm font-inter-bold">
+                        <p className="text-secondary font-inter-bold">
                             {formatSessionTime(workspace.startTime)}
                         </p>
                     ) : (
-                        <p className="text-sm font-inter-bold text-foreground-third">
+                        <p className="text-secondary font-inter-bold text-foreground-third">
                             Unset start time
                         </p>
                     )}
@@ -110,7 +110,7 @@ const WorkspaceCard = ({
                 </div>
             </div>
             {showFeedback && workspace.feedback && (
-                <div className="text-sm text-foreground-second">
+                <div className="text-secondary text-foreground-second">
                     {workspace.feedback}
                 </div>
             )}

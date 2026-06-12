@@ -72,7 +72,7 @@ const Sidebar = () => {
                                                 fill
                                             />
                                         </div>
-                                        <p className="text-sm">{button.text}</p>
+                                        <p className="text-secondary">{button.text}</p>
                                     </>
                                 );
                                 const className = cn(
@@ -99,7 +99,7 @@ const Sidebar = () => {
                     </div>
                 ))}
             </div>
-            <p className="text-foreground-third text-xs">
+            <p className="text-foreground-third text-caption">
                 © Chalkie Chalkie 2026
             </p>
         </div>

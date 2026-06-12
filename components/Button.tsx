@@ -27,7 +27,7 @@ const Button = ({
                 variant === "delete" || variant === "save"
                     ? "p-1"
                     : size === "small"
-                      ? "px-3 py-1 text-xs"
+                      ? "px-3 py-1 text-caption"
                       : "px-6 py-2",
                 variant === "primary"
                     ? "bg-[#0f348b]"

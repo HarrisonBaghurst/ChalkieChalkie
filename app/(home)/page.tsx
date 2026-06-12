@@ -7,10 +7,10 @@ const page = () => {
     return (
         <div className="mx-32 my-24 h-[calc(100%-12rem)] flex flex-col w-135 justify-between">
             <div className="flex flex-col gap-10">
-                <h1 className="text-6xl font-inter-bold w-full leading-18">
+                <h1 className="text-display w-full">
                     Where Effort Becomes Understanding
                 </h1>
-                <p className="text-foreground-second text-lg leading-relaxed">
+                <p className="text-foreground-second text-body">
                     A real-time collaborative workspace for tutors and students.
                     Work through complex problems, schedule lessons, and track
                     progress through Chalkie Chalkie.
@@ -22,10 +22,10 @@ const page = () => {
             </div>
             <div className="flex flex-col gap-6">
                 <div className="w-full h-fit gradient-border rounded-xl p-4 flex flex-col gap-2">
-                    <p className="text-lg font-inter-bold">
+                    <p className="text-subheading">
                         Still in Private Beta
                     </p>
-                    <p className="text-foreground-second text-md">
+                    <p className="text-foreground-second text-body">
                         Chalkie Chalkie is still being actively developed. If
                         you encounter any bugs or have an idea for our next
                         feature, please submit them here.
@@ -34,7 +34,7 @@ const page = () => {
                         <ContactButton />
                     </div>
                 </div>
-                <div className="text-xs text-foreground-third flex gap-8">
+                <div className="text-caption text-foreground-third flex gap-8">
                     <p>© Chalkie Chalkie 2026</p>
                     <p>Privacy Policy</p>
                 </div>

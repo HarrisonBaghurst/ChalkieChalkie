@@ -94,7 +94,7 @@ const ParticipantRoster = () => {
                 onClick={() => setCollapsed((c) => !c)}
                 className="w-full flex justify-between items-center px-4 py-3 cursor-pointer"
             >
-                <span className="text-sm text-foreground">
+                <span className="text-secondary text-foreground">
                     Participants
                     <span className="text-foreground-third">
                         {" · "}
@@ -137,10 +137,10 @@ const ParticipantRoster = () => {
                                     ) : null}
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                    <div className="text-sm text-foreground truncate">
+                                    <div className="text-secondary text-foreground truncate">
                                         {name || "Anonymous"}
                                     </div>
-                                    <div className="text-xs text-foreground-third truncate">
+                                    <div className="text-caption text-foreground-third truncate">
                                         {online ? "Online" : "Offline"}
                                     </div>
                                 </div>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import Button from "@/components/dashboard/Button";
 
 type SendMessageMode = "beta" | "contact";
 
@@ -25,9 +26,9 @@ const SeverityOptions: SeverityType[] = [
 ];
 
 const inputClass =
-    "border border-foreground-third rounded-md py-2 px-3 text-sm placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
+    "border border-foreground-third rounded-md py-2 px-3 text-secondary placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
 
-const labelClass = "text-xs text-foreground-third";
+const labelClass = "text-caption text-foreground-third";
 
 const BETA_STEPS = [
     { id: 1, label: "About you" },
@@ -44,7 +45,7 @@ const CONTACT_STEPS = [
 const ReviewRow = ({ label, value }: { label: string; value: string }) => (
     <div className="flex flex-col gap-1">
         <div className={labelClass}>{label.toUpperCase()}</div>
-        <div className="text-sm text-foreground whitespace-pre-wrap wrap-break-word">
+        <div className="text-secondary text-foreground whitespace-pre-wrap wrap-break-word">
             {value.trim() || "—"}
         </div>
     </div>
@@ -249,7 +250,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                     <ReviewRow label="Email" value={email} />
                     <ReviewRow label="Use case" value={useCase} />
                     <ReviewRow label="Referral" value={referral} />
-                    <p className="text-xs text-foreground-third pt-2">
+                    <p className="text-caption text-foreground-third pt-2">
                         We are currently in private beta. All requests are
                         reviewed manually. You will be notified by email if you
                         are accepted.
@@ -367,7 +368,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                     value={expectedVsActual}
                 />
                 <ReviewRow label="Browser and OS" value={browserAndOS} />
-                <p className="text-xs text-foreground-third pt-2">
+                <p className="text-caption text-foreground-third pt-2">
                     We are currently in private beta and expect issues to be
                     found. Current known issues can be found on{" "}
                     <a
@@ -392,12 +393,12 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                 className="bg-card-background rounded-xl p-8 w-150 max-w-[92vw] h-[60dvh] flex flex-col gap-6 text-foreground"
             >
                 <div className="flex items-center justify-between">
-                    <div className="font-inter-bold text-base">
+                    <div className="text-subheading">
                         {headerTitle}
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-foreground-third hover:text-foreground text-xl leading-none cursor-pointer"
+                        className="text-foreground-third hover:text-foreground text-subheading leading-none cursor-pointer"
                         aria-label="Close"
                     >
                         ×
@@ -421,7 +422,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                             >
                                 <div
                                     className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center text-xs font-inter-bold transition-colors",
+                                        "w-7 h-7 rounded-full flex items-center justify-center text-caption font-inter-bold transition-colors",
                                         step === s.id
                                             ? "bg-foreground text-background"
                                             : step > s.id
@@ -433,7 +434,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                 </div>
                                 <div
                                     className={cn(
-                                        "text-xs",
+                                        "text-caption",
                                         step === s.id
                                             ? "text-foreground"
                                             : "text-foreground-third",
@@ -454,46 +455,25 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <button
+                    <Button
+                        text="Back"
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}
-                        className={cn(
-                            "text-background bg-foreground rounded-sm py-2 px-5 text-xs",
-                            isFirstStep
-                                ? "opacity-40 cursor-not-allowed"
-                                : "cursor-pointer",
-                        )}
-                    >
-                        Back
-                    </button>
+                    />
                     {isFinalStep ? (
-                        <button
+                        <Button
+                            text={isSubmitting ? "Sending..." : "Submit"}
                             onClick={handleSubmit}
                             disabled={isSubmitting || !allValid}
-                            className={cn(
-                                "text-background bg-foreground rounded-sm py-2 px-5 text-xs",
-                                isSubmitting || !allValid
-                                    ? "opacity-40 cursor-not-allowed"
-                                    : "cursor-pointer",
-                            )}
-                        >
-                            {isSubmitting ? "Sending..." : "Submit"}
-                        </button>
+                        />
                     ) : (
-                        <button
+                        <Button
+                            text="Next"
                             onClick={() =>
                                 setStep((s) => Math.min(steps.length, s + 1))
                             }
                             disabled={!canAdvance}
-                            className={cn(
-                                "text-background bg-foreground rounded-sm py-2 px-5 text-xs",
-                                !canAdvance
-                                    ? "opacity-40 cursor-not-allowed"
-                                    : "cursor-pointer",
-                            )}
-                        >
-                            Next
-                        </button>
+                        />
                     )}
                 </div>
             </div>

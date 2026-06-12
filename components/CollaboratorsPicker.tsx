@@ -55,7 +55,7 @@ const CollaboratorsPicker = ({
 
     return (
         <div className="grid grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2 text-xs text-foreground-third">
+            <div className="flex flex-col gap-2 text-caption text-foreground-third">
                 <div>COLLABORATORS</div>
                 <div
                     onDragOver={(e) => {
@@ -107,7 +107,7 @@ const CollaboratorsPicker = ({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2 text-xs text-foreground-third">
+            <div className="flex flex-col gap-2 text-caption text-foreground-third">
                 <div>FRIENDS</div>
                 <div
                     onDragOver={(e) => {

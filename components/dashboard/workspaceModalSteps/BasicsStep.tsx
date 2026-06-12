@@ -8,7 +8,7 @@ type BasicsStepProps = {
 };
 
 const inputClass =
-    "border border-foreground-third rounded-md py-2 px-3 text-sm placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
+    "border border-foreground-third rounded-md py-2 px-3 text-secondary placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
 
 const BasicsStep = ({
     title,
@@ -21,7 +21,7 @@ const BasicsStep = ({
             <div className="flex flex-col gap-2">
                 <label
                     htmlFor="workspace-title"
-                    className="text-xs text-foreground-third"
+                    className="text-caption text-foreground-third"
                 >
                     TITLE
                 </label>
@@ -37,7 +37,7 @@ const BasicsStep = ({
             <div className="flex flex-col gap-2">
                 <label
                     htmlFor="workspace-description"
-                    className="text-xs text-foreground-third"
+                    className="text-caption text-foreground-third"
                 >
                     DESCRIPTION
                 </label>

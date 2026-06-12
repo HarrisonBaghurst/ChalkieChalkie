@@ -48,7 +48,7 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                 suppressHydrationWarning
                 onClick={() => setOpen((p) => !p)}
                 className={cn(
-                    "border border-foreground-third py-2 px-3 rounded-md w-full flex items-center justify-between cursor-pointer text-sm",
+                    "border border-foreground-third py-2 px-3 rounded-md w-full flex items-center justify-between cursor-pointer text-secondary",
                     disabled && "cursor-not-allowed text-foreground-third",
                 )}
             >
@@ -82,7 +82,7 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                             <button
                                 key={collaborator.id}
                                 onClick={() => toggle(collaborator.id)}
-                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-white/5 cursor-pointer"
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-secondary hover:bg-white/5 cursor-pointer"
                             >
                                 <span
                                     className={cn(

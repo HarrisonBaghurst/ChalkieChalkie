@@ -9,7 +9,7 @@ import WorkspaceCardSkeleton from "./WorkspaceCardSkeleton";
 const ListPanelSkeleton = ({ label }: { label: string }) => {
     return (
         <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
-            <p className="text-xs text-foreground-third font-inter-bold">
+            <p className="text-caption text-foreground-third font-inter-bold">
                 {label}
             </p>
             <div className="flex gap-4">

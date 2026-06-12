@@ -22,8 +22,8 @@ const CollaboratorCard = ({
                     <Image src={image} alt={`${firstName} icon`} fill />
                 </div>
                 <div className="flex flex-col">
-                    <div className="text-base text-foreground">{`${firstName} ${lastName}`}</div>
-                    <div className="text-xs text-foreground-third">
+                    <div className="text-body text-foreground">{`${firstName} ${lastName}`}</div>
+                    <div className="text-caption text-foreground-third">
                         {email ? email : "Unknown email"}
                     </div>
                 </div>

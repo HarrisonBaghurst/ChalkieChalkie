@@ -10,6 +10,7 @@ import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
 import TeamStep from "./workspaceModalSteps/TeamStep";
 import FeedbackStep from "./workspaceModalSteps/FeedbackStep";
 import ReviewStep from "./workspaceModalSteps/ReviewStep";
+import Button from "./Button";
 
 export type WorkspaceModalMode =
     | { kind: "create" }
@@ -215,7 +216,7 @@ const WorkspaceModal = ({
                 className="bg-card-background rounded-xl p-8 w-150 max-w-[92vw] h-[55dvh] flex flex-col gap-6 text-foreground"
             >
                 <div className="flex items-center justify-between">
-                    <div className="font-inter-bold text-base">
+                    <div className="text-subheading">
                         {mode.kind === "create"
                             ? "Create workspace"
                             : "Edit workspace"}
@@ -223,7 +224,7 @@ const WorkspaceModal = ({
                     <div className="flex items-center gap-4">
                         {mode.kind === "edit" &&
                             (confirmingDelete ? (
-                                <div className="flex items-center gap-3 text-xs">
+                                <div className="flex items-center gap-3 text-caption">
                                     <span className="text-foreground-third">
                                         Delete this workspace?
                                     </span>
@@ -252,14 +253,14 @@ const WorkspaceModal = ({
                             ) : (
                                 <button
                                     onClick={() => setConfirmingDelete(true)}
-                                    className="text-red-500 hover:text-red-600 text-xs cursor-pointer"
+                                    className="text-red-500 hover:text-red-600 text-caption cursor-pointer"
                                 >
                                     Delete
                                 </button>
                             ))}
                         <button
                             onClick={onClose}
-                            className="text-foreground-third hover:text-foreground text-xl leading-none cursor-pointer"
+                            className="text-foreground-third hover:text-foreground text-subheading leading-none cursor-pointer"
                             aria-label="Close"
                         >
                             ×
@@ -276,7 +277,7 @@ const WorkspaceModal = ({
                             >
                                 <div
                                     className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center text-xs font-inter-bold transition-colors",
+                                        "w-7 h-7 rounded-full flex items-center justify-center text-caption font-inter-bold transition-colors",
                                         step === s.id
                                             ? "bg-foreground text-background"
                                             : step > s.id
@@ -288,7 +289,7 @@ const WorkspaceModal = ({
                                 </div>
                                 <div
                                     className={cn(
-                                        "text-xs",
+                                        "text-caption",
                                         step === s.id
                                             ? "text-foreground"
                                             : "text-foreground-third",
@@ -354,44 +355,30 @@ const WorkspaceModal = ({
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <button
+                    <Button
+                        text="Back"
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}
-                        className={cn(
-                            "text-background bg-foreground rounded-sm py-2 px-5 text-xs",
-                            isFirstStep
-                                ? "opacity-40 cursor-not-allowed"
-                                : "cursor-pointer",
-                        )}
-                    >
-                        Back
-                    </button>
+                    />
                     {isFinalStep ? (
-                        <button
+                        <Button
+                            text={
+                                submitting
+                                    ? "Saving..."
+                                    : mode.kind === "create"
+                                      ? "Create"
+                                      : "Save"
+                            }
                             onClick={handleSubmit}
                             disabled={submitting}
-                            className={cn(
-                                "text-background bg-foreground rounded-sm py-2 px-5 text-xs",
-                                submitting
-                                    ? "opacity-40 cursor-not-allowed"
-                                    : "cursor-pointer",
-                            )}
-                        >
-                            {submitting
-                                ? "Saving..."
-                                : mode.kind === "create"
-                                  ? "Create"
-                                  : "Save"}
-                        </button>
+                        />
                     ) : (
-                        <button
+                        <Button
+                            text="Next"
                             onClick={() =>
                                 setStep((s) => Math.min(STEPS.length, s + 1))
                             }
-                            className="text-background bg-foreground rounded-sm py-2 px-5 text-xs cursor-pointer"
-                        >
-                            Next
-                        </button>
+                        />
                     )}
                 </div>
             </div>

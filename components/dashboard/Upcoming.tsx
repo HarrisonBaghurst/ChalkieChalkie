@@ -38,7 +38,7 @@ const Upcoming = ({
 }: UpcomingProps) => {
     return (
         <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
-            <p className="text-xs text-foreground-third font-inter-bold">
+            <p className="text-caption text-foreground-third font-inter-bold">
                 UPCOMING
             </p>
             <div className="flex gap-4">
@@ -47,7 +47,7 @@ const Upcoming = ({
                     value={search}
                     onChange={(e) => onChangeSearch(e.target.value)}
                     placeholder="Search upcoming sessions..."
-                    className="w-2/3 border border-foreground-third rounded-md py-2 px-3 text-sm placeholder:text-foreground-third focus:outline-none"
+                    className="w-2/3 border border-foreground-third rounded-md py-2 px-3 text-secondary placeholder:text-foreground-third focus:outline-none"
                 />
                 <div className="w-1/3">
                     <Filters
@@ -59,7 +59,7 @@ const Upcoming = ({
             </div>
             <div className="flex flex-col gap-4">
                 {workspaces.length === 0 ? (
-                    <p className="text-xs text-foreground-third">No sessions</p>
+                    <p className="text-caption text-foreground-third">No sessions</p>
                 ) : (
                     workspaces.map((w) => (
                         <WorkspaceCard

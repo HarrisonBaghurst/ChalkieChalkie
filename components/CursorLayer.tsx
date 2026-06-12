@@ -93,7 +93,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
                                     />
                                 </div>
                             ) : null}
-                            <span className="text-xs font-medium text-white">
+                            <span className="text-caption font-medium text-white">
                                 {name || "Anonymous"}
                             </span>
                         </div>

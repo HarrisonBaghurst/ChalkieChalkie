@@ -40,7 +40,7 @@ const Combobox = ({ value, onChange, className }: ComboboxProps) => {
             <button
                 onClick={() => setOpen((prev) => !prev)}
                 className={cn(
-                    "flex items-center gap-1.5 text-foreground rounded-full cursor-pointer border-2 border-white/15 px-3 py-1 text-xs",
+                    "flex items-center gap-1.5 text-foreground rounded-full cursor-pointer border-2 border-white/15 px-3 py-1 text-caption",
                     className,
                 )}
             >
@@ -76,7 +76,7 @@ const Combobox = ({ value, onChange, className }: ComboboxProps) => {
                                 setOpen(false);
                             }}
                             className={cn(
-                                "block w-full cursor-pointer px-3.5 py-2 text-left text-xs transition-colors",
+                                "block w-full cursor-pointer px-3.5 py-2 text-left text-caption transition-colors",
                                 option.value === value
                                     ? "bg-[#0f348b]/30 text-foreground"
                                     : "text-foreground/60 hover:bg-white/5",

@@ -16,14 +16,14 @@ const Next = ({ workspace }: NextProps) => {
     return (
         <div className="w-220 bg-card-background border-2 p-4 rounded-xl flex justify-between gradient-border">
             <div className="flex flex-col gap-2">
-                <p className="text-xs text-foreground-second font-inter-bold">
+                <p className="text-caption text-foreground-second font-inter-bold">
                     COMING UP NEXT
                 </p>
-                <p className="text-lg font-inter-bold">
+                <p className="text-subheading">
                     {workspace ? workspace.title : "No upcoming sessions"}
                 </p>
                 {workspace?.description && (
-                    <p className="text-xs max-w-100 text-foreground-second">
+                    <p className="text-caption max-w-100 text-foreground-second">
                         {workspace.description}
                     </p>
                 )}
