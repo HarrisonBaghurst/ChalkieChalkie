@@ -22,6 +22,7 @@ export const RATE_LIMITS = {
     "workspace:get":          { keyBy: "userId", limit: 60,  window: "1 m" },
     "workspace:patch":        { keyBy: "userId", limit: 20,  window: "1 m" },
     "workspace:create":       { keyBy: "userId", limit: 3,   window: "1 m" },
+    "workspace:delete":       { keyBy: "userId", limit: 10,  window: "1 m" },
     "workspace-image:upload": { keyBy: "userId", limit: 20,  window: "1 m" },
     "workspace-image:delete": { keyBy: "userId", limit: 30,  window: "1 m" },
     "users:friends":          { keyBy: "userId", limit: 30,  window: "1 m" },

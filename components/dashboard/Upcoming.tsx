@@ -20,6 +20,7 @@ type UpcomingProps = {
         workspace: Workspace,
         collaborators: userInfo[],
     ) => void;
+    onWorkspaceDeleted: (workspaceId: string) => void;
 };
 
 const Upcoming = ({
@@ -33,6 +34,7 @@ const Upcoming = ({
     onChangeSearch,
     friends,
     onWorkspaceUpdated,
+    onWorkspaceDeleted,
 }: UpcomingProps) => {
     return (
         <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
@@ -72,6 +74,7 @@ const Upcoming = ({
                             usersMap={usersMap}
                             friends={friends}
                             onUpdated={onWorkspaceUpdated}
+                            onDeleted={onWorkspaceDeleted}
                         />
                     ))
                 )}

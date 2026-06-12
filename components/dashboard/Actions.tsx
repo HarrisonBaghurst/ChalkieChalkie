@@ -30,6 +30,7 @@ const Actions = ({ friends, onCreated }: ActionsProps) => {
                 friends={friends}
                 onClose={() => setCreateOpen(false)}
                 onSubmitted={onCreated}
+                onDeleted={() => {}}
             />
         </div>
     );

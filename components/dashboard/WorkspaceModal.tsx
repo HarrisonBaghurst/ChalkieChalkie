@@ -21,6 +21,7 @@ type WorkspaceModalProps = {
     friends: userInfo[];
     onClose: () => void;
     onSubmitted: (workspace: Workspace, collaborators: userInfo[]) => void;
+    onDeleted: (workspaceId: string) => void;
 };
 
 type FormData = {
@@ -65,15 +66,19 @@ const WorkspaceModal = ({
     friends,
     onClose,
     onSubmitted,
+    onDeleted,
 }: WorkspaceModalProps) => {
     const { user } = useUser();
     const [step, setStep] = useState(1);
     const [form, setForm] = useState<FormData>(emptyForm);
     const [submitting, setSubmitting] = useState(false);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (!open) return;
         setStep(1);
+        setConfirmingDelete(false);
 
         if (mode.kind === "edit") {
             setForm({
@@ -169,6 +174,34 @@ const WorkspaceModal = ({
         }
     };
 
+    const handleDelete = async () => {
+        if (mode.kind !== "edit" || deleting) return;
+        setDeleting(true);
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${mode.workspace.id}`,
+                { method: "DELETE" },
+            );
+
+            if (!res.ok) {
+                toast.error("Failed to delete workspace.", {
+                    description: "Please try again.",
+                });
+                return;
+            }
+
+            toast.success("Workspace deleted.");
+            onDeleted(mode.workspace.id);
+            onClose();
+        } catch (err) {
+            console.error(err);
+            toast.error("Something went wrong.");
+        } finally {
+            setDeleting(false);
+        }
+    };
+
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
 
@@ -187,13 +220,51 @@ const WorkspaceModal = ({
                             ? "Create workspace"
                             : "Edit workspace"}
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-foreground-third hover:text-foreground text-xl leading-none cursor-pointer"
-                        aria-label="Close"
-                    >
-                        ×
-                    </button>
+                    <div className="flex items-center gap-4">
+                        {mode.kind === "edit" &&
+                            (confirmingDelete ? (
+                                <div className="flex items-center gap-3 text-xs">
+                                    <span className="text-foreground-third">
+                                        Delete this workspace?
+                                    </span>
+                                    <button
+                                        onClick={handleDelete}
+                                        disabled={deleting}
+                                        className={cn(
+                                            "text-red-500 hover:text-red-600 font-inter-bold",
+                                            deleting
+                                                ? "opacity-40 cursor-not-allowed"
+                                                : "cursor-pointer",
+                                        )}
+                                    >
+                                        {deleting ? "Deleting..." : "Delete"}
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setConfirmingDelete(false)
+                                        }
+                                        disabled={deleting}
+                                        className="text-foreground-third hover:text-foreground cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setConfirmingDelete(true)}
+                                    className="text-red-500 hover:text-red-600 text-xs cursor-pointer"
+                                >
+                                    Delete
+                                </button>
+                            ))}
+                        <button
+                            onClick={onClose}
+                            className="text-foreground-third hover:text-foreground text-xl leading-none cursor-pointer"
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between px-2">

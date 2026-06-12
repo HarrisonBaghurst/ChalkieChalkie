@@ -1,3 +1,4 @@
+import { deleteWorkspaceResources } from "@/lib/deleteWorkspace";
 import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { requireTutor } from "@/lib/serverRole";
@@ -129,4 +130,52 @@ export async function PATCH(
     }
 
     return Response.json(data);
+}
+
+/**
+ * Delete a workspace and all of its backing resources (Liveblocks room,
+ * pasted images, Supabase row). Host-only and irreversible.
+ *
+ * @route api/workspaces/[workspaceId]
+ */
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ workspaceId: string }> },
+) {
+    const { userId } = await auth();
+
+    if (!userId) {
+        return new Response("Unauthorised", { status: 401 });
+    }
+
+    const blocked = await enforceRateLimit(req, "workspace:delete", userId);
+    if (blocked) return blocked;
+
+    // tutor-only action
+    const forbidden = await requireTutor(userId);
+    if (forbidden) return forbidden;
+
+    const { workspaceId: roomId } = await params;
+    if (!roomId) {
+        return new Response("roomId is required", { status: 400 });
+    }
+
+    // only the host of the workspace may delete it
+    const { data: existingRoom, error: fetchError } = await supabaseAdmin
+        .from("Room")
+        .select("id, host_id")
+        .eq("id", roomId)
+        .single();
+
+    if (fetchError || !existingRoom || existingRoom.host_id !== userId) {
+        return new Response("Forbidden", { status: 403 });
+    }
+
+    try {
+        await deleteWorkspaceResources(roomId);
+    } catch (error) {
+        return errorResponse("workspace:delete", error, 500, { userId });
+    }
+
+    return Response.json({ deleted: true });
 }

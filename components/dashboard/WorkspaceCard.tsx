@@ -5,8 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
 import WorkspaceModal from "./WorkspaceModal";
+import { useUser } from "@clerk/nextjs";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { formatSessionTime } from "@/lib/textUtils";
+import { isHost } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 
 type WorkspaceCardProps = {
@@ -16,6 +18,7 @@ type WorkspaceCardProps = {
     usersMap: Record<string, userInfo>;
     friends: userInfo[];
     onUpdated: (workspace: Workspace, collaborators: userInfo[]) => void;
+    onDeleted: (workspaceId: string) => void;
 };
 
 const WorkspaceCard = ({
@@ -25,10 +28,16 @@ const WorkspaceCard = ({
     usersMap,
     friends,
     onUpdated,
+    onDeleted,
 }: WorkspaceCardProps) => {
     const router = useRouter();
+    const { user } = useUser();
     const [editOpen, setEditOpen] = useState(false);
     const role = useUserRole();
+
+    // Only the workspace host may edit (and therefore delete) it. This mirrors
+    // the host_id check enforced by the PATCH/DELETE API routes.
+    const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
 
     const collaborators = useMemo<userInfo[]>(() => {
         const ordered = [
@@ -92,7 +101,7 @@ const WorkspaceCard = ({
                         text="Join"
                         onClick={() => router.push(`/board/${workspace.id}`)}
                     />
-                    {role === "tutor" && (
+                    {canManage && (
                         <Button
                             text="Edit"
                             onClick={() => setEditOpen(true)}
@@ -105,13 +114,14 @@ const WorkspaceCard = ({
                     {workspace.feedback}
                 </div>
             )}
-            {role === "tutor" && (
+            {canManage && (
                 <WorkspaceModal
                     open={editOpen}
                     mode={{ kind: "edit", workspace, collaborators }}
                     friends={friends}
                     onClose={() => setEditOpen(false)}
                     onSubmitted={onUpdated}
+                    onDeleted={onDeleted}
                 />
             )}
         </div>

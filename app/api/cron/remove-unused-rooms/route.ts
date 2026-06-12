@@ -1,12 +1,8 @@
+import { deleteWorkspaceResources } from "@/lib/deleteWorkspace";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { Liveblocks } from "@liveblocks/node";
 
 export const runtime = "nodejs";
-
-const liveblocks = new Liveblocks({
-    secret: process.env.LIVEBLOCKS_SECRET_KEY!,
-});
 
 const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
 
@@ -50,37 +46,7 @@ export async function GET(request: Request) {
     let deletedCount = 0;
     for (const room of rooms) {
         try {
-            // delete liveblocks room first; if this fails, the supabase row
-            // stays so the next cron run retries cleanly
-            await liveblocks.deleteRoom(room.id);
-
-            // delete images in supabase storage
-            const { data: files, error: listError } =
-                await supabaseAdmin.storage
-                    .from("workspace-images")
-                    .list(room.id);
-
-            if (listError) {
-                console.error(
-                    `Failed to list images for room ${room.id}`,
-                    listError,
-                );
-            } else if (files && files.length > 0) {
-                const paths = files.map((file) => `${room.id}/${file.name}`);
-                const { error: removeError } = await supabaseAdmin.storage
-                    .from("workspace-images")
-                    .remove(paths);
-
-                if (removeError) {
-                    console.error(
-                        `Failed to delete images for room ${room.id}`,
-                        removeError,
-                    );
-                }
-            }
-
-            // delete supabase row last to keep state recoverable on failure
-            await supabaseAdmin.from("Room").delete().eq("id", room.id);
+            await deleteWorkspaceResources(room.id);
             deletedCount++;
         } catch (err) {
             console.error(`Failed to delete room ${room.id}`, err);

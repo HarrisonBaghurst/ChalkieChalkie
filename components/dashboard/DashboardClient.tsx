@@ -249,6 +249,10 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
         mergeUsers(collaborators);
     };
 
+    const handleDeleted = (id: string) => {
+        setWorkspaces((prev) => prev.filter((w) => w.id !== id));
+    };
+
     return (
         <div className="flex">
             <Sidebar />
@@ -270,6 +274,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                         onChangeSearch={setUpcomingSearch}
                         friends={friends}
                         onWorkspaceUpdated={handleUpdated}
+                        onWorkspaceDeleted={handleDeleted}
                     />
                     <Previous
                         workspaces={previousFiltered}
@@ -284,6 +289,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                         onChangeSearch={setPreviousSearch}
                         friends={friends}
                         onWorkspaceUpdated={handleUpdated}
+                        onWorkspaceDeleted={handleDeleted}
                     />
                 </div>
             </div>

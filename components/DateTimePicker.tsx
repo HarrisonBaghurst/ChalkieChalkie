@@ -165,7 +165,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                                     selectedDate === cell &&
                                         selectedMonth === viewMonth &&
                                         selectedYear === viewYear
-                                        ? "bg-[#0f348b] border-white/50"
+                                        ? "bg-[#e2ad4c] border-white/50 text-background"
                                         : now.getDate() === cell &&
                                             now.getMonth() === viewMonth &&
                                             now.getFullYear() === viewYear
