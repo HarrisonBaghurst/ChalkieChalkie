@@ -1,9 +1,8 @@
 import { useOthers } from "@liveblocks/react";
 import { RefObject, useEffect, useRef } from "react";
+import Image from "next/image";
 import { CanvasState } from "@/types/canvasStateTypes";
-
-// TBD - will update to be different colour per user later
-const COLOR = "#eb7a38";
+import { getUserColour } from "@/lib/userColour";
 
 interface CursorLayerProps {
     canvasStateRef: RefObject<CanvasState>;
@@ -15,7 +14,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
     // keep latest others without restarting the rAF loop on every presence tick
     const othersRef = useRef(others);
     othersRef.current = others;
-    const svgRefs = useRef<Map<number, SVGSVGElement | null>>(new Map());
+    const cursorRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
 
     // drive cursor transforms off the viewport ref each frame so remote cursors
     // track smoothly while THIS user pans/zooms (single source of truth, no
@@ -26,7 +25,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
             if (cancelled) return;
             const { offset, zoom } = canvasStateRef.current.viewport;
             othersRef.current.forEach(({ connectionId, presence }) => {
-                const el = svgRefs.current.get(connectionId);
+                const el = cursorRefs.current.get(connectionId);
                 if (!el || !presence?.cursor) return;
                 const screenX = presence.cursor.x * zoom + offset.x;
                 const screenY = presence.cursor.y * zoom + offset.y;
@@ -44,16 +43,20 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
 
     return (
         <>
-            {others.map(({ connectionId, presence }) => {
+            {others.map(({ connectionId, id, presence, info }) => {
                 if (!presence?.cursor) return null;
                 // initial transform from current viewport; rAF keeps it fresh
                 const screenX = presence.cursor.x * zoom + offset.x;
                 const screenY = presence.cursor.y * zoom + offset.y;
+                const colour = getUserColour(id);
+                const name = `${info?.firstName ?? ""} ${
+                    info?.lastName ?? ""
+                }`.trim();
                 return (
-                    <svg
+                    <div
                         key={connectionId}
                         ref={(el) => {
-                            svgRefs.current.set(connectionId, el);
+                            cursorRefs.current.set(connectionId, el);
                         }}
                         style={{
                             position: "absolute",
@@ -64,16 +67,37 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
                             pointerEvents: "none",
                             willChange: "transform",
                         }}
-                        width="24"
-                        height="36"
-                        viewBox="0 0 24 36"
-                        fill="none"
                     >
-                        <path
-                            fill={COLOR}
-                            d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
-                        />
-                    </svg>
+                        <svg
+                            width="24"
+                            height="36"
+                            viewBox="0 0 24 36"
+                            fill="none"
+                        >
+                            <path
+                                fill={colour}
+                                d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
+                            />
+                        </svg>
+                        <div
+                            className="absolute left-4 top-4 flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full whitespace-nowrap"
+                            style={{ backgroundColor: colour }}
+                        >
+                            {info?.imageUrl ? (
+                                <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0">
+                                    <Image
+                                        src={info.imageUrl}
+                                        alt={name}
+                                        fill
+                                        sizes="20px"
+                                    />
+                                </div>
+                            ) : null}
+                            <span className="text-xs font-medium text-white">
+                                {name || "Anonymous"}
+                            </span>
+                        </div>
+                    </div>
                 );
             })}
         </>

@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
     // create a Liveblocks session with Clerk user data
     const session = liveblocks.prepareSession(userId, {
         userInfo: {
+            firstName: user.firstName ?? "",
+            lastName: user.lastName ?? "",
+            imageUrl: user.imageUrl ?? "",
             email: user.emailAddresses[0]?.emailAddress ?? "",
         },
     });

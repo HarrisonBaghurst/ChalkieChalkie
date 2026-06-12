@@ -21,7 +21,12 @@ declare global {
         // Custom user info set when authenticating with a secret key
         UserMeta: {
             id: string;
-            info: {};
+            info: {
+                firstName: string;
+                lastName: string;
+                imageUrl: string;
+                email: string;
+            };
         };
 
         RoomEvent: {};

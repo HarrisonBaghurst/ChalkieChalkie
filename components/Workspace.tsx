@@ -18,6 +18,7 @@ import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
 import { useKeybinds } from "@/hooks/useKeybinds";
 import CursorLayer from "./CursorLayer";
+import ParticipantRoster from "./ParticipantRoster";
 import { handleMouseDown } from "@/lib/handlers/mouseDown";
 import { handleMouseMove } from "@/lib/handlers/mouseMove";
 import { handleMouseUp } from "@/lib/handlers/mouseUp";
@@ -230,6 +231,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
                     <CursorLayer canvasStateRef={canvasStateRef} />
+                    <ParticipantRoster />
                     <Navbar />
                     <Toolbar
                         currentTool={currentTool}
