@@ -5,9 +5,9 @@ import Image from "next/image";
 
 const page = () => {
     return (
-        <div className="mx-32 my-24 h-[calc(100%-12rem)] flex flex-col w-135 justify-between">
+        <div className="mx-32 my-24 h-[calc(100%-12rem)] flex flex-col justify-between w-min">
             <div className="flex flex-col gap-10">
-                <h1 className="text-display w-full">
+                <h1 className="text-display w-[11ch]">
                     Where Effort Becomes Understanding
                 </h1>
                 <p className="text-foreground-second text-body">
@@ -22,9 +22,7 @@ const page = () => {
             </div>
             <div className="flex flex-col gap-6">
                 <div className="w-full h-fit gradient-border rounded-xl p-4 flex flex-col gap-2">
-                    <p className="text-subheading">
-                        Still in Private Beta
-                    </p>
+                    <p className="text-subheading">Still in Private Beta</p>
                     <p className="text-foreground-second text-body">
                         Chalkie Chalkie is still being actively developed. If
                         you encounter any bugs or have an idea for our next
@@ -39,7 +37,7 @@ const page = () => {
                     <p>Privacy Policy</p>
                 </div>
             </div>
-            <div className="absolute left-224 border-2 border-white/10 top-[calc(50%-3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="absolute left-224 border-2 border-white/10 top-60 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
@@ -49,7 +47,7 @@ const page = () => {
                     />
                 </div>
             </div>
-            <div className="absolute left-200 border-2 border-white/10 top-[calc(50%+3rem)] -translate-y-1/2 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="absolute left-200 border-2 border-white/10 top-90 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
