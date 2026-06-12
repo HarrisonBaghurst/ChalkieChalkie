@@ -37,7 +37,7 @@ export async function GET(req: Request) {
         const blocked = await enforceRateLimit(req, "users:friends", userId);
         if (blocked) return blocked;
 
-        // tutor-only endpoint (used to invite tutees into workspaces)
+        // tutor-only endpoint (used to invite collaborators into workspaces)
         const forbidden = await requireTutor(userId);
         if (forbidden) return forbidden;
 

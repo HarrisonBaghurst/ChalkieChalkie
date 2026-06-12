@@ -7,7 +7,7 @@ export type SortDirection = "asc" | "desc";
 export const applyDashboardFilters = (
     workspaces: Workspace[],
     search: string,
-    selectedTuteeIds: string[],
+    selectedCollaboratorIds: string[],
     sortDir: SortDirection,
 ): Workspace[] => {
     let result = [...workspaces];
@@ -19,9 +19,9 @@ export const applyDashboardFilters = (
         );
     }
 
-    if (selectedTuteeIds.length > 0) {
+    if (selectedCollaboratorIds.length > 0) {
         result = result.filter((w) =>
-            selectedTuteeIds.some((id) => w.collaboratorIds?.includes(id)),
+            selectedCollaboratorIds.some((id) => w.collaboratorIds?.includes(id)),
         );
     }
 

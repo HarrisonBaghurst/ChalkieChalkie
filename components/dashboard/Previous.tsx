@@ -9,10 +9,10 @@ import { pickCounterparty } from "@/lib/dashboardCounterparty";
 type PreviousProps = {
     workspaces: Workspace[];
     usersMap: Record<string, userInfo>;
-    viewerIsTutor: boolean;
-    tutees: userInfo[];
-    selectedTuteeIds: string[];
-    onChangeSelectedTuteeIds: (ids: string[]) => void;
+    viewerIsHost: boolean;
+    collaborators: userInfo[];
+    selectedCollaboratorIds: string[];
+    onChangeSelectedCollaboratorIds: (ids: string[]) => void;
     search: string;
     onChangeSearch: (s: string) => void;
     friends: userInfo[];
@@ -25,10 +25,10 @@ type PreviousProps = {
 const Previous = ({
     workspaces,
     usersMap,
-    viewerIsTutor,
-    tutees,
-    selectedTuteeIds,
-    onChangeSelectedTuteeIds,
+    viewerIsHost,
+    collaborators,
+    selectedCollaboratorIds,
+    onChangeSelectedCollaboratorIds,
     search,
     onChangeSearch,
     friends,
@@ -49,9 +49,9 @@ const Previous = ({
                 />
                 <div className="w-1/3">
                     <Filters
-                        tutees={tutees}
-                        selectedIds={selectedTuteeIds}
-                        onChange={onChangeSelectedTuteeIds}
+                        collaborators={collaborators}
+                        selectedIds={selectedCollaboratorIds}
+                        onChange={onChangeSelectedCollaboratorIds}
                     />
                 </div>
             </div>
@@ -63,7 +63,11 @@ const Previous = ({
                         <WorkspaceCard
                             key={w.id}
                             workspace={w}
-                            tutee={pickCounterparty(w, usersMap, viewerIsTutor)}
+                            counterparty={pickCounterparty(
+                                w,
+                                usersMap,
+                                viewerIsHost,
+                            )}
                             showFeedback={true}
                             usersMap={usersMap}
                             friends={friends}

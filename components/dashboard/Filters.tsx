@@ -6,12 +6,12 @@ import { userInfo } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 
 interface FiltersProps {
-    tutees: userInfo[];
+    collaborators: userInfo[];
     selectedIds: string[];
     onChange: (ids: string[]) => void;
 }
 
-const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
+const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -33,7 +33,7 @@ const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
         }
     };
 
-    const disabled = tutees.length === 0;
+    const disabled = collaborators.length === 0;
 
     const label = disabled
         ? "No members yet"
@@ -76,12 +76,12 @@ const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
 
             {open && !disabled && (
                 <div className="absolute top-[calc(100%+6px)] right-0 z-10 w-75 max-h-72 overflow-y-auto rounded-md border border-white/10 bg-[#0d0d0a]">
-                    {tutees.map((tutee) => {
-                        const checked = selectedIds.includes(tutee.id);
+                    {collaborators.map((collaborator) => {
+                        const checked = selectedIds.includes(collaborator.id);
                         return (
                             <button
-                                key={tutee.id}
-                                onClick={() => toggle(tutee.id)}
+                                key={collaborator.id}
+                                onClick={() => toggle(collaborator.id)}
                                 className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-white/5 cursor-pointer"
                             >
                                 <span
@@ -110,10 +110,10 @@ const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
                                     )}
                                 </span>
                                 <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-white/10">
-                                    {tutee.imageUrl && (
+                                    {collaborator.imageUrl && (
                                         <Image
-                                            src={tutee.imageUrl}
-                                            alt={tutee.firstName}
+                                            src={collaborator.imageUrl}
+                                            alt={collaborator.firstName}
                                             fill
                                             sizes="24px"
                                             className="object-cover"
@@ -121,7 +121,8 @@ const Filters = ({ tutees, selectedIds, onChange }: FiltersProps) => {
                                     )}
                                 </div>
                                 <span className="truncate">
-                                    {tutee.firstName} {tutee.lastName}
+                                    {collaborator.firstName}{" "}
+                                    {collaborator.lastName}
                                 </span>
                             </button>
                         );

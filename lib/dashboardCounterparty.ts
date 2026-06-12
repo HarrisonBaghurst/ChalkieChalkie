@@ -1,16 +1,18 @@
 import { userInfo, Workspace } from "@/types/userTypes";
-import { isTutor } from "@/lib/roleStub";
+import { isHost } from "@/lib/workspaceHost";
 
 export const pickCounterparty = (
     workspace: Workspace,
     usersMap: Record<string, userInfo>,
-    viewerIsTutor: boolean,
+    viewerIsHost: boolean,
 ): userInfo | null => {
-    if (viewerIsTutor) {
-        const firstTuteeId = workspace.collaboratorIds?.find(
-            (id) => !isTutor(id, workspace),
+    if (viewerIsHost) {
+        const firstCollaboratorId = workspace.collaboratorIds?.find(
+            (id) => !isHost(id, workspace),
         );
-        return firstTuteeId ? (usersMap[firstTuteeId] ?? null) : null;
+        return firstCollaboratorId
+            ? (usersMap[firstCollaboratorId] ?? null)
+            : null;
     }
     return usersMap[workspace.host] ?? null;
 };

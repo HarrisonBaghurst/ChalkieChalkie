@@ -11,7 +11,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 type WorkspaceCardProps = {
     workspace: Workspace;
-    tutee: userInfo | null;
+    counterparty: userInfo | null;
     showFeedback: boolean;
     usersMap: Record<string, userInfo>;
     friends: userInfo[];
@@ -20,7 +20,7 @@ type WorkspaceCardProps = {
 
 const WorkspaceCard = ({
     workspace,
-    tutee,
+    counterparty,
     showFeedback,
     usersMap,
     friends,
@@ -47,11 +47,11 @@ const WorkspaceCard = ({
             <div className="h-px w-full bg-foreground-third" />
             <div className="flex justify-between">
                 <div className="flex gap-4 items-center">
-                    {tutee?.imageUrl ? (
+                    {counterparty?.imageUrl ? (
                         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-foreground-third">
                             <Image
-                                src={tutee.imageUrl}
-                                alt={`${tutee.firstName} ${tutee.lastName}`}
+                                src={counterparty.imageUrl}
+                                alt={`${counterparty.firstName} ${counterparty.lastName}`}
                                 fill
                                 sizes="40px"
                                 className="object-cover"

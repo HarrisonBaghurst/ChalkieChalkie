@@ -8,7 +8,7 @@ import {
     applyDashboardFilters,
     DASHBOARD_GRACE_MS,
 } from "@/lib/dashboardFilters";
-import { isTutor, viewerIsTutorAcrossAny } from "@/lib/roleStub";
+import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import Sidebar from "./Sidebar";
 import Next from "./Next";
@@ -38,7 +38,9 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     );
     const [friends, setFriends] = useState<userInfo[]>([]);
 
-    const [selectedTuteeIds, setSelectedTuteeIds] = useState<string[]>([]);
+    const [selectedCollaboratorIds, setSelectedCollaboratorIds] = useState<
+        string[]
+    >([]);
     const [upcomingSearch, setUpcomingSearch] = useState("");
     const [previousSearch, setPreviousSearch] = useState("");
 
@@ -182,18 +184,17 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
         [workspaces, cutoff],
     );
 
-    const viewerIsTutor = useMemo(
-        () =>
-            viewerIsTutorAcrossAny(user?.id, [...upcomingAll, ...previousAll]),
+    const viewerIsHost = useMemo(
+        () => viewerIsHostOfAny(user?.id, [...upcomingAll, ...previousAll]),
         [user?.id, upcomingAll, previousAll],
     );
 
-    const tutees = useMemo(() => {
+    const collaborators = useMemo(() => {
         const seen = new Set<string>();
         const result: userInfo[] = [];
         [...upcomingAll, ...previousAll].forEach((w) => {
             w.collaboratorIds?.forEach((id) => {
-                if (isTutor(id, w)) return;
+                if (isHost(id, w)) return;
                 if (seen.has(id)) return;
                 const u = usersMap[id];
                 if (!u) return;
@@ -209,10 +210,10 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
             applyDashboardFilters(
                 upcomingAll,
                 upcomingSearch,
-                selectedTuteeIds,
+                selectedCollaboratorIds,
                 "asc",
             ),
-        [upcomingAll, upcomingSearch, selectedTuteeIds],
+        [upcomingAll, upcomingSearch, selectedCollaboratorIds],
     );
 
     const previousFiltered = useMemo(
@@ -220,10 +221,10 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
             applyDashboardFilters(
                 previousAll,
                 previousSearch,
-                selectedTuteeIds,
+                selectedCollaboratorIds,
                 "desc",
             ),
-        [previousAll, previousSearch, selectedTuteeIds],
+        [previousAll, previousSearch, selectedCollaboratorIds],
     );
 
     const nextWorkspace = upcomingAll[0] ?? null;
@@ -259,10 +260,12 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                     <Upcoming
                         workspaces={upcomingFiltered}
                         usersMap={usersMap}
-                        viewerIsTutor={viewerIsTutor}
-                        tutees={tutees}
-                        selectedTuteeIds={selectedTuteeIds}
-                        onChangeSelectedTuteeIds={setSelectedTuteeIds}
+                        viewerIsHost={viewerIsHost}
+                        collaborators={collaborators}
+                        selectedCollaboratorIds={selectedCollaboratorIds}
+                        onChangeSelectedCollaboratorIds={
+                            setSelectedCollaboratorIds
+                        }
                         search={upcomingSearch}
                         onChangeSearch={setUpcomingSearch}
                         friends={friends}
@@ -271,10 +274,12 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                     <Previous
                         workspaces={previousFiltered}
                         usersMap={usersMap}
-                        viewerIsTutor={viewerIsTutor}
-                        tutees={tutees}
-                        selectedTuteeIds={selectedTuteeIds}
-                        onChangeSelectedTuteeIds={setSelectedTuteeIds}
+                        viewerIsHost={viewerIsHost}
+                        collaborators={collaborators}
+                        selectedCollaboratorIds={selectedCollaboratorIds}
+                        onChangeSelectedCollaboratorIds={
+                            setSelectedCollaboratorIds
+                        }
                         search={previousSearch}
                         onChangeSearch={setPreviousSearch}
                         friends={friends}
