@@ -3,6 +3,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { clerkAppearance } from "@/lib/clerkAppearance";
 import { Toaster } from "sonner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
@@ -18,7 +19,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <ClerkProvider>
+        <ClerkProvider appearance={clerkAppearance}>
             <html lang="en" className={cn("font-sans", geist.variable)}>
                 <body className={`antialiased w-full overflow-x-hidden`}>
                     <div className="relative">
