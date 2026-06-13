@@ -5,8 +5,8 @@ import Image from "next/image";
 
 const page = () => {
     return (
-        <div className="mx-32 my-24 h-[calc(100%-12rem)] flex flex-col justify-between w-min">
-            <div className="flex flex-col gap-10">
+        <div className="px-[6.6dvw] py-[8dvw] 2xl:py-[5dvw] h-full flex flex-col justify-between 2xl:w-min gap-20">
+            <div className="flex flex-col gap-6 2xl:gap-10">
                 <h1 className="text-display w-[11ch]">
                     Where Effort Becomes Understanding
                 </h1>
@@ -15,7 +15,7 @@ const page = () => {
                     Work through complex problems, schedule lessons, and track
                     progress through Chalkie Chalkie.
                 </p>
-                <div className="flex gap-12">
+                <div className="flex gap-6 2xl:gap-12">
                     <BetaSignUpButton />
                     <HeroLoginButton />
                 </div>
@@ -37,7 +37,7 @@ const page = () => {
                     <p>Privacy Policy</p>
                 </div>
             </div>
-            <div className="absolute left-224 border-2 border-white/10 top-60 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="hidden 2xl:block absolute left-224 border-2 border-white/10 top-60 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
@@ -47,7 +47,7 @@ const page = () => {
                     />
                 </div>
             </div>
-            <div className="absolute left-200 border-2 border-white/10 top-90 w-fit h-fit rounded-lg skew-5 rotate-5">
+            <div className="hidden 2xl:block absolute left-200 border-2 border-white/10 top-90 w-fit h-fit rounded-lg skew-5 rotate-5">
                 <div className="relative w-240 h-140 rounded-lg overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}

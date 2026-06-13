@@ -8,7 +8,7 @@ const Navbar = () => {
     const isInWorkspace = pathname?.startsWith("/board") ?? false;
 
     return (
-        <div className="h-fit bg-card-background py-3 px-10 fixed w-full flex justify-between items-center z-1000">
+        <div className="h-fit bg-card-background py-3.5 px-4 2xl:px-10 fixed w-full flex justify-between items-center z-1000">
             <p
                 className={`font-inter-bold${
                     isInWorkspace ? " cursor-pointer" : ""

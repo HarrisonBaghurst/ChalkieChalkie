@@ -45,7 +45,7 @@ const CONTACT_STEPS = [
 const ReviewRow = ({ label, value }: { label: string; value: string }) => (
     <div className="flex flex-col gap-1">
         <div className={labelClass}>{label.toUpperCase()}</div>
-        <div className="text-secondary text-foreground whitespace-pre-wrap wrap-break-word">
+        <div className="text-foreground whitespace-pre-wrap wrap-break-word">
             {value.trim() || "—"}
         </div>
     </div>
@@ -386,16 +386,14 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
     return (
         <div
             onClick={onClose}
-            className="fixed left-0 top-0 w-full h-full bg-background/80 z-500 flex items-center justify-center"
+            className="fixed left-0 top-0 w-full h-full bg-background/80 z-1000 flex items-center justify-center"
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-card-background rounded-xl p-8 w-150 max-w-[92vw] h-[60dvh] flex flex-col gap-6 text-foreground"
+                className="bg-card-background rounded-xl p-8 w-150 max-w-[92vw] h-[70dvh] 2xl:h-[60dvh] flex flex-col gap-6 text-foreground"
             >
                 <div className="flex items-center justify-between">
-                    <div className="text-subheading">
-                        {headerTitle}
-                    </div>
+                    <div className="text-subheading">{headerTitle}</div>
                     <button
                         onClick={onClose}
                         className="text-foreground-third hover:text-foreground text-subheading leading-none cursor-pointer"
