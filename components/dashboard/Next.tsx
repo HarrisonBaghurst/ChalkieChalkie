@@ -14,7 +14,7 @@ const Next = ({ workspace }: NextProps) => {
     const router = useRouter();
 
     return (
-        <div className="w-220 bg-card-background border-2 p-4 rounded-xl flex justify-between gradient-border">
+        <div className="w-full 2xl:w-220 bg-card-background border-2 p-4 rounded-xl flex justify-between gradient-border">
             <div className="flex flex-col gap-2">
                 <p className="text-caption text-foreground-second font-inter-bold">
                     COMING UP NEXT
@@ -33,10 +33,14 @@ const Next = ({ workspace }: NextProps) => {
                     <p className="font-inter-bold text-center">
                         {formatSessionTime(workspace.startTime)}
                     </p>
-                    <Button
-                        text="Join Workspace"
-                        onClick={() => router.push(`/board/${workspace.id}`)}
-                    />
+                    <div className="hidden 2xl:block">
+                        <Button
+                            text="Join Workspace"
+                            onClick={() =>
+                                router.push(`/board/${workspace.id}`)
+                            }
+                        />
+                    </div>
                 </div>
             )}
         </div>

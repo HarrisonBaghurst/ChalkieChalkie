@@ -247,9 +247,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     };
 
     const handleUpdated = (ws: Workspace, collaborators: userInfo[]) => {
-        setWorkspaces((prev) =>
-            prev.map((w) => (w.id === ws.id ? ws : w)),
-        );
+        setWorkspaces((prev) => prev.map((w) => (w.id === ws.id ? ws : w)));
         mergeUsers(collaborators);
     };
 
@@ -259,8 +257,10 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
 
     return (
         <div className="flex">
-            <Sidebar />
-            <div className="ml-75 w-full h-full p-16 flex flex-col gap-6">
+            <div className="hidden 2xl:block">
+                <Sidebar />
+            </div>
+            <div className="2xl:ml-75 w-full h-full p-[3.33dvw] flex flex-col gap-6">
                 {loading || !isLoaded ? (
                     <DashboardSkeleton />
                 ) : (
@@ -268,7 +268,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                         <Next workspace={nextWorkspace} />
                         <Actions friends={friends} onCreated={handleCreated} />
                         <div className="h-px w-full bg-foreground-third" />
-                        <div className="flex gap-6 w-full">
+                        <div className="grid 2xl:flex gap-6 w-full">
                             <Upcoming
                                 workspaces={upcomingFiltered}
                                 usersMap={usersMap}

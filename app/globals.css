@@ -14,6 +14,12 @@
     font-weight: 400;
 }
 
+@font-face {
+    font-family: "Libre";
+    src: url("/fonts/LibreBaskerville-Bold.ttf") format("truetype");
+    font-weight: 400;
+}
+
 :root {
     --background: #121212;
     --background-second: #494949;
@@ -102,6 +108,7 @@
 @theme inline {
     --font-inter-bold: "InterBold";
     --font-inter-regular: "InterRegular";
+    --font-libre: "Libre";
 
     --color-background: var(--background);
     --color-background-second: var(--background-second);

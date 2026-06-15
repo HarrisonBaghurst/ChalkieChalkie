@@ -37,7 +37,7 @@ const Previous = ({
     onWorkspaceDeleted,
 }: PreviousProps) => {
     return (
-        <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
+        <div className="w-full bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
             <p className="text-caption text-foreground-third font-inter-bold">
                 PREVIOUS
             </p>
@@ -59,7 +59,9 @@ const Previous = ({
             </div>
             <div className="flex flex-col gap-4">
                 {workspaces.length === 0 ? (
-                    <p className="text-caption text-foreground-third">No sessions</p>
+                    <p className="text-caption text-foreground-third">
+                        No sessions
+                    </p>
                 ) : (
                     workspaces.map((w) => (
                         <WorkspaceCard

@@ -54,7 +54,7 @@ const WorkspaceCard = ({
     return (
         <div className="flex flex-col gap-4">
             <div className="h-px w-full bg-foreground-third" />
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
                 <div className="flex gap-4 items-center">
                     {counterparty?.imageUrl ? (
                         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-foreground-third">
@@ -97,15 +97,16 @@ const WorkspaceCard = ({
                             Unset start time
                         </p>
                     )}
-                    <Button
-                        text="Join"
-                        onClick={() => router.push(`/board/${workspace.id}`)}
-                    />
-                    {canManage && (
+                    <div className="hidden 2xl:block">
                         <Button
-                            text="Edit"
-                            onClick={() => setEditOpen(true)}
+                            text="Join"
+                            onClick={() =>
+                                router.push(`/board/${workspace.id}`)
+                            }
                         />
+                    </div>
+                    {canManage && (
+                        <Button text="Edit" onClick={() => setEditOpen(true)} />
                     )}
                 </div>
             </div>
