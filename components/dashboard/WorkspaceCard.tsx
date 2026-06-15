@@ -76,7 +76,7 @@ const WorkspaceCard = ({
                                 {workspace.title}
                             </p>
                         ) : (
-                            <p className="text-secondary font-inter-bold text-foreground-third">
+                            <p className="text-secondary font-inter-bold">
                                 Untitled workspace
                             </p>
                         )}
@@ -93,7 +93,7 @@ const WorkspaceCard = ({
                             {formatSessionTime(workspace.startTime)}
                         </p>
                     ) : (
-                        <p className="text-secondary font-inter-bold text-foreground-third">
+                        <p className="text-secondary font-inter-bold">
                             Unset start time
                         </p>
                     )}
@@ -111,9 +111,7 @@ const WorkspaceCard = ({
                 </div>
             </div>
             {showFeedback && workspace.feedback && (
-                <div className="text-secondary text-foreground-second">
-                    {workspace.feedback}
-                </div>
+                <div className="text-secondary">{workspace.feedback}</div>
             )}
             {canManage && (
                 <WorkspaceModal
