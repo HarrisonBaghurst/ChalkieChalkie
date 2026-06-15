@@ -198,11 +198,11 @@
 
 @layer components {
     .text-display {
-        font-family: "InterBold";
+        font-family: "Libre";
         font-size: clamp(
             2.5rem,
-            2.04rem + 2.05vw,
-            4.5rem
+            2rem + 2vw,
+            4rem
         ); /* 40px → 72px, 360–1920px */
         line-height: 1.05;
     }
