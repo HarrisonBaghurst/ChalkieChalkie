@@ -16,6 +16,7 @@ import Actions from "./Actions";
 import Upcoming from "./Upcoming";
 import Previous from "./Previous";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
+import Navbar from "../home/Navbar";
 
 type DashboardClientProps = {
     testData?: {
@@ -260,7 +261,10 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
             <div className="hidden 2xl:block">
                 <Sidebar />
             </div>
-            <div className="2xl:ml-75 w-full h-full p-[3.33dvw] flex flex-col gap-6">
+            <div className="block 2xl:hidden">
+                <Navbar />
+            </div>
+            <div className="2xl:ml-75 w-full h-full p-[3.33dvw] flex flex-col gap-6 mt-16 2xl:mt-0">
                 {loading || !isLoaded ? (
                     <DashboardSkeleton />
                 ) : (
