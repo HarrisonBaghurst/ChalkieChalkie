@@ -12,7 +12,6 @@ import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import Sidebar from "./Sidebar";
 import Next from "./Next";
-import Actions from "./Actions";
 import Upcoming from "./Upcoming";
 import Previous from "./Previous";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
@@ -259,7 +258,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     return (
         <div className="flex bg-card-background min-h-dvh">
             <div className="hidden 2xl:block">
-                <Sidebar />
+                <Sidebar friends={friends} onCreated={handleCreated} />
             </div>
             <div className="block 2xl:hidden">
                 <Navbar />
@@ -270,7 +269,6 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                 ) : (
                     <>
                         <Next workspace={nextWorkspace} />
-                        <Actions friends={friends} onCreated={handleCreated} />
                         <div className="h-px w-full bg-foreground-third" />
                         <div className="grid 2xl:flex gap-6 w-full">
                             <Upcoming
