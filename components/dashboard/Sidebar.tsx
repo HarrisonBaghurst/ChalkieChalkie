@@ -72,7 +72,7 @@ const Sidebar = () => {
                                                 fill
                                             />
                                         </div>
-                                        <p className="text-secondary">{button.text}</p>
+                                        <p className="text-small">{button.text}</p>
                                     </>
                                 );
                                 const className = cn(

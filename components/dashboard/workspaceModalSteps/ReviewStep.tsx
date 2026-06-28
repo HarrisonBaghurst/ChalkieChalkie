@@ -19,7 +19,7 @@ const Row = ({
 }) => (
     <div className="flex flex-col gap-1">
         <div className="text-caption text-foreground-third">{label}</div>
-        <div className="text-secondary">{children}</div>
+        <div className="text-small">{children}</div>
     </div>
 );
 

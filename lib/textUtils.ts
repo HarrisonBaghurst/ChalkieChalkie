@@ -74,16 +74,19 @@ export function formatSessionTime(iso: string): string {
         (startOfDay(date) - startOfDay(now)) / (24 * 60 * 60 * 1000),
     );
 
-    if (dayDiff === 0) return `Today ${time}`;
-    if (dayDiff === 1) return `Tomorrow ${time}`;
-    if (dayDiff === -1) return `Yesterday ${time}`;
-    if (dayDiff > -7 && dayDiff < 7) return `${WEEKDAYS[date.getDay()]} ${time}`;
+    if (dayDiff === 0) return `Today, ${time}`;
+    if (dayDiff === 1) return `Tomorrow, ${time}`;
+    if (dayDiff === -1) return `Yesterday, ${time}`;
+    if (dayDiff > -7 && dayDiff < 7)
+        return `${WEEKDAYS[date.getDay()]}, ${time}`;
 
     const day = date.getDate();
     const month = SHORT_MONTHS[date.getMonth()];
     const year =
-        date.getFullYear() === now.getFullYear() ? "" : ` ${date.getFullYear()}`;
-    return `${day} ${month}${year} ${time}`;
+        date.getFullYear() === now.getFullYear()
+            ? ""
+            : ` ${date.getFullYear()}`;
+    return `${day} ${month}${year}, ${time}`;
 }
 
 export const formatDate = (date: Date): string => {

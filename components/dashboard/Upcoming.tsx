@@ -47,7 +47,7 @@ const Upcoming = ({
                     value={search}
                     onChange={(e) => onChangeSearch(e.target.value)}
                     placeholder="Search upcoming sessions..."
-                    className="w-2/3 border border-foreground-third rounded-md py-2 px-3 text-secondary placeholder:text-foreground-third focus:outline-none"
+                    className="w-2/3 border border-foreground-third rounded-md py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none"
                 />
                 <div className="w-1/3">
                     <Filters

@@ -55,7 +55,7 @@ const CollaboratorsInput = ({
                 className="flex flex-col gap-2 cursor-pointer text-left"
                 onClick={() => setPopupOpen(true)}
             >
-                <div className="text-secondary text-foreground-third">
+                <div className="text-small text-foreground-third">
                     COLLABORATORS
                 </div>
                 <div className="flex flex-col gap-0">

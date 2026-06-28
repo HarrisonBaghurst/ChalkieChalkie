@@ -149,7 +149,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                     {DAYS.map((day) => (
                         <div
                             key={day}
-                            className="text-secondary text-foreground-third w-full text-center"
+                            className="text-small text-foreground-third w-full text-center"
                         >
                             {day}
                         </div>

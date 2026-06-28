@@ -72,11 +72,11 @@ const WorkspaceCard = ({
                     )}
                     <div className="flex flex-col gap-1">
                         {workspace.title ? (
-                            <p className="text-secondary font-inter-bold">
+                            <p className="text-small font-inter-bold">
                                 {workspace.title}
                             </p>
                         ) : (
-                            <p className="text-secondary font-inter-bold">
+                            <p className="text-small font-inter-bold">
                                 Untitled workspace
                             </p>
                         )}
@@ -89,11 +89,11 @@ const WorkspaceCard = ({
                 </div>
                 <div className="flex gap-4 items-center">
                     {workspace.startTime ? (
-                        <p className="text-secondary font-inter-bold">
+                        <p className="text-small font-inter-bold">
                             {formatSessionTime(workspace.startTime)}
                         </p>
                     ) : (
-                        <p className="text-secondary font-inter-bold">
+                        <p className="text-small font-inter-bold">
                             Unset start time
                         </p>
                     )}
@@ -111,7 +111,7 @@ const WorkspaceCard = ({
                 </div>
             </div>
             {showFeedback && workspace.feedback && (
-                <div className="text-secondary">{workspace.feedback}</div>
+                <div className="text-small">{workspace.feedback}</div>
             )}
             {canManage && (
                 <WorkspaceModal

@@ -26,7 +26,7 @@ const SeverityOptions: SeverityType[] = [
 ];
 
 const inputClass =
-    "border border-foreground-third rounded-md py-2 px-3 text-secondary placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
+    "border border-foreground-third rounded-md py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
 
 const labelClass = "text-caption text-foreground-third";
 

@@ -49,7 +49,7 @@ const TextInput = ({
         <div className="w-full h-full relative textd-base text-foreground">
             <div className="flex flex-col gap-2 z-100">
                 {title && (
-                    <div className="text-secondary text-foreground-second">
+                    <div className="text-small text-foreground-second">
                         {title}
                     </div>
                 )}

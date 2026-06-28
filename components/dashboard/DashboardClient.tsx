@@ -257,14 +257,14 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     };
 
     return (
-        <div className="flex">
+        <div className="flex bg-card-background min-h-dvh">
             <div className="hidden 2xl:block">
                 <Sidebar />
             </div>
             <div className="block 2xl:hidden">
                 <Navbar />
             </div>
-            <div className="2xl:ml-75 w-full h-full p-[3.33dvw] flex flex-col gap-6 mt-16 2xl:mt-0">
+            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-6 bg-background m-2 rounded-2xl">
                 {loading || !isLoaded ? (
                     <DashboardSkeleton />
                 ) : (
