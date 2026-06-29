@@ -29,7 +29,7 @@ const Toolbar = ({
             <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background rounded-lg flex flex-col gap-2">
                 <div className="flex flex-col gap-2 p-2">
                     <ToolbarButton
-                        icon={"/icons/pen.svg"}
+                        icon={"/icons/pen-tool.svg"}
                         label="pen icon"
                         isActive={currentTool === "pen"}
                         onSelect={() => handleToolChange("pen")}
@@ -49,13 +49,13 @@ const Toolbar = ({
                         onSelect={() => handleToolChange("eraser")}
                     />
                     <ToolbarButton
-                        icon={"/icons/pointer.svg"}
+                        icon={"/icons/mouse-pointer-2.svg"}
                         label="pointer icon"
                         isActive={currentTool === "pointer"}
                         onSelect={() => handleToolChange("pointer")}
                     />
                     <ToolbarButton
-                        icon={"/icons/selector.svg"}
+                        icon={"/icons/square-dashed.svg"}
                         label="selector icon"
                         isActive={currentTool === "selector"}
                         onSelect={() => handleToolChange("selector")}

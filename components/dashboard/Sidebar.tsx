@@ -13,6 +13,7 @@ import WorkspaceModal from "./WorkspaceModal";
 type SidebarItem = {
     text: string;
     icon: string;
+    iconDark?: string;
     status: boolean;
     link?: string | null;
     onClick?: () => void;
@@ -43,13 +44,15 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
                       items: [
                           {
                               text: "Create Workspace",
-                              icon: "/icons/folder-plus-svgrepo-com.svg",
+                              icon: "/icons/file-plus-corner.svg",
+                              iconDark: "/icons/file-plus-corner-dark.svg",
                               status: true,
                               onClick: () => setCreateOpen(true),
                           },
                           {
                               text: "Add New Tutee",
-                              icon: "/icons/users-svgrepo-com.svg",
+                              icon: "/icons/user-round-plus.svg",
+                              iconDark: "/icons/user-round-plus-dark.svg",
                               status: false,
                           },
                       ],
@@ -61,19 +64,22 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             items: [
                 {
                     text: "Workspaces",
-                    icon: "/icons/notebook-svgrepo-com.svg",
+                    icon: "/icons/library.svg",
+                    iconDark: "/icons/library-dark.svg",
                     status: true,
                     link: "/dashboard",
                     active: pathname === "/dashboard",
                 },
                 {
                     text: "Messages",
-                    icon: "/icons/messages-1-svgrepo-com.svg",
+                    icon: "/icons/message-square-text.svg",
+                    iconDark: "/icons/message-square-text-dark.svg",
                     status: false,
                 },
                 {
                     text: "Tutees",
-                    icon: "/icons/graduation-hat-svgrepo-com.svg",
+                    icon: "/icons/graduation-cap.svg",
+                    iconDark: "/icons/graduation-cap-dark.svg",
                     status: false,
                 },
             ],
@@ -84,7 +90,15 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
         const content = (
             <>
                 <div className="relative w-5 h-5">
-                    <Image src={item.icon} alt={item.text} fill />
+                    <Image
+                        src={
+                            item.active && item.iconDark
+                                ? item.iconDark
+                                : item.icon
+                        }
+                        alt={item.text}
+                        fill
+                    />
                 </div>
                 <p className="text-small">{item.text}</p>
             </>
@@ -153,17 +167,13 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
                     </div>
                 ))}
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-8">
                 <Link
                     href="/"
                     className="text-foreground-second font-inter-bold mx-2 flex gap-3 items-center rounded-sm cursor-pointer"
                 >
                     <div className="relative w-5 h-5">
-                        <Image
-                            src="/icons/home-10-svgrepo-com.svg"
-                            alt="Return Home"
-                            fill
-                        />
+                        <Image src="/icons/house.svg" alt="Return Home" fill />
                     </div>
                     <p className="text-small">Return Home</p>
                 </Link>

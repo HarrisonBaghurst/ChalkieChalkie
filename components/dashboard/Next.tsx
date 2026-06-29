@@ -54,8 +54,7 @@ const Next = ({ workspace }: NextProps) => {
             {/* Link icon */}
             <div className="absolute top-4 right-4">
                 <Image
-                    /* TODO: swap for a dedicated "open/link" icon when available */
-                    src="/icons/pen-square.svg"
+                    src="/icons/external-link.svg"
                     alt="Open workspace"
                     width={20}
                     height={20}

@@ -53,25 +53,16 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                 )}
             >
                 <span>{label}</span>
-                <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
+                <Image
+                    src="/icons/chevron-down.svg"
+                    alt=""
+                    width={12}
+                    height={12}
                     className={cn(
-                        "transition-transform duration-150 shrink-0",
+                        "opacity-50 transition-transform duration-150 shrink-0",
                         open && "rotate-180",
                     )}
-                >
-                    <path
-                        d="M2 4l4 4 4-4"
-                        stroke="currentColor"
-                        strokeOpacity={0.5}
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
+                />
             </button>
 
             {open && !disabled && (
@@ -84,31 +75,17 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                                 onClick={() => toggle(collaborator.id)}
                                 className="flex w-full items-center gap-3 px-3 py-2 text-left text-small hover:bg-white/5 cursor-pointer"
                             >
-                                <span
-                                    className={cn(
-                                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                                <Image
+                                    src={
                                         checked
-                                            ? "bg-[#0f348b] border-[#0f348b]"
-                                            : "border-white/30",
-                                    )}
-                                >
-                                    {checked && (
-                                        <svg
-                                            width="10"
-                                            height="10"
-                                            viewBox="0 0 10 10"
-                                            fill="none"
-                                        >
-                                            <path
-                                                d="M2 5l2 2 4-4"
-                                                stroke="white"
-                                                strokeWidth="1.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                    )}
-                                </span>
+                                            ? "/icons/square-check.svg"
+                                            : "/icons/square.svg"
+                                    }
+                                    alt=""
+                                    width={16}
+                                    height={16}
+                                    className="shrink-0"
+                                />
                                 <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-white/10">
                                     {collaborator.imageUrl && (
                                         <Image

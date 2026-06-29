@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -206,7 +207,7 @@ const WorkspaceModal = ({
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
 
-    return (
+    return createPortal(
         <div
             onClick={onClose}
             className="fixed left-0 top-0 w-full h-full bg-background/80 z-500 flex items-center justify-center"
@@ -382,7 +383,8 @@ const WorkspaceModal = ({
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 };
 

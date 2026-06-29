@@ -126,7 +126,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                         onClick={() => incrementMonth(-1)}
                     >
                         <Image
-                            src={"/icons/down-arrow.svg"}
+                            src={"/icons/chevron-down.svg"}
                             alt="arrow"
                             fill
                             className="rotate-90"
@@ -138,7 +138,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                         onClick={() => incrementMonth(1)}
                     >
                         <Image
-                            src={"/icons/down-arrow.svg"}
+                            src={"/icons/chevron-down.svg"}
                             alt="arrow"
                             fill
                             className="rotate-270"

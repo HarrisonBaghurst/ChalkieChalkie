@@ -102,7 +102,7 @@ const ParticipantRoster = () => {
                     </span>
                 </span>
                 <Image
-                    src="/icons/down-arrow.svg"
+                    src="/icons/chevron-down.svg"
                     alt={collapsed ? "Expand" : "Collapse"}
                     width={16}
                     height={16}

@@ -68,17 +68,17 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
                             willChange: "transform",
                         }}
                     >
-                        <svg
-                            width="24"
-                            height="36"
-                            viewBox="0 0 24 36"
-                            fill="none"
-                        >
-                            <path
-                                fill={colour}
-                                d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
-                            />
-                        </svg>
+                        <span
+                            style={{
+                                display: "block",
+                                width: 24,
+                                height: 24,
+                                WebkitMask:
+                                    "url(/icons/mouse-pointer-2.svg) center/contain no-repeat",
+                                mask: "url(/icons/mouse-pointer-2.svg) center/contain no-repeat",
+                                backgroundColor: colour,
+                            }}
+                        />
                         <div
                             className="absolute left-4 top-4 flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full whitespace-nowrap"
                             style={{ backgroundColor: colour }}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type TimeFilter = "upcoming" | "passed" | "next" | null;
@@ -45,25 +46,16 @@ const Combobox = ({ value, onChange, className }: ComboboxProps) => {
                 )}
             >
                 <span>{selected.label}</span>
-                <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
+                <Image
+                    src="/icons/chevron-down.svg"
+                    alt=""
+                    width={12}
+                    height={12}
                     className={cn(
-                        "transition-transform duration-150 shrink-0",
+                        "opacity-50 transition-transform duration-150 shrink-0",
                         open && "rotate-180",
                     )}
-                >
-                    <path
-                        d="M2 4l4 4 4-4"
-                        stroke="currentColor"
-                        strokeOpacity={0.5}
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
+                />
             </button>
 
             {open && (
