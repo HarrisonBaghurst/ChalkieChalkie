@@ -268,8 +268,11 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                     <DashboardSkeleton />
                 ) : (
                     <>
-                        <Next workspace={nextWorkspace} />
-                        <div className="h-px w-full bg-foreground-third" />
+                        <Next
+                            workspace={nextWorkspace}
+                            usersMap={usersMap}
+                            viewerIsHost={viewerIsHost}
+                        />
                         <div className="grid 2xl:flex gap-6 w-full">
                             <Upcoming
                                 workspaces={upcomingFiltered}
