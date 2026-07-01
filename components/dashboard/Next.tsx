@@ -46,7 +46,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                     y: e.clientY - rect.top,
                 });
             }}
-            className="group relative w-full 2xl:w-1/3 h-55 bg-card-background border-2 p-4 rounded-xl flex flex-col gap-4 text-left cursor-pointer gradient-border"
+            className="group relative w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 rounded-xl flex flex-col gap-4 text-left cursor-pointer gradient-border"
         >
             <div
                 className={`pointer-events-none absolute z-10 bg-foreground text-background text-caption font-inter-regular px-2 py-1 rounded-sm whitespace-nowrap shadow-md transition-opacity duration-150 ${
@@ -57,7 +57,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                 Join workspace
             </div>
 
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-5 right-5">
                 <Image
                     src="/icons/external-link.svg"
                     alt="Open workspace"
@@ -70,7 +70,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                 <p className="text-caption text-foreground-third font-inter-regular">
                     COMING UP NEXT
                 </p>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-5">
                     {counterparty?.imageUrl ? (
                         <div className="relative w-12 h-12 rounded-full overflow-hidden bg-foreground-third">
                             <Image
@@ -95,11 +95,15 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                     </div>
                 </div>
             </div>
-
             {workspace.description && (
-                <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto">
-                    {workspace.description}
-                </p>
+                <div className="flex flex-col gap-1">
+                    <p className="text-caption text-foreground-third">
+                        Description
+                    </p>
+                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto">
+                        {workspace.description}
+                    </p>
+                </div>
             )}
         </button>
     );
