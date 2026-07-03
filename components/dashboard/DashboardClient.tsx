@@ -256,18 +256,26 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     };
 
     return (
-        <div className="flex bg-card-background min-h-dvh">
+        <div className="dashboard-root flex bg-card-background min-h-dvh">
             <div className="hidden 2xl:block">
                 <Sidebar friends={friends} onCreated={handleCreated} />
             </div>
             <div className="block 2xl:hidden">
                 <Navbar />
             </div>
-            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-6 bg-background m-2 rounded-2xl">
+            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-[2.5dvw] bg-background m-2 rounded-2xl">
                 {loading || !isLoaded ? (
                     <DashboardSkeleton />
                 ) : (
                     <>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-heading font-inter-bold">
+                                Your Dashboard
+                            </p>
+                            <p className="text-foreground-second">
+                                View and update your workspaces
+                            </p>
+                        </div>
                         <Next
                             workspace={nextWorkspace}
                             usersMap={usersMap}

@@ -37,11 +37,9 @@ const Previous = ({
     onWorkspaceDeleted,
 }: PreviousProps) => {
     return (
-        <div className="w-full bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
-            <p className="text-caption text-foreground-third font-inter-bold">
-                PREVIOUS
-            </p>
-            <div className="flex gap-4">
+        <div className="w-full bg-card-background rounded-xl pt-5 px-2 pb-2 flex flex-col gap-4 h-fit">
+            <p className="text-caption text-foreground-third px-3">PREVIOUS</p>
+            <div className="flex gap-4 px-3">
                 <input
                     type="text"
                     value={search}
@@ -57,7 +55,7 @@ const Previous = ({
                     />
                 </div>
             </div>
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
                 {workspaces.length === 0 ? (
                     <p className="text-caption text-foreground-third">
                         No sessions

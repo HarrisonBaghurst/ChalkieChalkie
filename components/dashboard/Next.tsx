@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { userInfo, Workspace } from "@/types/userTypes";
-import { formatSessionTime } from "@/lib/textUtils";
+import { formatSessionTime, daysUntil } from "@/lib/textUtils";
 import { pickCounterparty } from "@/lib/dashboardCounterparty";
+import Tooltip from "./Tooltip";
+import InfoTag from "./InfoTag";
 
 type NextProps = {
     workspace: Workspace | null;
@@ -19,8 +21,8 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
         : null;
 
     const router = useRouter();
-    const [hovered, setHovered] = useState(false);
-    const [cursor, setCursor] = useState({ x: 0, y: 0 });
+
+    const days = workspace ? daysUntil(workspace.startTime) : 0;
 
     if (!workspace) {
         return (
@@ -34,78 +36,76 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
     }
 
     return (
-        <button
-            type="button"
-            onClick={() => router.push(`/board/${workspace.id}`)}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setCursor({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                });
-            }}
-            className="group relative w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 rounded-xl flex flex-col gap-4 text-left cursor-pointer gradient-border"
-        >
-            <div
-                className={`pointer-events-none absolute z-10 bg-foreground text-background text-caption font-inter-regular px-2 py-1 rounded-sm whitespace-nowrap shadow-md transition-opacity duration-150 ${
-                    hovered ? "opacity-100" : "opacity-0"
-                }`}
-                style={{ left: cursor.x + 14, top: cursor.y + 14 }}
+        <Tooltip label="Join workspace" className="w-full 2xl:w-1/3">
+            <button
+                type="button"
+                onClick={() => router.push(`/board/${workspace.id}`)}
+                className="group relative w-full h-fit bg-card-background border-2 p-5 rounded-xl flex flex-col gap-6 text-left cursor-pointer gradient-border"
             >
-                Join workspace
-            </div>
-
-            <div className="absolute top-5 right-5">
-                <Image
-                    src="/icons/external-link.svg"
-                    alt="Open workspace"
-                    width={20}
-                    height={20}
-                    className="opacity-50 group-hover:opacity-100 transition-opacity"
-                />
-            </div>
-            <div className="flex flex-col gap-5 pr-8">
-                <p className="text-caption text-foreground-third font-inter-regular">
-                    COMING UP NEXT
-                </p>
-                <div className="flex items-center gap-5">
-                    {counterparty?.imageUrl ? (
-                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-foreground-third">
-                            <Image
-                                src={counterparty.imageUrl}
-                                alt={`${counterparty.firstName} ${counterparty.lastName}`}
-                                fill
-                                sizes="40px"
-                                className="object-cover"
-                                unoptimized
-                            />
+                <div className="absolute top-5 right-5">
+                    <Image
+                        src="/icons/external-link.svg"
+                        alt="Open workspace"
+                        width={20}
+                        height={20}
+                        className="opacity-50 group-hover:opacity-100 transition-opacity"
+                    />
+                </div>
+                <div className="flex flex-col gap-6 pr-8">
+                    <p className="text-caption font-inter-regular gradient-text">
+                        COMING UP NEXT
+                    </p>
+                    <div className="flex gap-5">
+                        {counterparty?.imageUrl ? (
+                            <div className="relative min-w-12 h-12 rounded-md overflow-hidden bg-foreground-third">
+                                <Image
+                                    src={counterparty.imageUrl}
+                                    alt={`${counterparty.firstName} ${counterparty.lastName}`}
+                                    fill
+                                    sizes="40px"
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-8 h-8 bg-foreground-third rounded-full" />
+                        )}
+                        <div className="flex flex-col gap-6">
+                            <div>
+                                <p className="text-heading font-inter-bold">
+                                    {formatSessionTime(workspace.startTime)}
+                                </p>
+                                <p className="text-body font-inter-bold text-foreground-second">
+                                    {workspace.title}
+                                </p>
+                            </div>
+                            {workspace.description && (
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-caption text-foreground-third">
+                                        Description
+                                    </p>
+                                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto">
+                                        {workspace.description}
+                                    </p>
+                                </div>
+                            )}
+                            <div className="flex gap-2">
+                                <InfoTag
+                                    text="60 mins"
+                                    icon="/icons/clock.svg"
+                                />
+                                {days > 0 && (
+                                    <InfoTag
+                                        text={`${days} day${days !== 1 ? "s" : ""} away`}
+                                        icon="/icons/calendar.svg"
+                                    />
+                                )}
+                            </div>
                         </div>
-                    ) : (
-                        <div className="w-8 h-8 bg-foreground-third rounded-full" />
-                    )}
-                    <div>
-                        <p className="text-heading">
-                            {formatSessionTime(workspace.startTime)}
-                        </p>
-                        <p className="text-body font-inter-bold">
-                            {workspace.title}
-                        </p>
                     </div>
                 </div>
-            </div>
-            {workspace.description && (
-                <div className="flex flex-col gap-1">
-                    <p className="text-caption text-foreground-third">
-                        Description
-                    </p>
-                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto">
-                        {workspace.description}
-                    </p>
-                </div>
-            )}
-        </button>
+            </button>
+        </Tooltip>
     );
 };
 

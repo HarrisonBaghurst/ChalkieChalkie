@@ -63,7 +63,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             title: "Menu",
             items: [
                 {
-                    text: "Workspaces",
+                    text: "Dashboard",
                     icon: "/icons/library.svg",
                     iconDark: "/icons/library-dark.svg",
                     status: true,
@@ -138,7 +138,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             <div className="flex flex-col gap-8">
                 <div className="flex gap-4 items-center">
                     {user?.imageUrl ? (
-                        <div className="relative w-10 h-10 rounded-full overflow-hidden bg-foreground-third">
+                        <div className="relative w-10 h-10 rounded-md overflow-hidden bg-foreground-third">
                             <Image
                                 src={user.imageUrl}
                                 alt={`${user.firstName ?? "User"} icon`}
@@ -152,7 +152,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
                         <div className="w-10 h-10 rounded-full bg-foreground" />
                     )}
                     <div className="font-inter-bold flex flex-col leading-tight">
-                        <p>
+                        <p className="text-caption text-foreground-second">
                             {user?.firstName ? `${user.firstName}'s` : "Your"}
                         </p>
                         <p>Chalkie Chalkie</p>

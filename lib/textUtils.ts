@@ -59,6 +59,16 @@ const startOfDay = (d: Date): number => {
     return x.getTime();
 };
 
+export function daysUntil(iso: string): number {
+    if (!iso) return 0;
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return 0;
+
+    return Math.round(
+        (startOfDay(date) - startOfDay(new Date())) / (24 * 60 * 60 * 1000),
+    );
+}
+
 export function formatSessionTime(iso: string): string {
     if (!iso) return "";
     const date = new Date(iso);

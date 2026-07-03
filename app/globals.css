@@ -22,7 +22,7 @@
 
 :root {
     --background: #121212;
-    --background-second: #494949;
+    --background-second: #171717;
 
     --foreground: hsl(0, 0%, 92%);
     --foreground-second: hsl(0, 2%, 80%);
@@ -307,6 +307,19 @@
             rgba(230, 110, 170, 1) 99%
         );
     }
+    .gradient-text {
+        background: linear-gradient(
+            150deg,
+            rgba(219, 193, 90, 1) 0%,
+            rgba(245, 139, 47, 1) 35%,
+            rgba(227, 104, 104, 1) 62%,
+            rgba(230, 110, 170, 1) 99%
+        );
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
 
     /* Chalk gradient shimmer band that sweeps across skeleton placeholders. */
     @keyframes skeleton-shimmer {
@@ -362,6 +375,12 @@
     }
     html {
         @apply font-sans;
+    }
+    /* On the dashboard, match the propagated canvas background (shown in the
+       Firefox overscroll area) to the frame colour rather than the darker
+       site-wide --background. Scoped via :has() so the global bg is untouched. */
+    body:has(.dashboard-root) {
+        background: var(--card-background);
     }
 }
 
