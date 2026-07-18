@@ -24,7 +24,11 @@ type WorkspaceTableRowProps = {
     onDeleted: (workspaceId: string) => void;
 };
 
-const cellClass = "px-3 py-3 align-middle text-small";
+// Row divider + hover live on the cells (not the <tr>) because the table uses
+// border-separate, where <tr> borders/backgrounds don't render or clip the
+// last row's rounded corners reliably.
+const cellClass =
+    "px-3 py-3 align-middle text-small border-b border-foreground-third/10 group-hover:bg-foreground-third/10";
 
 const WorkspaceTableRow = ({
     workspace,
@@ -71,7 +75,7 @@ const WorkspaceTableRow = ({
     return (
         <tr
             onClick={join}
-            className="group cursor-pointer border-b border-foreground-third/10 hover:bg-foreground-third/10"
+            className="group cursor-pointer"
         >
             <td className={cellClass}>
                 <PeopleStack people={people} host={usersMap[workspace.host]} />

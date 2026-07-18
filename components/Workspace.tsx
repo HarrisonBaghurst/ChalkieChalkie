@@ -24,7 +24,7 @@ import { handleMouseMove } from "@/lib/handlers/mouseMove";
 import { handleMouseUp } from "@/lib/handlers/mouseUp";
 import { getMousePos } from "@/lib/handlers/helpers";
 import FullscreenLoader from "./FullscreenLoader";
-import Navbar from "./home/Navbar";
+import BoardHeader from "./BoardHeader";
 import Toolbar from "./Toolbar";
 
 const ZOOM_MIN = 0.25;
@@ -60,7 +60,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         currentStroke: null,
         isDrawing: false,
         currentColour: "#eeeeee",
-        highlightColour: HIGHLIGHT_COLOURS[0],
+        highlightColour: HIGHLIGHT_COLOURS[0].code,
         tool: "pen",
         cursorPosition: { x: 0, y: 0 },
         selectedImageId: null,
@@ -231,8 +231,8 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
             {isLoaded ? (
                 <div className="w-dvw h-dvh overflow-hidden">
                     <CursorLayer canvasStateRef={canvasStateRef} />
+                    <BoardHeader />
                     <ParticipantRoster />
-                    <Navbar />
                     <Toolbar
                         currentTool={currentTool}
                         currentColourRef={currentColourRef}
@@ -246,14 +246,23 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                             cursor: toolCursorMap[currentTool],
                         }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
-                        onMouseDown={(e) =>
+                        onMouseDown={(e) => {
+                            // the canvas handler calls preventDefault, which
+                            // suppresses the browser's implicit blur of a
+                            // focused element (e.g. the title input). Blur it
+                            // manually so inline edits commit before drawing.
+                            if (
+                                document.activeElement instanceof HTMLElement
+                            ) {
+                                document.activeElement.blur();
+                            }
                             handleMouseDown({
                                 e,
                                 canvasStateRef,
                                 strokes,
                                 callbacks,
-                            })
-                        }
+                            });
+                        }}
                         onMouseMove={(e) => {
                             handleMouseMove({
                                 e,

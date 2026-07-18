@@ -89,7 +89,7 @@ const ParticipantRoster = () => {
     if (members.length === 0) return null;
 
     return (
-        <div className="absolute top-22 right-4 w-64 bg-card-background radius-surface overflow-hidden">
+        <div className="fixed top-4 right-4 z-50 w-64 bg-card-background radius-surface border border-foreground-third/15 overflow-hidden">
             <button
                 onClick={() => setCollapsed((c) => !c)}
                 className="w-full flex justify-between items-center px-4 py-3 cursor-pointer"

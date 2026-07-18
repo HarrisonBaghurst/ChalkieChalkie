@@ -26,8 +26,14 @@ const Toolbar = ({
 
     return (
         <>
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background radius-control flex flex-col gap-2">
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background radius-surface border border-foreground-third/15 flex flex-col gap-2">
                 <div className="flex flex-col gap-2 p-2">
+                    <ToolbarButton
+                        icon={"/icons/mouse-pointer-2.svg"}
+                        label="pointer icon"
+                        isActive={currentTool === "pointer"}
+                        onSelect={() => handleToolChange("pointer")}
+                    />
                     <ToolbarButton
                         icon={"/icons/pen-tool.svg"}
                         label="pen icon"
@@ -49,19 +55,13 @@ const Toolbar = ({
                         onSelect={() => handleToolChange("eraser")}
                     />
                     <ToolbarButton
-                        icon={"/icons/mouse-pointer-2.svg"}
-                        label="pointer icon"
-                        isActive={currentTool === "pointer"}
-                        onSelect={() => handleToolChange("pointer")}
-                    />
-                    <ToolbarButton
                         icon={"/icons/square-dashed.svg"}
                         label="selector icon"
                         isActive={currentTool === "selector"}
                         onSelect={() => handleToolChange("selector")}
                     />
                 </div>
-                <div className="w-full h-px bg-foreground-third" />
+                <div className="w-full h-px bg-foreground-third/15" />
                 <div className="flex flex-col gap-2 p-2">
                     <ToolbarButton
                         icon="/icons/undo.svg"
