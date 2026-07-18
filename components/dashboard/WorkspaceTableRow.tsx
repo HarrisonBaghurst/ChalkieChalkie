@@ -74,7 +74,7 @@ const WorkspaceTableRow = ({
             className="group cursor-pointer border-b border-foreground-third/10 hover:bg-foreground-third/10"
         >
             <td className={cellClass}>
-                <PeopleStack people={people} />
+                <PeopleStack people={people} host={usersMap[workspace.host]} />
             </td>
             <td className={cellClass}>
                 {workspace.title ? (
