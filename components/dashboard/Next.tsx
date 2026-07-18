@@ -26,7 +26,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     if (!workspace) {
         return (
-            <div className="w-full 2xl:w-1/3 h-50 bg-card-background border-2 p-4 rounded-xl flex flex-col gap-3 gradient-border">
+            <div className="w-full 2xl:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
                 <p className="text-caption text-foreground-second font-inter-regular">
                     Coming up next
                 </p>
@@ -40,7 +40,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
             <button
                 type="button"
                 onClick={() => router.push(`/board/${workspace.id}`)}
-                className="group relative w-full h-fit bg-card-background border-2 p-5 rounded-xl flex flex-col gap-6 text-left cursor-pointer gradient-border"
+                className="group relative w-full h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 text-left cursor-pointer gradient-border"
             >
                 <div className="absolute top-5 right-5">
                     <Image
@@ -57,7 +57,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                     </p>
                     <div className="flex gap-5">
                         {counterparty?.imageUrl ? (
-                            <div className="relative min-w-12 h-12 rounded-md overflow-hidden bg-foreground-third">
+                            <div className="relative min-w-12 h-12 radius-tag overflow-hidden bg-foreground-third">
                                 <Image
                                     src={counterparty.imageUrl}
                                     alt={`${counterparty.firstName} ${counterparty.lastName}`}
@@ -84,7 +84,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                                     <p className="text-caption text-foreground-third">
                                         Description
                                     </p>
-                                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto">
+                                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2">
                                         {workspace.description}
                                     </p>
                                 </div>

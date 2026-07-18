@@ -104,7 +104,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             </>
         );
         const className = cn(
-            "flex gap-3 items-center rounded-sm",
+            "flex gap-3 items-center radius-tag",
             item.active
                 ? "bg-foreground text-background! font-inter-bold px-2 py-2 cursor-pointer"
                 : item.status
@@ -138,7 +138,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             <div className="flex flex-col gap-8">
                 <div className="flex gap-4 items-center">
                     {user?.imageUrl ? (
-                        <div className="relative w-10 h-10 rounded-md overflow-hidden bg-foreground-third">
+                        <div className="relative w-10 h-10 radius-tag overflow-hidden bg-foreground-third">
                             <Image
                                 src={user.imageUrl}
                                 alt={`${user.firstName ?? "User"} icon`}
@@ -170,7 +170,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
             <div className="flex flex-col gap-8">
                 <Link
                     href="/"
-                    className="text-foreground-second font-inter-bold mx-2 flex gap-3 items-center rounded-sm cursor-pointer"
+                    className="text-foreground-second font-inter-bold mx-2 flex gap-3 items-center radius-tag cursor-pointer"
                 >
                     <div className="relative w-5 h-5">
                         <Image src="/icons/house.svg" alt="Return Home" fill />

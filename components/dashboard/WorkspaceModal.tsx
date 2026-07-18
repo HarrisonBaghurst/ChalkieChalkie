@@ -214,7 +214,7 @@ const WorkspaceModal = ({
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className="bg-card-background rounded-xl p-8 w-150 max-w-[92vw] h-[55dvh] flex flex-col gap-6 text-foreground"
+                className="bg-card-background radius-surface p-8 w-150 max-w-[92vw] h-[55dvh] flex flex-col gap-6 text-foreground"
             >
                 <div className="flex items-center justify-between">
                     <div className="text-subheading">

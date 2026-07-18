@@ -21,7 +21,7 @@ const page = () => {
                 </div>
             </div>
             <div className="flex flex-col gap-6">
-                <div className="w-full h-fit gradient-border rounded-xl p-4 flex flex-col gap-2">
+                <div className="w-full h-fit gradient-border radius-surface p-4 flex flex-col gap-2">
                     <p className="text-subheading">Still in Private Beta</p>
                     <p className="text-foreground-second text-body">
                         Chalkie Chalkie is still being actively developed. If
@@ -37,8 +37,8 @@ const page = () => {
                     <p>Privacy Policy</p>
                 </div>
             </div>
-            <div className="hidden 2xl:block absolute left-224 border-2 border-white/10 top-60 w-fit h-fit rounded-lg skew-5 rotate-5">
-                <div className="relative w-240 h-140 rounded-lg overflow-hidden">
+            <div className="hidden 2xl:block absolute left-224 border-2 border-white/10 top-60 w-fit h-fit radius-surface skew-5 rotate-5">
+                <div className="relative w-240 h-140 radius-control overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
                         alt="dashboard example"
@@ -47,8 +47,8 @@ const page = () => {
                     />
                 </div>
             </div>
-            <div className="hidden 2xl:block absolute left-200 border-2 border-white/10 top-90 w-fit h-fit rounded-lg skew-5 rotate-5">
-                <div className="relative w-240 h-140 rounded-lg overflow-hidden">
+            <div className="hidden 2xl:block absolute left-200 border-2 border-white/10 top-90 w-fit h-fit radius-surface skew-5 rotate-5">
+                <div className="relative w-240 h-140 radius-control overflow-hidden">
                     <Image
                         src={"/imgs/dashboardExample.webp"}
                         alt="dashboard example"

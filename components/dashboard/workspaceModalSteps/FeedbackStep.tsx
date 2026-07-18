@@ -24,7 +24,7 @@ const FeedbackStep = ({ feedback, onChange }: FeedbackStepProps) => {
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="How did it go? What should you remember for next time?"
                 rows={8}
-                className="border border-foreground-third rounded-md py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground resize-none mt-2"
+                className="border border-foreground-third radius-control py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground resize-none mt-2"
             />
         </div>
     );

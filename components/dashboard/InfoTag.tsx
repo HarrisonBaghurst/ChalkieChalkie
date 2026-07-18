@@ -9,7 +9,7 @@ type InfoTagProps = {
 const InfoTag = ({ text, icon, className }: InfoTagProps) => {
     return (
         <div
-            className={`inline-flex items-center gap-1.5 w-fit bg-foreground-third/40 text-foreground-second text-caption font-inter-regular px-2 py-1 rounded-md ${
+            className={`inline-flex items-center gap-1.5 w-fit bg-foreground-third/40 text-foreground-second text-caption font-inter-regular px-2 py-1 radius-tag ${
                 className ?? ""
             }`}
         >

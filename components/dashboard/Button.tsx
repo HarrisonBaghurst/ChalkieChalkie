@@ -26,7 +26,7 @@ const Button = ({
                 disabled={disabled}
                 aria-label={text}
                 className={cn(
-                    "bg-foreground rounded-sm flex items-center justify-center",
+                    "bg-foreground radius-control flex items-center justify-center",
                     size && size == "large" ? "size-11" : "size-9",
                     disabled
                         ? "opacity-40 cursor-not-allowed"
@@ -49,7 +49,7 @@ const Button = ({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "text-background! bg-foreground rounded-sm h-fit",
+                "text-background! bg-foreground radius-control h-fit",
                 size && size == "large"
                     ? "py-2.5 px-7 text-body"
                     : "py-2 px-5 text-caption",

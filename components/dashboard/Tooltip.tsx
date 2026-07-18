@@ -27,7 +27,7 @@ const Tooltip = ({ label, children, className }: TooltipProps) => {
             }}
         >
             <div
-                className={`pointer-events-none absolute z-20 bg-foreground text-background text-caption font-inter-regular px-2 py-1 rounded-sm whitespace-nowrap shadow-md transition-opacity duration-150 ${
+                className={`pointer-events-none absolute z-20 bg-foreground text-background text-caption font-inter-regular px-2 py-1 radius-tag whitespace-nowrap shadow-md transition-opacity duration-150 ${
                     hovered ? "opacity-100" : "opacity-0"
                 }`}
                 style={{ left: cursor.x + 14, top: cursor.y + 14 }}

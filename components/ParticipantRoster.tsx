@@ -89,7 +89,7 @@ const ParticipantRoster = () => {
     if (members.length === 0) return null;
 
     return (
-        <div className="absolute top-22 right-4 w-64 bg-card-background rounded-xl overflow-hidden">
+        <div className="absolute top-22 right-4 w-64 bg-card-background radius-surface overflow-hidden">
             <button
                 onClick={() => setCollapsed((c) => !c)}
                 className="w-full flex justify-between items-center px-4 py-3 cursor-pointer"
@@ -122,7 +122,7 @@ const ParticipantRoster = () => {
                         return (
                             <div
                                 key={m.id}
-                                className={`flex gap-3 items-center p-2 rounded-xl ${
+                                className={`flex gap-3 items-center p-2 radius-surface ${
                                     online ? "" : "opacity-40"
                                 }`}
                             >

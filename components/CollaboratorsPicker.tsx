@@ -64,7 +64,7 @@ const CollaboratorsPicker = ({
                     }}
                     onDragLeave={() => setDragOverTarget(null)}
                     onDrop={() => handleDrop("collaborators")}
-                    className={`min-h-75 rounded-md flex flex-col p-2 border transition-colors duration-150 ${
+                    className={`min-h-75 radius-control flex flex-col p-2 border transition-colors duration-150 ${
                         dragOverTarget === "collaborators" &&
                         draggedUser?.from === "friends"
                             ? "border-foreground bg-white/5"
@@ -84,7 +84,7 @@ const CollaboratorsPicker = ({
                                         "collaborators",
                                     )
                                 }
-                                className={`rounded-md transition-opacity duration-100 ${
+                                className={`radius-control transition-opacity duration-100 ${
                                     isOwner
                                         ? "opacity-50 cursor-not-allowed"
                                         : "cursor-grab active:cursor-grabbing active:opacity-50"
@@ -116,7 +116,7 @@ const CollaboratorsPicker = ({
                     }}
                     onDragLeave={() => setDragOverTarget(null)}
                     onDrop={() => handleDrop("friends")}
-                    className={`min-h-75 rounded-md flex flex-col p-2 border transition-colors duration-150 ${
+                    className={`min-h-75 radius-control flex flex-col p-2 border transition-colors duration-150 ${
                         dragOverTarget === "friends" &&
                         draggedUser?.from === "collaborators"
                             ? "border-foreground bg-white/5"
@@ -130,7 +130,7 @@ const CollaboratorsPicker = ({
                             onDragStart={() =>
                                 handleDragStart(friend, "friends")
                             }
-                            className="cursor-grab active:cursor-grabbing active:opacity-50 rounded-md transition-opacity duration-100"
+                            className="cursor-grab active:cursor-grabbing active:opacity-50 radius-control transition-opacity duration-100"
                             title="Drag to add as collaborator"
                         >
                             <CollaboratorCard

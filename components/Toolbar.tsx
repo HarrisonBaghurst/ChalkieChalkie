@@ -26,7 +26,7 @@ const Toolbar = ({
 
     return (
         <>
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background rounded-lg flex flex-col gap-2">
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background radius-control flex flex-col gap-2">
                 <div className="flex flex-col gap-2 p-2">
                     <ToolbarButton
                         icon={"/icons/pen-tool.svg"}

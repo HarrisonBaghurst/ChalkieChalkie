@@ -20,14 +20,14 @@ const ColourSelector = ({
     const [selected, setSelected] = useState(currentColourRef.current);
 
     return (
-        <div className="absolute -top-5 left-14 bg-card-background rounded-md flex gap-2 p-2">
+        <div className="absolute -top-5 left-14 bg-card-background radius-control flex gap-2 p-2">
             {displayColours.map((code, i) => {
                 const isSelected = selected === code;
                 return (
                     <div
                         key={i}
                         className={cn(
-                            "cursor-pointer w-12 h-12 rounded-md border-2 transition-colors duration-150",
+                            "cursor-pointer w-12 h-12 radius-control border-2 transition-colors duration-150",
                             isSelected
                                 ? "border-transparent"
                                 : "border-foreground-third hover:border-foreground-second",

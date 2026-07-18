@@ -69,7 +69,7 @@ const TextInput = ({
             </div>
             <div
                 className={cn(
-                    "absolute -left-2 -top-2 border-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] pointer-events-none rounded-md",
+                    "absolute -left-2 -top-2 border-2 w-[calc(100%+1rem)] h-[calc(100%+1rem)] pointer-events-none radius-control",
                     interacting ? "border-white/15" : "border-transparent",
                 )}
             />

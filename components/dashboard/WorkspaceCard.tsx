@@ -55,7 +55,7 @@ const WorkspaceCard = ({
 
     return (
         <>
-            <div className="group relative w-full flex flex-col gap-4 p-5 rounded-md bg-background-second text-left hover:z-10">
+            <div className="group relative w-full flex flex-col gap-4 p-5 radius-surface bg-background-second text-left hover:z-10">
                 <div className="absolute top-4 right-4 flex gap-2">
                     <Tooltip
                         label={expanded ? "Collapse" : "Expand"}

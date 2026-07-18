@@ -47,7 +47,7 @@ const ToolbarButton = ({
     return (
         <button
             className={cn(
-                "cursor-pointer w-12 h-12 rounded-sm flex items-center justify-center duration-150 border-2 transition-colors",
+                "cursor-pointer w-12 h-12 radius-control flex items-center justify-center duration-150 border-2 transition-colors",
                 isActive
                     ? "gradient-border-bright"
                     : "border-foreground-third hover:border-foreground-second bg-transparent",

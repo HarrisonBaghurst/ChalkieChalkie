@@ -7,13 +7,15 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import {
     applyDashboardFilters,
     DASHBOARD_GRACE_MS,
+    DashboardFilterState,
+    EMPTY_DASHBOARD_FILTERS,
+    hasActiveDashboardFilters,
 } from "@/lib/dashboardFilters";
 import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import Sidebar from "./Sidebar";
 import Next from "./Next";
-import Upcoming from "./Upcoming";
-import Previous from "./Previous";
+import WorkspaceLists from "./WorkspaceLists";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
 import Navbar from "../home/Navbar";
 
@@ -40,11 +42,9 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     const [friends, setFriends] = useState<userInfo[]>([]);
     const [loading, setLoading] = useState(!testData);
 
-    const [selectedCollaboratorIds, setSelectedCollaboratorIds] = useState<
-        string[]
-    >([]);
-    const [upcomingSearch, setUpcomingSearch] = useState("");
-    const [previousSearch, setPreviousSearch] = useState("");
+    const [filters, setFilters] = useState<DashboardFilterState>(
+        EMPTY_DASHBOARD_FILTERS,
+    );
 
     const now = useMemo(() => new Date(), []);
 
@@ -210,26 +210,16 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     }, [upcomingAll, previousAll, usersMap]);
 
     const upcomingFiltered = useMemo(
-        () =>
-            applyDashboardFilters(
-                upcomingAll,
-                upcomingSearch,
-                selectedCollaboratorIds,
-                "asc",
-            ),
-        [upcomingAll, upcomingSearch, selectedCollaboratorIds],
+        () => applyDashboardFilters(upcomingAll, filters, "asc"),
+        [upcomingAll, filters],
     );
 
     const previousFiltered = useMemo(
-        () =>
-            applyDashboardFilters(
-                previousAll,
-                previousSearch,
-                selectedCollaboratorIds,
-                "desc",
-            ),
-        [previousAll, previousSearch, selectedCollaboratorIds],
+        () => applyDashboardFilters(previousAll, filters, "desc"),
+        [previousAll, filters],
     );
+
+    const activeFilters = hasActiveDashboardFilters(filters);
 
     const nextWorkspace = upcomingAll[0] ?? null;
 
@@ -263,7 +253,7 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
             <div className="block 2xl:hidden">
                 <Navbar />
             </div>
-            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-[2.5dvw] bg-background m-2 rounded-2xl">
+            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-[2.5dvw] bg-background m-2 radius-surface">
                 {loading || !isLoaded ? (
                     <DashboardSkeleton />
                 ) : (
@@ -281,42 +271,26 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
                             usersMap={usersMap}
                             viewerIsHost={viewerIsHost}
                         />
-                        <div className="grid 2xl:flex gap-6 w-full">
-                            <Upcoming
-                                workspaces={upcomingFiltered}
-                                usersMap={usersMap}
-                                viewerIsHost={viewerIsHost}
-                                collaborators={collaborators}
-                                selectedCollaboratorIds={
-                                    selectedCollaboratorIds
-                                }
-                                onChangeSelectedCollaboratorIds={
-                                    setSelectedCollaboratorIds
-                                }
-                                search={upcomingSearch}
-                                onChangeSearch={setUpcomingSearch}
-                                friends={friends}
-                                onWorkspaceUpdated={handleUpdated}
-                                onWorkspaceDeleted={handleDeleted}
-                            />
-                            <Previous
-                                workspaces={previousFiltered}
-                                usersMap={usersMap}
-                                viewerIsHost={viewerIsHost}
-                                collaborators={collaborators}
-                                selectedCollaboratorIds={
-                                    selectedCollaboratorIds
-                                }
-                                onChangeSelectedCollaboratorIds={
-                                    setSelectedCollaboratorIds
-                                }
-                                search={previousSearch}
-                                onChangeSearch={setPreviousSearch}
-                                friends={friends}
-                                onWorkspaceUpdated={handleUpdated}
-                                onWorkspaceDeleted={handleDeleted}
-                            />
-                        </div>
+                        <WorkspaceLists
+                            upcoming={upcomingFiltered}
+                            previous={previousFiltered}
+                            usersMap={usersMap}
+                            collaborators={collaborators}
+                            filters={filters}
+                            hasActiveFilters={activeFilters}
+                            onChangeSearch={(search) =>
+                                setFilters((f) => ({ ...f, search }))
+                            }
+                            onChangeCollaboratorIds={(collaboratorIds) =>
+                                setFilters((f) => ({ ...f, collaboratorIds }))
+                            }
+                            onClearFilters={() =>
+                                setFilters(EMPTY_DASHBOARD_FILTERS)
+                            }
+                            friends={friends}
+                            onWorkspaceUpdated={handleUpdated}
+                            onWorkspaceDeleted={handleDeleted}
+                        />
                     </>
                 )}
             </div>

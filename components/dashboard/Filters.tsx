@@ -48,7 +48,7 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                 suppressHydrationWarning
                 onClick={() => setOpen((p) => !p)}
                 className={cn(
-                    "border border-foreground-third py-2 px-3 rounded-md w-full flex items-center justify-between cursor-pointer text-small",
+                    "border border-foreground-third py-2 px-3 radius-control w-full flex items-center justify-between cursor-pointer text-small",
                     disabled && "cursor-not-allowed text-foreground-third",
                 )}
             >
@@ -66,7 +66,7 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
             </button>
 
             {open && !disabled && (
-                <div className="absolute top-[calc(100%+6px)] right-0 z-10 w-75 max-h-72 overflow-y-auto rounded-md border border-white/10 bg-[#0d0d0a]">
+                <div className="absolute top-[calc(100%+6px)] right-0 z-10 w-75 max-h-72 overflow-y-auto radius-control border border-white/10 bg-[#0d0d0a]">
                     {collaborators.map((collaborator) => {
                         const checked = selectedIds.includes(collaborator.id);
                         return (

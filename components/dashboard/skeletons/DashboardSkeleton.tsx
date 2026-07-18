@@ -8,7 +8,7 @@ import WorkspaceCardSkeleton from "./WorkspaceCardSkeleton";
 // existing `ml-75 … flex flex-col gap-6` container.
 const ListPanelSkeleton = ({ label }: { label: string }) => {
     return (
-        <div className="w-1/2 bg-card-background rounded-xl p-4 flex flex-col gap-4 h-fit">
+        <div className="w-1/2 bg-card-background radius-surface p-4 flex flex-col gap-4 h-fit">
             <p className="text-caption text-foreground-third font-inter-bold">
                 {label}
             </p>
@@ -29,7 +29,7 @@ const DashboardSkeleton = () => {
     return (
         <>
             {/* Next ("coming up next") card */}
-            <div className="w-220 bg-card-background border-2 p-4 rounded-xl flex justify-between gradient-border">
+            <div className="w-220 bg-card-background border-2 p-4 radius-surface flex justify-between gradient-border">
                 <div className="flex flex-col gap-2">
                     <Skeleton className="h-3 w-28" />
                     <Skeleton className="h-5 w-56" />

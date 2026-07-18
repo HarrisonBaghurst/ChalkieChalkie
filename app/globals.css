@@ -21,6 +21,19 @@
 }
 
 :root {
+    /* ── Semantic colour tokens ──────────────────────────────────────────
+       Surfaces (dark → light):
+         --background          page backdrop (darkest)
+         --background-second   raised rows / inset panels
+         --card-background     cards, tables, modals, popovers
+       Text (strongest → faintest):
+         --foreground          primary text / high-emphasis
+         --foreground-second   secondary text / labels
+         --foreground-third    muted text, hairline borders, placeholders
+       Accents:
+         --button-main         primary action colour
+         --arrow-color         decorative arrows / chevrons
+       ──────────────────────────────────────────────────────────────────── */
     --background: #121212;
     --background-second: #171717;
 
@@ -36,9 +49,6 @@
     --button-main: hsl(208, 75%, 40%);
 
     --arrow-color: #7f7f7fff;
-
-    --border-radius: 1.75rem;
-    --border-radius-small: 1.25rem;
 
     --padding: 0.5rem;
 
@@ -247,6 +257,26 @@
         ); /* 11px → 12px */
         line-height: 1.4;
     }
+
+    /* ── Semantic rounding tiers ─────────────────────────────────────────
+       Role-based radii, mirroring the text-* system. Prefer these over raw
+       rounded-* utilities so rounding stays consistent across components.
+       rounded-full is still used directly for circular elements. */
+    .radius-tag {
+        border-radius: var(
+            --radius-md
+        ); /* 8px  — tags, chips, thumbnails, menu items */
+    }
+    .radius-control {
+        border-radius: var(
+            --radius-lg
+        ); /* 10px — buttons, inputs, dropdowns, toolbars */
+    }
+    .radius-surface {
+        border-radius: var(
+            --radius-xl
+        ); /* 14px — cards, tables, modals, panels */
+    }
 }
 @layer utilities {
     .dotted-paper {
@@ -277,10 +307,10 @@
                 padding-box,
             linear-gradient(
                     150deg,
-                    rgba(219, 193, 90, 0.6) 0%,
-                    rgba(245, 139, 47, 0.6) 35%,
-                    rgba(227, 104, 104, 0.6) 62%,
-                    rgba(230, 110, 170, 0.6) 99%
+                    rgba(219, 193, 90, 0.25) 0%,
+                    rgba(245, 139, 47, 0.25) 35%,
+                    rgba(227, 104, 104, 0.25) 62%,
+                    rgba(230, 110, 170, 0.25) 99%
                 )
                 border-box;
     }
@@ -310,10 +340,10 @@
     .gradient-text {
         background: linear-gradient(
             150deg,
-            rgba(219, 193, 90, 1) 0%,
-            rgba(245, 139, 47, 1) 35%,
-            rgba(227, 104, 104, 1) 62%,
-            rgba(230, 110, 170, 1) 99%
+            rgba(219, 193, 90, 0.75) 0%,
+            rgba(245, 139, 47, 0.75) 35%,
+            rgba(227, 104, 104, 0.75) 62%,
+            rgba(230, 110, 170, 0.75) 99%
         );
         background-clip: text;
         -webkit-background-clip: text;

@@ -185,7 +185,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
             <div>
                 <div className="flex gap-4 items-center justify-center">
                     <input
-                        className="border border-foreground-third rounded-md w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
+                        className="border border-foreground-third radius-control w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
                         placeholder=""
                         inputMode="numeric"
                         value={selectedHour ?? ""}
@@ -193,7 +193,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                     />
                     <div>:</div>
                     <input
-                        className="border border-foreground-third rounded-md w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
+                        className="border border-foreground-third radius-control w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
                         placeholder=""
                         inputMode="numeric"
                         value={selectedMin ?? ""}
