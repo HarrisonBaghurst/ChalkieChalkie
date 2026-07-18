@@ -42,6 +42,7 @@
     --foreground-third: hsl(0, 0%, 40%);
 
     --card-background: hsl(0, 0%, 12%);
+    --card-background-hover: hsl(0, 0%, 17%);
     --card-shadow: hsl(0, 0, 12%);
     --card-child-background: hsl(0, 1%, 37%);
     --card-child-shadow: hsl(0, 0, 20%);
@@ -128,6 +129,7 @@
     --color-foreground-third: var(--foreground-third);
 
     --color-card-background: var(--card-background);
+    --color-card-background-hover: var(--card-background-hover);
 
     --font-heading: var(--font-sans);
 
@@ -277,6 +279,22 @@
             --radius-xl
         ); /* 14px — cards, tables, modals, panels */
     }
+
+    /* ── Shared control surface ──────────────────────────────────────────
+       Canonical chrome for interactive controls (tabs, inputs, dropdown
+       triggers, buttons, popovers) so they read as one family: filled card
+       surface, faint hairline border, control-tier rounding. Pair with
+       `hover:bg-card-background-hover` on individually interactive controls
+       to get the brighten-on-hover behaviour. */
+    .control-surface {
+        background-color: var(--card-background);
+        border: 1px solid
+            color-mix(in oklab, var(--foreground-third) 25%, transparent);
+        border-radius: var(--radius-lg);
+        transition:
+            background-color 150ms ease,
+            border-color 150ms ease;
+    }
 }
 @layer utilities {
     .dotted-paper {
@@ -300,33 +318,37 @@
     .scroll-target {
         scroll-margin-top: 8dvw;
     }
-    .gradient-border {
+    /* Chalk gradient border. Fill colour and border opacity are driven by
+       `--gb-fill` / `--gb-alpha` so variants (bright, interactive hover) only
+       override those two values instead of duplicating the gradient. */
+    .gradient-border,
+    .gradient-border-bright,
+    .gradient-card {
+        --gb-fill: var(--card-background);
+        --gb-alpha: 0.25;
         border: 2px solid transparent;
         background:
-            linear-gradient(var(--card-background), var(--card-background))
-                padding-box,
+            linear-gradient(var(--gb-fill), var(--gb-fill)) padding-box,
             linear-gradient(
                     150deg,
-                    rgba(219, 193, 90, 0.25) 0%,
-                    rgba(245, 139, 47, 0.25) 35%,
-                    rgba(227, 104, 104, 0.25) 62%,
-                    rgba(230, 110, 170, 0.25) 99%
+                    rgba(219, 193, 90, var(--gb-alpha)) 0%,
+                    rgba(245, 139, 47, var(--gb-alpha)) 35%,
+                    rgba(227, 104, 104, var(--gb-alpha)) 62%,
+                    rgba(230, 110, 170, var(--gb-alpha)) 99%
                 )
                 border-box;
     }
     .gradient-border-bright {
-        border: 2px solid transparent;
-        background:
-            linear-gradient(var(--card-background), var(--card-background))
-                padding-box,
-            linear-gradient(
-                    150deg,
-                    rgba(219, 193, 90, 1) 0%,
-                    rgba(245, 139, 47, 1) 35%,
-                    rgba(227, 104, 104, 1) 62%,
-                    rgba(230, 110, 170, 1) 99%
-                )
-                border-box;
+        --gb-alpha: 1;
+    }
+    /* Interactive variant of gradient-border: on hover the fill lifts to the
+       brighter card surface and the border reaches full chroma. */
+    .gradient-card {
+        transition: background 200ms ease;
+    }
+    .gradient-card:hover {
+        --gb-fill: var(--card-background-hover);
+        --gb-alpha: 1;
     }
     .gradient-background {
         background: linear-gradient(

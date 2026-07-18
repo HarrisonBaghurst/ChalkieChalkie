@@ -12,7 +12,7 @@ type StatusTagProps = {
 const StatusTag = ({ status }: StatusTagProps) => {
     const completed = status === "completed";
     return (
-        <span className="inline-flex items-center gap-1.5 w-fit bg-foreground-third/40 text-foreground-second text-caption font-inter-regular px-2 py-1 radius-tag">
+        <span className="inline-flex items-center gap-1.5 w-fit text-foreground-second text-small font-inter-regular px-2 py-1 radius-tag">
             <span
                 className={cn(
                     "w-1.5 h-1.5 rounded-full",

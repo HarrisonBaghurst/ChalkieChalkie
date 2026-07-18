@@ -21,12 +21,12 @@ type WorkspaceTableProps = {
 };
 
 const COLUMNS = [
+    { key: "people", label: "People", width: "w-[12%]" },
     { key: "header", label: "Header", width: "w-[22%]" },
     { key: "startTime", label: "Start time", width: "w-[15%]" },
-    { key: "status", label: "Status", width: "w-[12%]" },
-    { key: "people", label: "People", width: "w-[12%]" },
     { key: "description", label: "Description", width: "w-[18%]" },
     { key: "feedback", label: "Feedback", width: "w-[16%]" },
+    { key: "status", label: "Status", width: "w-[12%]" },
     { key: "actions", label: "", width: "w-[5%]" },
 ] as const;
 
@@ -38,7 +38,7 @@ const WorkspaceTable = ({
     onWorkspaceDeleted,
 }: WorkspaceTableProps) => {
     return (
-        <div className="w-full overflow-hidden radius-surface border border-foreground-third/15 bg-card-background">
+        <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">
             <table className="w-full table-fixed border-collapse">
                 <thead>
                     <tr className="border-b border-foreground-third/15 bg-background-second">

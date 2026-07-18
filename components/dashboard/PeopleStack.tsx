@@ -7,41 +7,55 @@ import Tooltip from "./Tooltip";
 
 type PeopleStackProps = {
     people: userInfo[];
-    // How many avatars to render before stopping (excess is dropped).
-    max?: number;
 };
 
-// Row of user avatars. Each avatar uses the same radius-tag style as the
-// counterparty image in Next.tsx and shows the user's name on hover via the
-// shared Tooltip popover.
-const PeopleStack = ({ people, max = 3 }: PeopleStackProps) => {
-    const shown = people.slice(0, max);
+const fullName = (person: userInfo) =>
+    `${person.firstName} ${person.lastName}`.trim();
 
-    if (shown.length === 0) {
+// Shows a single user avatar (with the user's name on hover) plus a "+n" tag
+// for any remaining people. The tag is hoverable and lists the other users.
+// Avatars use the same radius-tag style as the counterparty image in Next.tsx
+// and share the Tooltip popover.
+const PeopleStack = ({ people }: PeopleStackProps) => {
+    if (people.length === 0) {
         return <span className="text-caption text-foreground-third">—</span>;
     }
 
+    const [first, ...rest] = people;
+    const firstName = fullName(first);
+
     return (
         <div className="flex items-center gap-2">
-            {shown.map((person) => {
-                const name = `${person.firstName} ${person.lastName}`.trim();
-                return (
-                    <Tooltip key={person.id} label={name}>
-                        <div className="relative w-8 h-8 radius-tag overflow-hidden bg-foreground-third">
-                            {person.imageUrl && (
-                                <Image
-                                    src={person.imageUrl}
-                                    alt={name}
-                                    fill
-                                    sizes="32px"
-                                    className="object-cover"
-                                    unoptimized
-                                />
-                            )}
+            <Tooltip label={firstName}>
+                <div className="relative w-8 h-8 radius-tag overflow-hidden bg-foreground-third">
+                    {first.imageUrl && (
+                        <Image
+                            src={first.imageUrl}
+                            alt={firstName}
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                            unoptimized
+                        />
+                    )}
+                </div>
+            </Tooltip>
+
+            {rest.length > 0 && (
+                <Tooltip
+                    label={
+                        <div className="flex flex-col gap-1">
+                            {rest.map((person) => (
+                                <span key={person.id}>{fullName(person)}</span>
+                            ))}
                         </div>
-                    </Tooltip>
-                );
-            })}
+                    }
+                >
+                    <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">
+                        +{rest.length}
+                    </div>
+                </Tooltip>
+            )}
         </div>
     );
 };

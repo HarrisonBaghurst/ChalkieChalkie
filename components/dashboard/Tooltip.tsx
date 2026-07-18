@@ -4,7 +4,7 @@ import React, { ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type TooltipProps = {
-    label: string;
+    label: ReactNode;
     children: ReactNode;
     className?: string;
 };

@@ -84,7 +84,7 @@ const WorkspaceLists = ({
                         value={filters.search}
                         onChange={(e) => onChangeSearch(e.target.value)}
                         placeholder="Search sessions..."
-                        className="w-56 border border-foreground-third radius-control py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none"
+                        className="w-56 control-surface py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none"
                     />
                     <Filters
                         collaborators={collaborators}
@@ -96,8 +96,10 @@ const WorkspaceLists = ({
                         onClick={onClearFilters}
                         disabled={!hasActiveFilters}
                         className={cn(
-                            "border border-foreground-third text-foreground-third py-2 px-3 radius-control text-small whitespace-nowrap cursor-pointer",
-                            !hasActiveFilters && "cursor-not-allowed opacity-60",
+                            "control-surface text-foreground-third py-2 px-3 text-small whitespace-nowrap cursor-pointer",
+                            hasActiveFilters
+                                ? "hover:bg-card-background-hover"
+                                : "cursor-not-allowed opacity-60",
                         )}
                     >
                         Clear filters

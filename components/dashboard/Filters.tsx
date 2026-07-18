@@ -48,8 +48,10 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                 suppressHydrationWarning
                 onClick={() => setOpen((p) => !p)}
                 className={cn(
-                    "border border-foreground-third py-2 px-3 radius-control w-full flex items-center justify-between cursor-pointer text-small",
-                    disabled && "cursor-not-allowed text-foreground-third",
+                    "control-surface py-2 px-3 w-full flex items-center justify-between cursor-pointer text-small gap-2",
+                    disabled
+                        ? "cursor-not-allowed text-foreground-third"
+                        : "hover:bg-card-background-hover",
                 )}
             >
                 <span>{label}</span>
@@ -66,14 +68,14 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
             </button>
 
             {open && !disabled && (
-                <div className="absolute top-[calc(100%+6px)] right-0 z-10 w-75 max-h-72 overflow-y-auto radius-control border border-white/10 bg-[#0d0d0a]">
+                <div className="absolute top-[calc(100%+6px)] right-0 z-10 w-75 max-h-72 overflow-y-auto control-surface">
                     {collaborators.map((collaborator) => {
                         const checked = selectedIds.includes(collaborator.id);
                         return (
                             <button
                                 key={collaborator.id}
                                 onClick={() => toggle(collaborator.id)}
-                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-small hover:bg-white/5 cursor-pointer"
+                                className="flex w-full items-center gap-3 px-3 py-2 text-left text-small hover:bg-card-background-hover cursor-pointer"
                             >
                                 <Image
                                     src={
@@ -86,7 +88,7 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                                     height={16}
                                     className="shrink-0"
                                 />
-                                <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-white/10">
+                                <div className="relative h-6 w-6 shrink-0 overflow-hidden radius-tag bg-white/10">
                                     {collaborator.imageUrl && (
                                         <Image
                                             src={collaborator.imageUrl}

@@ -23,7 +23,7 @@ const Tabs = ({ tabs, activeId, onChange, className }: TabsProps) => {
     return (
         <div
             className={cn(
-                "inline-flex items-center gap-1 radius-tag border border-foreground-third/25 bg-card-background p-1",
+                "inline-flex items-center gap-1 control-surface p-1",
                 className,
             )}
         >
@@ -41,14 +41,14 @@ const Tabs = ({ tabs, activeId, onChange, className }: TabsProps) => {
                                 : "text-foreground-third hover:text-foreground-second",
                         )}
                     >
-                        <span>{tab.label}</span>
+                        <span className="text-small">{tab.label}</span>
                         {tab.count !== undefined && (
                             <span
                                 className={cn(
-                                    "rounded-full px-1.5 text-caption",
+                                    "text-small",
                                     active
-                                        ? "bg-foreground-third/40 text-foreground-second"
-                                        : "bg-foreground-third/20 text-foreground-third",
+                                        ? "text-foreground-second"
+                                        : "text-foreground-third",
                                 )}
                             >
                                 {tab.count}

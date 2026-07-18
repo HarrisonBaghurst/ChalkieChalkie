@@ -8,6 +8,7 @@ import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import PeopleStack from "./PeopleStack";
+import Tooltip from "./Tooltip";
 import StatusTag from "./StatusTag";
 import RowActionsMenu from "./RowActionsMenu";
 import WorkspaceModal from "./WorkspaceModal";
@@ -72,71 +73,85 @@ const WorkspaceTableRow = ({
             onClick={join}
             className="group cursor-pointer border-b border-foreground-third/10 hover:bg-foreground-third/10"
         >
-                <td className={cellClass}>
-                    {workspace.title ? (
-                        <span className="font-inter-bold text-foreground">
-                            {workspace.title}
-                        </span>
-                    ) : (
-                        <span className="text-foreground-third">
-                            Untitled workspace
-                        </span>
-                    )}
-                </td>
-                <td className={cellClass}>
-                    {workspace.startTime ? (
-                        <span className="font-libre">
-                            {formatSessionTime(workspace.startTime)}
-                        </span>
-                    ) : (
-                        <span className="text-foreground-third">Unset</span>
-                    )}
-                </td>
-                <td className={cellClass}>
-                    <StatusTag
-                        status={bucket === "previous" ? "completed" : "upcoming"}
-                    />
-                </td>
-                <td className={cellClass}>
-                    <PeopleStack people={people} />
-                </td>
-                <td className={cellClass}>
-                    {workspace.description ? (
+            <td className={cellClass}>
+                <PeopleStack people={people} />
+            </td>
+            <td className={cellClass}>
+                {workspace.title ? (
+                    <span className="font-inter-bold text-foreground">
+                        {workspace.title}
+                    </span>
+                ) : (
+                    <span className="text-foreground-third">
+                        Untitled workspace
+                    </span>
+                )}
+            </td>
+            <td className={cellClass}>
+                {workspace.startTime ? (
+                    <span className="">
+                        {formatSessionTime(workspace.startTime)}
+                    </span>
+                ) : (
+                    <span className="text-foreground-third">Unset</span>
+                )}
+            </td>
+            <td className={cellClass}>
+                {workspace.description ? (
+                    <Tooltip
+                        label={
+                            <div className="w-64 whitespace-normal">
+                                {workspace.description}
+                            </div>
+                        }
+                    >
                         <span className="block truncate text-foreground-second">
                             {workspace.description}
                         </span>
-                    ) : (
-                        <span className="text-foreground-third">—</span>
-                    )}
-                </td>
-                <td className={cellClass}>
-                    {workspace.feedback ? (
+                    </Tooltip>
+                ) : (
+                    <span className="text-foreground-third">—</span>
+                )}
+            </td>
+            <td className={cellClass}>
+                {workspace.feedback ? (
+                    <Tooltip
+                        label={
+                            <div className="w-64 whitespace-normal">
+                                {workspace.feedback}
+                            </div>
+                        }
+                    >
                         <span className="block truncate text-foreground-second">
                             {workspace.feedback}
                         </span>
-                    ) : (
-                        <span className="text-foreground-third">—</span>
-                    )}
-                </td>
-                <td className={cellClass}>
-                    <RowActionsMenu
-                        onJoin={join}
-                        onEdit={
-                            canManage ? () => setEditOpen(true) : undefined
-                        }
+                    </Tooltip>
+                ) : (
+                    <span className="text-foreground-third">—</span>
+                )}
+            </td>
+            <td className={cellClass}>
+                <StatusTag
+                    status={bucket === "previous" ? "completed" : "upcoming"}
+                />
+            </td>
+            <td className={cellClass}>
+                <RowActionsMenu
+                    onJoin={join}
+                    onEdit={canManage ? () => setEditOpen(true) : undefined}
+                />
+                {canManage && (
+                    <WorkspaceModal
+                        open={editOpen}
+                        mode={{ kind: "edit", workspace, collaborators }}
+                        friends={friends}
+                        onClose={() => setEditOpen(false)}
+                        onSubmitted={onUpdated}
+                        onDeleted={onDeleted}
                     />
-                    {canManage && (
-                        <WorkspaceModal
-                            open={editOpen}
-                            mode={{ kind: "edit", workspace, collaborators }}
-                            friends={friends}
-                            onClose={() => setEditOpen(false)}
-                            onSubmitted={onUpdated}
-                            onDeleted={onDeleted}
-                        />
-                    )}
-                </td>
-            </tr>
+                )}
+            </td>
+        </tr>
     );
 };
 
