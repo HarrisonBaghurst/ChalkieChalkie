@@ -2,6 +2,7 @@ import BetaSignUpButton from "@/components/home/BetaSignUpButton";
 import ContactButton from "@/components/home/ContactButton";
 import HeroLoginButton from "@/components/home/HeroLoginButton";
 import Image from "next/image";
+import Link from "next/link";
 
 const page = () => {
     return (
@@ -34,7 +35,12 @@ const page = () => {
                 </div>
                 <div className="text-caption text-foreground-third flex gap-8">
                     <p>© Chalkie Chalkie 2026</p>
-                    <p>Privacy Policy</p>
+                    <Link
+                        href="/privacy-policy"
+                        className="transition-colors hover:text-foreground-second"
+                    >
+                        Privacy Policy
+                    </Link>
                 </div>
             </div>
             <div className="hidden 2xl:block absolute left-224 border-2 border-white/10 top-60 w-fit h-fit radius-surface skew-5 rotate-5">
