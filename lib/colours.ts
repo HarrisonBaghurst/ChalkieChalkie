@@ -1,26 +1,41 @@
-export const COLOURS: { colour: string; code: string }[] = [
+export const PEN_COLOURS: { colour: string; code: string }[] = [
     {
         colour: "White",
         code: "#e6e8e6",
     },
     {
         colour: "Yellow",
-        code: "#fdca40",
+        code: "#dbc15a",
     },
     {
         colour: "Orange",
-        code: "#db6b2a",
+        code: "#f59542",
     },
     {
         colour: "Red",
-        code: "#df2935",
+        code: "#e36868",
     },
     {
         colour: "Pink",
-        code: "#db53d9",
+        code: "#e66eaa",
+    },
+];
+
+export const HIGHLIGHT_COLOURS: { colour: string; code: string }[] = [
+    {
+        colour: "Butter",
+        code: "#f2d178",
     },
     {
-        colour: "Blue",
-        code: "#3772ff",
+        colour: "Peach",
+        code: "#f0a56b",
+    },
+    {
+        colour: "Rose",
+        code: "#e88aa8",
+    },
+    {
+        colour: "Mauve",
+        code: "#c78fbf",
     },
 ];

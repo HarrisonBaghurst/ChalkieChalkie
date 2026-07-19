@@ -197,7 +197,7 @@ const drawToCanvas = ({
 
         ctx.save();
         ctx.resetTransform();
-        ctx.globalAlpha = 0.15;
+        ctx.globalAlpha = 0.25;
         ctx.drawImage(hl, 0, 0);
         ctx.restore();
     }
@@ -217,12 +217,7 @@ const drawToCanvas = ({
             for (let i = 1; i < pts.length - 2; i++) {
                 const xc = (pts[i].x + pts[i + 1].x) / 2 + dx;
                 const yc = (pts[i].y + pts[i + 1].y) / 2 + dy;
-                ctx.quadraticCurveTo(
-                    pts[i].x + dx,
-                    pts[i].y + dy,
-                    xc,
-                    yc,
-                );
+                ctx.quadraticCurveTo(pts[i].x + dx, pts[i].y + dy, xc, yc);
             }
             const last = pts.length - 1;
             ctx.quadraticCurveTo(

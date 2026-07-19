@@ -3,7 +3,7 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence } from "motion/react";
 import ColourSelector from "./ColourSelector";
-import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
+import { HIGHLIGHT_COLOURS } from "@/lib/colours";
 
 interface ToolbarButtonProps {
     icon: string;

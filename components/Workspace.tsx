@@ -9,7 +9,7 @@ import {
     useState,
 } from "react";
 import { Point } from "@/types/strokeTypes";
-import { HIGHLIGHT_COLOURS } from "@/lib/highlightColours";
+import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
 import { useMyPresence } from "@liveblocks/react";
 import { toolCursorMap, Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
@@ -59,7 +59,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         lastMouseScreen: null,
         currentStroke: null,
         isDrawing: false,
-        currentColour: "#eeeeee",
+        currentColour: PEN_COLOURS[0].code,
         highlightColour: HIGHLIGHT_COLOURS[0].code,
         tool: "pen",
         cursorPosition: { x: 0, y: 0 },

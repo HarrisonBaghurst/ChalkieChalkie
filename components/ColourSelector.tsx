@@ -1,4 +1,4 @@
-import { COLOURS } from "@/lib/colours";
+import { PEN_COLOURS } from "@/lib/colours";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { RefObject, useState } from "react";
@@ -25,15 +25,15 @@ const STEP_DEG = ((CARD_W + CARD_GAP) / RADIUS) * (180 / Math.PI);
 const FIRST_CARD_X = 15;
 const TOP_PAD = 12;
 const ENTRY_DEG = ((FIRST_CARD_X + CARD_W + 8) / RADIUS) * (180 / Math.PI);
-const STAGGER_IN = 0.045;
-const STAGGER_OUT = 0.03;
+const STAGGER_IN = 0;
+const STAGGER_OUT = 0;
 
 const ColourSelector = ({
     currentColourRef,
     colours,
     onColourChosen,
 }: ColourSelectorProps) => {
-    const displayColours = colours ?? COLOURS;
+    const displayColours = colours ?? PEN_COLOURS;
     const [selected, setSelected] = useState(currentColourRef.current);
 
     const count = displayColours.length;
