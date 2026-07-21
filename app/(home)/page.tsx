@@ -6,8 +6,42 @@ import Link from "next/link";
 
 const page = () => {
     return (
-        <div className="px-[6.6dvw] py-[8dvw] 2xl:py-[5dvw] h-full flex flex-col justify-between 2xl:w-min gap-20">
-            <div className="flex flex-col gap-6 2xl:gap-10">
+        <div className="px-[16dvw] py-[5dvh] h-full flex flex-col items-center gap-12">
+            <div className="flex flex-col gap-12 items-center">
+                <div className="flex flex-col gap-8 items-center">
+                    <div className="flex gap-3 flex-col items-center">
+                        <h1 className="text-display w-fit text-center">
+                            Where effort
+                        </h1>
+                        <h1 className="text-display w-fit text-center">
+                            becomes
+                        </h1>
+                        <h1 className="text-display w-fit text-center">
+                            understanding.
+                        </h1>
+                    </div>
+                    <p className="text-subheading font-inter-regular text-foreground-third w-[20ch] text-center">
+                        A real-time workspace for tutors and their students.
+                    </p>
+                </div>
+                <BetaSignUpButton />
+            </div>
+            <div className="w-full aspect-4/3 relative">
+                <Image
+                    src={"/imgs/heroEllipse.webp"}
+                    alt="background ellipse"
+                    fill
+                    className="scale-110"
+                />
+                <Image
+                    src={"/imgs/dashboardMockup.webp"}
+                    alt="dashboard mockup image"
+                    fill
+                    className="scale-110"
+                    priority
+                />
+            </div>
+            {/* <div className="flex flex-col gap-6 2xl:gap-10">
                 <h1 className="text-display w-[11ch]">
                     Where Effort Becomes Understanding
                 </h1>
@@ -61,7 +95,7 @@ const page = () => {
                         fill
                     />
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

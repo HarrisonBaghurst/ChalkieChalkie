@@ -10,7 +10,7 @@ const BetaSignUpButton = () => {
     return (
         <SignedOut>
             <Button
-                text="Join Private Beta"
+                text="Request Beta Access"
                 onClick={() => setShowSendMessage(true)}
                 size="large"
             />

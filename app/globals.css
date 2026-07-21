@@ -392,6 +392,16 @@
         );
         animation: skeleton-shimmer 1.6s ease-in-out infinite;
     }
+    .gradient-radial-glow {
+        background: radial-gradient(
+            ellipse 50dvw 40dvw at center,
+            #e0c03d66 0%,
+            #f58b2f4d 30%,
+            #e3686833 55%,
+            #e368681a 75%,
+            transparent
+        );
+    }
 
     /* Branded ring spinner — pair with `animate-spin`. */
     .spinner-chalk {

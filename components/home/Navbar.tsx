@@ -8,9 +8,9 @@ const Navbar = () => {
     const isInHome = pathname === "/";
 
     return (
-        <div className="h-fit bg-card-background py-3.5 px-4 2xl:px-10 fixed w-full flex justify-between items-center z-1000">
+        <div className="h-fit py-[2dvh] px-[6dvw] fixed w-full flex justify-between items-center z-1000">
             <p
-                className={`font-inter-bold${
+                className={`text-subheading font-inter-regular ${
                     !isInHome ? " cursor-pointer" : ""
                 }`}
                 onClick={
