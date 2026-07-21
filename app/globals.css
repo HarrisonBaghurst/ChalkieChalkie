@@ -403,6 +403,26 @@
         );
     }
 
+    /* Slow floating "hover" bob. Bakes in scale(1.1) so it doesn't
+       override the mockup's scale-110 utility. */
+    @keyframes bob {
+        0%,
+        100% {
+            transform: translateY(0) scale(1.1);
+        }
+        50% {
+            transform: translateY(-16px) scale(1.1);
+        }
+    }
+    .animate-bob {
+        animation: bob 4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .animate-bob {
+            animation: none;
+        }
+    }
+
     /* Branded ring spinner — pair with `animate-spin`. */
     .spinner-chalk {
         border-radius: 9999px;

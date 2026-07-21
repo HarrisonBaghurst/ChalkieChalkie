@@ -39,7 +39,7 @@ const page = () => {
                     src={"/imgs/dashboardMockup.webp"}
                     alt="dashboard mockup image"
                     fill
-                    className="scale-110"
+                    className="scale-110 animate-bob"
                     priority
                     unoptimized
                 />
