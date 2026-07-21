@@ -11,6 +11,10 @@ const Navbar = () => {
 
     return (
         <div className="h-fit py-[2dvh] px-[6dvw] fixed w-full flex justify-between items-center z-1000">
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-transparent to-background"
+            />
             <SignedIn>
                 <div className="flex gap-4 items-center">
                     <UserButton
