@@ -12,7 +12,7 @@ const HeroLoginButton = () => {
 
     return (
         <SignedOut>
-            <Button text="Sign In" onClick={handleLogin} size="large" />
+            <Button text="Sign In" onClick={handleLogin} size="regular" />
         </SignedOut>
     );
 };

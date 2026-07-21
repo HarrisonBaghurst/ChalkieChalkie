@@ -1,3 +1,4 @@
+import DashboardLinkButton from "@/components/DashboardLinkButton";
 import BetaSignUpButton from "@/components/home/BetaSignUpButton";
 import ContactButton from "@/components/home/ContactButton";
 import HeroLoginButton from "@/components/home/HeroLoginButton";
@@ -25,6 +26,7 @@ const page = () => {
                     </p>
                 </div>
                 <BetaSignUpButton />
+                <DashboardLinkButton />
             </div>
             <div className="w-full aspect-4/3 relative">
                 <Image
@@ -39,6 +41,7 @@ const page = () => {
                     fill
                     className="scale-110"
                     priority
+                    unoptimized
                 />
             </div>
             {/* <div className="flex flex-col gap-6 2xl:gap-10">
