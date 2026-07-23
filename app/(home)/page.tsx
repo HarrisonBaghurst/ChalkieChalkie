@@ -26,7 +26,7 @@ const page = () => {
                 <BetaSignUpButton />
                 <DashboardLinkButton />
             </div>
-            <div className="w-full aspect-4/3 relative">
+            <div className="w-full aspect-4/3 relative pointer-events-none">
                 <Image
                     src={"/imgs/heroEllipse.webp"}
                     alt="background ellipse"

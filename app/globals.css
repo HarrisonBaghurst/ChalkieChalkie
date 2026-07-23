@@ -210,13 +210,13 @@
 
 @layer components {
     .text-display {
-        font-family: "Libre";
+        font-family: "InterBold";
         font-size: clamp(
             2.5rem,
             2rem + 2vw,
             4rem
         ); /* 40px → 72px, 360–1920px */
-        line-height: 1.05;
+        line-height: 0.9;
     }
     .text-heading {
         font-family: "Libre";

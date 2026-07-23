@@ -7,7 +7,12 @@ const Navbar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const { user } = useUser();
-    const isInHome = pathname === "/";
+
+    // The brand links home, except inside a workspace where it returns to the
+    // dashboard. Suppress the affordance when we're already at the target.
+    const isInWorkspace = pathname.startsWith("/board");
+    const brandHref = isInWorkspace ? "/dashboard" : "/";
+    const isAtBrandTarget = pathname === brandHref;
 
     return (
         <div className="h-fit py-[2dvh] px-[6dvw] fixed w-full flex justify-between items-center z-1000">
@@ -24,7 +29,16 @@ const Navbar = () => {
                             },
                         }}
                     />
-                    <div className="font-inter-bold flex flex-col leading-tight">
+                    <div
+                        className={`font-inter-bold flex flex-col leading-tight ${
+                            !isAtBrandTarget ? "cursor-pointer" : ""
+                        }`}
+                        onClick={
+                            !isAtBrandTarget
+                                ? () => router.push(brandHref)
+                                : undefined
+                        }
+                    >
                         <p className="text-caption text-foreground-second">
                             {user?.firstName ? `${user.firstName}'s` : "Your"}
                         </p>
@@ -35,10 +49,12 @@ const Navbar = () => {
             <SignedOut>
                 <div
                     className={`font-inter-bold flex flex-col leading-tight ${
-                        !isInHome ? "cursor-pointer" : ""
+                        !isAtBrandTarget ? "cursor-pointer" : ""
                     }`}
                     onClick={
-                        !isInHome ? () => router.push("/dashboard") : undefined
+                        !isAtBrandTarget
+                            ? () => router.push(brandHref)
+                            : undefined
                     }
                 >
                     <p className="text-caption text-foreground-second">
