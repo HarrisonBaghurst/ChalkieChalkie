@@ -41,7 +41,9 @@ const Navbar = () => {
                         !isInHome ? () => router.push("/dashboard") : undefined
                     }
                 >
-                    <p className="text-caption text-foreground-second">Your</p>
+                    <p className="text-caption text-foreground-second">
+                        Welcome to
+                    </p>
                     <p>Chalkie Chalkie</p>
                 </div>
                 <HeroLoginButton />
