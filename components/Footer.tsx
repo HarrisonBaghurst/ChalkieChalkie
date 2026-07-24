@@ -39,8 +39,9 @@ const Footer = () => {
                             <Link href="/privacy-policy" className={linkClass}>
                                 Privacy policy
                             </Link>
-                            {/* TODO: enable and link once the Terms of service page is implemented */}
-                            <p className={disabledLinkClass}>Terms of service</p>
+                            <Link href="/terms-of-service" className={linkClass}>
+                                Terms of service
+                            </Link>
                             {/* TODO: enable and link once the Cookie policy page is implemented */}
                             <p className={disabledLinkClass}>Cookie policy</p>
                         </div>
@@ -57,7 +58,7 @@ const Footer = () => {
                                 Contact
                             </button>
                             <a
-                                href="https://github.com/harrisonbaghurst"
+                                href="https://github.com/HarrisonBaghurst/ChalkieChalkie"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={linkClass}

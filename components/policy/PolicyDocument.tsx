@@ -5,8 +5,9 @@ import type {
 } from "@/types/policyTypes";
 
 /**
- * Renders a {@link PolicyDocumentType} as a centred, scrollable information
- * page using the site's typography scale. Content-agnostic: pass a different
+ * Renders a {@link PolicyDocumentType} as a centred information page using the
+ * site's typography scale. Flows within the page's own scroll (the (legal)
+ * layout owns scrolling and the footer). Content-agnostic: pass a different
  * JSON document to render a different policy page (terms, cookies, etc.).
  *
  * Server component — reads no browser APIs so `contactEmail` stays server-side.
@@ -19,7 +20,7 @@ const PolicyDocument = ({
     contactEmail: string;
 }) => {
     return (
-        <div className="h-dvh overflow-y-auto bg-background">
+        <div className="w-full">
             <article className="mx-auto w-full max-w-4xl px-6 py-16 sm:px-8 sm:py-24">
                 <header className="mb-12">
                     <h1 className="text-display mb-3">{document.title}</h1>

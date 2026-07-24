@@ -219,7 +219,7 @@
         line-height: 0.9;
     }
     .text-heading {
-        font-family: "Libre";
+        font-family: "InterBold";
         font-size: clamp(1.5rem, 1.41rem + 0.38vw, 1.875rem); /* 24px → 30px */
         line-height: 1.1;
     }
