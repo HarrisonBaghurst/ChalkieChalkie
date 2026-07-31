@@ -1,9 +1,29 @@
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import testWorkspaces from "@/data/testWorkspaces.json";
-import { Workspace, userInfo } from "@/types/userTypes";
-import { clerkClient } from "@clerk/nextjs/server";
+import { UserRole, Workspace, userInfo } from "@/types/userTypes";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { getUserRole } from "@/lib/serverRole";
+
+// Resolves the account role server-side so the sidebar's tutor-only Actions
+// section is correct on first paint instead of appearing once Clerk hydrates.
+// A failed lookup is non-fatal: the client falls back to reading the role off
+// the Clerk user object. auth() stays outside the try — it reads headers, and
+// Next signals "this route can't be static" by throwing from that call, which
+// must propagate rather than be swallowed as a lookup failure.
+const resolveRole = async (): Promise<UserRole | undefined> => {
+    const { userId } = await auth();
+    if (!userId) return undefined;
+    try {
+        return await getUserRole(userId);
+    } catch (err) {
+        console.error("[dashboard] failed to resolve user role", err);
+        return undefined;
+    }
+};
 
 const page = async () => {
+    const role = await resolveRole();
+
     if (process.env.ENVIRONMENT === "testing") {
         const upcoming: Workspace[] = testWorkspaces.upcomingLessons.map(
             (lesson) => ({
@@ -58,10 +78,10 @@ const page = async () => {
             }
         }
 
-        return <DashboardClient testData={{ workspaces, users }} />;
+        return <DashboardClient role={role} testData={{ workspaces, users }} />;
     }
 
-    return <DashboardClient />;
+    return <DashboardClient role={role} />;
 };
 
 export default page;

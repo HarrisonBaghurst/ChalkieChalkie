@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
-import { userInfo, Workspace } from "@/types/userTypes";
+import { userInfo, UserRole, Workspace } from "@/types/userTypes";
+import Skeleton from "@/components/ui/Skeleton";
 import WorkspaceModal from "./WorkspaceModal";
 
 type SidebarItem = {
@@ -28,16 +29,33 @@ type SidebarSection = {
 type SidebarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
+    // Role resolved server-side by the caller. Lets the role-gated Actions
+    // section render correctly on first paint; without it we fall back to the
+    // client role, which reads "student" until Clerk hydrates.
+    role?: UserRole;
 };
 
-const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
-    const { user } = useUser();
+const Sidebar = ({
+    friends = [],
+    onCreated,
+    role: serverRole,
+}: SidebarProps) => {
+    const { user, isLoaded } = useUser();
     const pathname = usePathname();
-    const role = useUserRole();
+    const clientRole = useUserRole();
     const [createOpen, setCreateOpen] = useState(false);
 
+    const role = serverRole ?? clientRole;
+    // Absent a server-resolved role we can't tell whether the Actions section
+    // belongs to this user until Clerk hydrates, so its space is reserved.
+    const roleKnown = !!serverRole || isLoaded;
+    // Creating needs a callback to land the new workspace in the page's state;
+    // without one the new workspace would vanish until reload, so the action
+    // renders in the disabled style instead.
+    const canCreate = !!onCreated;
+
     const sections: SidebarSection[] = [
-        ...(role === "tutor"
+        ...(roleKnown && role === "tutor"
             ? [
                   {
                       title: "Actions",
@@ -46,7 +64,7 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
                               text: "Create Workspace",
                               icon: "/icons/file-plus-corner.svg",
                               iconDark: "/icons/file-plus-corner-dark.svg",
-                              status: true,
+                              status: canCreate,
                               onClick: () => setCreateOpen(true),
                           },
                           {
@@ -137,27 +155,48 @@ const Sidebar = ({ friends = [], onCreated }: SidebarProps) => {
         <div className="bg-card-background w-75 h-dvh p-4 flex flex-col justify-between fixed">
             <div className="flex flex-col gap-8">
                 <div className="flex gap-4 items-center">
-                    {user?.imageUrl ? (
-                        <div className="relative w-10 h-10 radius-tag overflow-hidden bg-foreground-third">
-                            <Image
-                                src={user.imageUrl}
-                                alt={`${user.firstName ?? "User"} icon`}
-                                fill
-                                sizes="40px"
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </div>
+                    {/* Same control as the Navbar's: clicking the avatar opens
+                        Clerk's account menu. Held by a skeleton until Clerk
+                        hydrates, since UserButton renders nothing until then. */}
+                    {isLoaded ? (
+                        <UserButton
+                            appearance={{
+                                elements: {
+                                    avatarBox: "!w-10 !h-10 !rounded-sm",
+                                },
+                            }}
+                        />
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-foreground" />
+                        <Skeleton className="w-10 h-10 rounded-sm" />
                     )}
                     <div className="font-inter-bold flex flex-col leading-tight">
+                        {/* "Your" covers both the pre-hydration gap and users
+                            without a first name, so this line never shimmers. */}
                         <p className="text-caption text-foreground-second">
                             {user?.firstName ? `${user.firstName}'s` : "Your"}
                         </p>
                         <p>Chalkie Chalkie</p>
                     </div>
                 </div>
+                {/* Placeholder for the tutor-only Actions section while the role
+                    is still unknown, so the Menu below doesn't jump once it
+                    resolves. Mirrors two renderItem rows. */}
+                {!roleKnown && (
+                    <div className="flex flex-col gap-4">
+                        <p className="text-caption text-foreground-third mx-2">
+                            Actions
+                        </p>
+                        {["w-32", "w-28"].map((width) => (
+                            <div
+                                key={width}
+                                className="flex gap-3 items-center mx-2"
+                            >
+                                <Skeleton className="w-5 h-5 radius-tag" />
+                                <Skeleton className={`h-4 ${width}`} />
+                            </div>
+                        ))}
+                    </div>
+                )}
                 {sections.map((section, i) => (
                     <div key={i} className="flex flex-col gap-4">
                         <p className="text-caption text-foreground-third mx-2">

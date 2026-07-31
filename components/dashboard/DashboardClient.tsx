@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { userInfo, Workspace } from "@/types/userTypes";
+import { userInfo, UserRole, Workspace } from "@/types/userTypes";
 import {
     applyDashboardFilters,
     DASHBOARD_GRACE_MS,
@@ -14,12 +14,16 @@ import {
 import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import Sidebar from "./Sidebar";
+import DashboardShell from "./DashboardShell";
 import Next from "./Next";
 import WorkspaceLists from "./WorkspaceLists";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
-import Navbar from "../home/Navbar";
 
 type DashboardClientProps = {
+    // Role resolved server-side by the page. Passed down so the sidebar's
+    // role-gated section is right on first paint; falls back to the client
+    // role if the lookup failed.
+    role?: UserRole;
     testData?: {
         workspaces: Workspace[];
         users: userInfo[];
@@ -29,9 +33,13 @@ type DashboardClientProps = {
 // TODO(refactor): duplicates the workspace/users fetching + snake_case
 // mapping in components/Workspaces.tsx — see the TODO there; extract a shared
 // API client once one of the two surfaces is retired.
-const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
+const DashboardClient = ({
+    role: serverRole,
+    testData,
+}: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
-    const role = useUserRole();
+    const clientRole = useUserRole();
+    const role = serverRole ?? clientRole;
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>(
         testData?.workspaces ?? [],
@@ -246,55 +254,55 @@ const DashboardClient = ({ testData }: DashboardClientProps = {}) => {
     };
 
     return (
-        <div className="dashboard-root flex bg-card-background min-h-dvh">
-            <div className="hidden 2xl:block">
-                <Sidebar friends={friends} onCreated={handleCreated} />
-            </div>
-            <div className="block 2xl:hidden">
-                <Navbar />
-            </div>
-            <div className="2xl:ml-75 w-full min-h-[calc(100dvh-1rem)] p-[2.5dvw] flex flex-col gap-[2.5dvw] bg-background m-2 radius-surface">
-                {loading || !isLoaded ? (
-                    <DashboardSkeleton />
-                ) : (
-                    <>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-heading font-inter-bold">
-                                Your Dashboard
-                            </p>
-                            <p className="text-foreground-second">
-                                View and update your workspaces
-                            </p>
-                        </div>
-                        <Next
-                            workspace={nextWorkspace}
-                            usersMap={usersMap}
-                            viewerIsHost={viewerIsHost}
-                        />
-                        <WorkspaceLists
-                            upcoming={upcomingFiltered}
-                            previous={previousFiltered}
-                            usersMap={usersMap}
-                            collaborators={collaborators}
-                            filters={filters}
-                            hasActiveFilters={activeFilters}
-                            onChangeSearch={(search) =>
-                                setFilters((f) => ({ ...f, search }))
-                            }
-                            onChangeCollaboratorIds={(collaboratorIds) =>
-                                setFilters((f) => ({ ...f, collaboratorIds }))
-                            }
-                            onClearFilters={() =>
-                                setFilters(EMPTY_DASHBOARD_FILTERS)
-                            }
-                            friends={friends}
-                            onWorkspaceUpdated={handleUpdated}
-                            onWorkspaceDeleted={handleDeleted}
-                        />
-                    </>
-                )}
-            </div>
-        </div>
+        <DashboardShell
+            sidebar={
+                <Sidebar
+                    friends={friends}
+                    onCreated={handleCreated}
+                    role={serverRole}
+                />
+            }
+        >
+            {loading || !isLoaded ? (
+                <DashboardSkeleton />
+            ) : (
+                <>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-heading font-inter-bold">
+                            Your Dashboard
+                        </p>
+                        <p className="text-foreground-second">
+                            View and update your workspaces
+                        </p>
+                    </div>
+                    <Next
+                        workspace={nextWorkspace}
+                        usersMap={usersMap}
+                        viewerIsHost={viewerIsHost}
+                    />
+                    <WorkspaceLists
+                        upcoming={upcomingFiltered}
+                        previous={previousFiltered}
+                        usersMap={usersMap}
+                        collaborators={collaborators}
+                        filters={filters}
+                        hasActiveFilters={activeFilters}
+                        onChangeSearch={(search) =>
+                            setFilters((f) => ({ ...f, search }))
+                        }
+                        onChangeCollaboratorIds={(collaboratorIds) =>
+                            setFilters((f) => ({ ...f, collaboratorIds }))
+                        }
+                        onClearFilters={() =>
+                            setFilters(EMPTY_DASHBOARD_FILTERS)
+                        }
+                        friends={friends}
+                        onWorkspaceUpdated={handleUpdated}
+                        onWorkspaceDeleted={handleDeleted}
+                    />
+                </>
+            )}
+        </DashboardShell>
     );
 };
 

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { userInfo, Workspace } from "@/types/userTypes";
+import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import WorkspaceTableRow, { WorkspaceBucket } from "./WorkspaceTableRow";
 
 export type WorkspaceRow = {
@@ -20,15 +21,8 @@ type WorkspaceTableProps = {
     onWorkspaceDeleted: (workspaceId: string) => void;
 };
 
-const COLUMNS = [
-    { key: "people", label: "People", width: "w-[12%]" },
-    { key: "header", label: "Header", width: "w-[22%]" },
-    { key: "startTime", label: "Start time", width: "w-[15%]" },
-    { key: "description", label: "Description", width: "w-[18%]" },
-    { key: "feedback", label: "Feedback", width: "w-[16%]" },
-    { key: "status", label: "Status", width: "w-[12%]" },
-    { key: "actions", label: "", width: "w-[5%]" },
-] as const;
+// Shared with the loading skeleton so both tables lay out identically.
+const COLUMNS = WORKSPACE_TABLE_COLUMNS;
 
 const WorkspaceTable = ({
     rows,
