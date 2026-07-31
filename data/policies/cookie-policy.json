@@ -1,0 +1,219 @@
+{
+    "title": "Cookie Policy",
+    "lastUpdated": "31 July 2026",
+    "intro": [
+        {
+            "type": "paragraph",
+            "text": "This Cookie Policy for Chalkie Chalkie ('we', 'us', or 'our') explains what cookies and similar technologies are, which ones are set when you use our website and application ('Services'), why we use them, and what choices you have. It should be read alongside our Privacy Notice, which explains how we handle your personal information more generally."
+        },
+        {
+            "type": "paragraph",
+            "text": "**In short:** we only use cookies that are strictly necessary to sign you in and keep your session secure. We do not use advertising cookies, analytics cookies, or any form of cross-site tracking. Because every cookie we set is strictly necessary, we are not required to ask for your consent and we do not show a cookie banner."
+        },
+        {
+            "type": "paragraph",
+            "text": "If you have any questions about this policy, you can contact us at {{CONTACT_EMAIL}}."
+        }
+    ],
+    "sections": [
+        {
+            "id": "what-are-cookies",
+            "heading": "1. What are cookies and similar technologies?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "Cookies are small text files that a website asks your browser to store on your device. When you return to the site, or move between pages, your browser sends those files back so the site can recognise your device. Cookies set by the site you are visiting are called 'first-party' cookies; cookies set by another organisation whose services the site relies on are called 'third-party' cookies."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "'Similar technologies' means anything else that stores information on, or reads information from, your device — most commonly local storage and session storage. UK law treats these in the same way as cookies, so they are covered by this policy too."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Cookies can also be described by how long they last. A **session cookie** is deleted when you close your browser. A **persistent cookie** stays on your device until it expires or you delete it."
+                }
+            ]
+        },
+        {
+            "id": "how-we-use",
+            "heading": "2. How do we use cookies?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "We use cookies for one purpose only: to operate the parts of the Services that cannot work without them. In practice this means authentication and security."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Specifically, the cookies we set allow us to:"
+                },
+                {
+                    "type": "list",
+                    "items": [
+                        "Sign you in and keep you signed in as you move between pages, so you do not have to re-enter your details on every screen",
+                        "Confirm to our servers that a request genuinely comes from your signed-in account before we return any of your data",
+                        "Check that you are a member of a lesson workspace before granting you access to its whiteboard",
+                        "Protect the sign-in process against automated abuse, such as bots and credential-stuffing attacks"
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Every cookie described in this policy falls into this category. We do not use cookies to build a profile of you, to measure how you use the Services, or to advertise to you anywhere."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Chalkie Chalkie does not itself store anything in your browser's local storage or session storage."
+                }
+            ]
+        },
+        {
+            "id": "cookies-we-use",
+            "heading": "3. Which cookies do we use?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "The cookies below are set through Clerk, the authentication provider we use to manage sign-in and user accounts. All of them are classed as strictly necessary."
+                },
+                {
+                    "type": "definitions",
+                    "items": [
+                        {
+                            "term": "__session",
+                            "description": "**Purpose:** holds the signed token that proves to our servers that you are logged in, so your account, dashboard, and workspaces load correctly. **Provider:** Clerk (first-party). **Duration:** short-lived and refreshed automatically while you stay signed in; cleared when you sign out."
+                        },
+                        {
+                            "term": "__client_uat",
+                            "description": "**Purpose:** records whether a signed-in session currently exists, so pages can be rendered in the correct signed-in or signed-out state before the full session token is read. **Provider:** Clerk (first-party). **Duration:** persistent; cleared when you sign out."
+                        },
+                        {
+                            "term": "__clerk_handshake",
+                            "description": "**Purpose:** carries state through the redirect that completes a sign-in or sign-out, so the process finishes on the correct page. **Provider:** Clerk (first-party). **Duration:** transient — deleted within moments of the sign-in completing."
+                        },
+                        {
+                            "term": "_cfuvid",
+                            "description": "**Purpose:** distinguishes individual visitors sharing an IP address so that rate limits and bot protection can be applied fairly to the authentication service. It does not store personal information and is not used for analytics or advertising. **Provider:** Cloudflare, used by Clerk (third-party). **Duration:** session cookie."
+                        }
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Clerk may set additional short-lived cookies during the sign-in process, and different cookies on development or preview environments that are not part of the live Services. The exact names and lifetimes are set by Clerk and can change when they update their software. You can read more in [Clerk's privacy policy](https://clerk.com/legal/privacy) and [Cloudflare's cookie documentation](https://developers.cloudflare.com/fundamentals/reference/policies-compliances/cloudflare-cookies/)."
+                }
+            ]
+        },
+        {
+            "id": "what-we-dont-use",
+            "heading": "4. Which cookies do we not use?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "So that there is no ambiguity, we want to be explicit about what is not present on the Services. We do not use:"
+                },
+                {
+                    "type": "list",
+                    "items": [
+                        "Advertising or marketing cookies of any kind",
+                        "Analytics or performance-measurement cookies, including Google Analytics",
+                        "Tag managers or third-party tracking scripts",
+                        "Social media pixels, share buttons, or embedded widgets that track you",
+                        "Cookies that follow you across other websites, or that are sold or shared with data brokers"
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Should this change in future — for example if we introduce analytics to understand how lessons are used — we will update this policy and put an appropriate consent or opt-out mechanism in place **before** any such technology is switched on."
+                }
+            ]
+        },
+        {
+            "id": "third-parties",
+            "heading": "5. Third-party services",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "We rely on a small number of service providers to run the Services. Only one of them results in cookies being stored on your device:"
+                },
+                {
+                    "type": "definitions",
+                    "items": [
+                        {
+                            "term": "Clerk",
+                            "description": "Handles account registration, sign-in, and session management. Sets the cookies listed in section 3, including the Cloudflare cookie used to protect its infrastructure."
+                        },
+                        {
+                            "term": "Supabase, Liveblocks, Upstash, Resend, and Vercel",
+                            "description": "Provide our database and file storage, real-time whiteboard collaboration, rate limiting, contact emails, and website hosting respectively. These are used from our servers or authenticated with tokens held only in memory, and do not set cookies in your browser."
+                        }
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Details of what personal information these providers process, and on what legal basis, are set out in our Privacy Notice."
+                }
+            ]
+        },
+        {
+            "id": "consent",
+            "heading": "6. Do we need your consent?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "Under the Privacy and Electronic Communications Regulations 2003 ('PECR'), as amended by the Data (Use and Access) Act 2025, a website must normally obtain consent before storing information on, or reading information from, a user's device."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "There is an exception where the storage or access is strictly necessary to provide a service the user has explicitly requested. Keeping you securely signed in to an account you asked us to create falls squarely within that exception, and it is the only purpose for which we set cookies. For that reason we do not ask for your consent to these cookies and we do not display a cookie banner."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "The exception removes the requirement to obtain consent — it does not remove our duty to be transparent. That is what this policy is for. Guidance on the rules is published by the Information Commissioner's Office at [ico.org.uk](https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guide-to-pecr/cookies-and-similar-technologies/)."
+                }
+            ]
+        },
+        {
+            "id": "manage",
+            "heading": "7. How can you control cookies?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "Because we set no optional cookies, there is nothing for you to opt out of on our side. You remain in full control of cookies through your browser, which you can use to block or delete cookies for any site, including ours."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "These settings are usually found under 'Privacy', 'Privacy and security', or 'Cookies and site data' in your browser's preferences or settings menu. Most browsers also let you delete all cookies stored so far, and to block cookies from being set at all."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "**Please note:** the cookies described in section 3 are required for authentication. If you block or delete them, you will not be able to sign in to Chalkie Chalkie, and you will be signed out of any lesson workspace you are currently in. The public pages of our website will continue to work normally."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Signing out of your account also clears your session cookies."
+                }
+            ]
+        },
+        {
+            "id": "policy-updates",
+            "heading": "8. Do we make updates to this policy?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "**In short:** yes, we will update this policy as necessary to stay compliant with relevant laws and to reflect any change in the technologies we use."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "We may update this Cookie Policy from time to time. The updated version will be indicated by an updated 'Last updated' date at the top of this page and will be effective as soon as it is accessible. If we make material changes — in particular if we begin using any cookie that is not strictly necessary — we will notify you either by prominently posting a notice of the changes or by sending you a notification directly. We encourage you to review this policy periodically to stay informed about how we use cookies."
+                }
+            ]
+        },
+        {
+            "id": "contact",
+            "heading": "9. How can you contact us about this policy?",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": "If you have questions or comments about this policy, or would like more detail about any cookie described above, you may email us at {{CONTACT_EMAIL}}."
+                }
+            ]
+        }
+    ]
+}

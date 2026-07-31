@@ -5,7 +5,6 @@ import Link from "next/link";
 import SendMessage from "./SendMessage";
 
 const linkClass = "w-fit hover:underline cursor-pointer";
-const disabledLinkClass = "w-fit text-foreground-third cursor-not-allowed";
 
 const Footer = () => {
     const [showSendMessage, setShowSendMessage] = useState(false);
@@ -42,8 +41,9 @@ const Footer = () => {
                             <Link href="/terms-of-service" className={linkClass}>
                                 Terms of service
                             </Link>
-                            {/* TODO: enable and link once the Cookie policy page is implemented */}
-                            <p className={disabledLinkClass}>Cookie policy</p>
+                            <Link href="/cookie-policy" className={linkClass}>
+                                Cookie policy
+                            </Link>
                         </div>
                     </div>
                     <div className="flex flex-col gap-5">
