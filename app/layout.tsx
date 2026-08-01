@@ -4,7 +4,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { clerkAppearance } from "@/lib/clerkAppearance";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -22,14 +23,12 @@ export default function RootLayout({
         <ClerkProvider appearance={clerkAppearance}>
             <html lang="en" className={cn("font-sans", geist.variable)}>
                 <body className={`antialiased w-full overflow-x-hidden`}>
-                    <div className="relative">
-                        {children}
-                        <Toaster
-                            position="bottom-center"
-                            theme="dark"
-                            richColors
-                        />
-                    </div>
+                    <TooltipProvider>
+                        <div className="relative">
+                            {children}
+                            <Toaster position="bottom-center" richColors />
+                        </div>
+                    </TooltipProvider>
                 </body>
             </html>
         </ClerkProvider>

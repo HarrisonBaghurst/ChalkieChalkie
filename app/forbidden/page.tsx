@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/Button";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 const notFound = () => {
@@ -19,11 +19,7 @@ const notFound = () => {
                 <p className="pb-4">
                     403 - You don't have permission to access this page
                 </p>
-                <Button
-                    text="Return home"
-                    variant="primary"
-                    handleClick={returnHome}
-                />
+                <Button onClick={returnHome}>Return home</Button>
             </div>
         </div>
     );

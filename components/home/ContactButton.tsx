@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Button from "../dashboard/Button";
+import { Button } from "@/components/ui/button";
 import SendMessage from "../SendMessage";
 
 const ContactButton = () => {
@@ -9,11 +9,12 @@ const ContactButton = () => {
     return (
         <>
             <Button
-                text="Contact Chalkie Chalkie"
                 onClick={() => {
                     setShowSendMessage((prev) => !prev);
                 }}
-            />
+            >
+                Contact Chalkie Chalkie
+            </Button>
             {showSendMessage && (
                 <SendMessage
                     mode="contact"

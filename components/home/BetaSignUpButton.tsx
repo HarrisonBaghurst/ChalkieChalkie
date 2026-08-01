@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { SignedOut } from "@clerk/nextjs";
-import Button from "../dashboard/Button";
+import { Button } from "@/components/ui/button";
 import SendMessage from "../SendMessage";
 
 const BetaSignUpButton = () => {
@@ -9,11 +9,9 @@ const BetaSignUpButton = () => {
 
     return (
         <SignedOut>
-            <Button
-                text="Request Beta Access"
-                onClick={() => setShowSendMessage(true)}
-                size="large"
-            />
+            <Button size="lg" onClick={() => setShowSendMessage(true)}>
+                Request Beta Access
+            </Button>
             {showSendMessage && (
                 <SendMessage
                     mode="beta"

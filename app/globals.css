@@ -31,7 +31,6 @@
          --foreground-second   secondary text / labels
          --foreground-third    muted text, hairline borders, placeholders
        Accents:
-         --button-main         primary action colour
          --arrow-color         decorative arrows / chevrons
        ──────────────────────────────────────────────────────────────────── */
     --background: #121212;
@@ -47,45 +46,45 @@
     --card-child-background: hsl(0, 1%, 37%);
     --card-child-shadow: hsl(0, 0, 20%);
 
-    --button-main: hsl(208, 75%, 40%);
-
     --arrow-color: #7f7f7fff;
 
     --padding: 0.5rem;
 
     --gap: 1rem;
 
-    --card: oklch(1 0 0);
+    /* ── shadcn/ui token bridge ──────────────────────────────────────────
+       shadcn primitives address colour through their own token names. Rather
+       than maintain a second palette, every one aliases onto the semantic
+       tokens above, which stay canonical. Change a colour there and the
+       primitives follow. Do not put literal colour values in this block. */
+    --card: var(--card-background);
+    --card-foreground: var(--foreground);
 
-    --card-foreground: oklch(0.145 0 0);
+    --popover: var(--card-background);
+    --popover-foreground: var(--foreground);
 
-    --popover: oklch(1 0 0);
+    /* The white solid button is the canonical primary action. */
+    --primary: var(--foreground);
+    --primary-foreground: var(--background);
 
-    --popover-foreground: oklch(0.145 0 0);
+    --secondary: var(--background-second);
+    --secondary-foreground: var(--foreground);
 
-    --primary: oklch(0.205 0 0);
+    --muted: var(--background-second);
+    --muted-foreground: var(--foreground-third);
 
-    --primary-foreground: oklch(0.985 0 0);
+    --accent: var(--card-background-hover);
+    --accent-foreground: var(--foreground);
 
-    --secondary: oklch(0.97 0 0);
+    --destructive: #c21f2f;
+    --success: #3a9630;
 
-    --secondary-foreground: oklch(0.205 0 0);
+    /* Same expression as `.control-surface` below, so a stock shadcn border
+       and an existing .control-surface element are pixel-identical. */
+    --border: color-mix(in oklab, var(--foreground-third) 25%, transparent);
+    --input: color-mix(in oklab, var(--foreground-third) 25%, transparent);
 
-    --muted: oklch(0.97 0 0);
-
-    --muted-foreground: oklch(0.556 0 0);
-
-    --accent: oklch(0.97 0 0);
-
-    --accent-foreground: oklch(0.205 0 0);
-
-    --destructive: oklch(0.577 0.245 27.325);
-
-    --border: oklch(0.922 0 0);
-
-    --input: oklch(0.922 0 0);
-
-    --ring: hsl(0, 0%, 63%);
+    --ring: var(--foreground-second);
 
     --chart-1: oklch(0.87 0 0);
 
@@ -168,6 +167,8 @@
     --color-border: var(--border);
 
     --color-destructive: var(--destructive);
+
+    --color-success: var(--success);
 
     --color-accent-foreground: var(--accent-foreground);
 

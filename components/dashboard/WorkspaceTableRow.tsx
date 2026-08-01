@@ -4,12 +4,17 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { userInfo, Workspace } from "@/types/userTypes";
+import { cn } from "@/lib/utils";
 import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import PeopleStack from "./PeopleStack";
-import Tooltip from "./Tooltip";
-import StatusTag from "./StatusTag";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import RowActionsMenu from "./RowActionsMenu";
 import WorkspaceModal from "./WorkspaceModal";
 
@@ -102,16 +107,17 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 {workspace.description ? (
-                    <Tooltip
-                        label={
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="block truncate text-left text-foreground-second">
+                                {workspace.description}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
                             <div className="w-64 whitespace-normal">
                                 {workspace.description}
                             </div>
-                        }
-                    >
-                        <span className="block truncate text-foreground-second">
-                            {workspace.description}
-                        </span>
+                        </TooltipContent>
                     </Tooltip>
                 ) : (
                     <span className="text-foreground-third">—</span>
@@ -119,25 +125,34 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 {workspace.feedback ? (
-                    <Tooltip
-                        label={
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="block truncate text-left text-foreground-second">
+                                {workspace.feedback}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
                             <div className="w-64 whitespace-normal">
                                 {workspace.feedback}
                             </div>
-                        }
-                    >
-                        <span className="block truncate text-foreground-second">
-                            {workspace.feedback}
-                        </span>
+                        </TooltipContent>
                     </Tooltip>
                 ) : (
                     <span className="text-foreground-third">—</span>
                 )}
             </td>
             <td className={cellClass}>
-                <StatusTag
-                    status={bucket === "previous" ? "completed" : "upcoming"}
-                />
+                <Badge variant="status">
+                    <span
+                        className={cn(
+                            "w-1.5 h-1.5 rounded-full",
+                            bucket === "previous"
+                                ? "bg-green-500"
+                                : "bg-amber-400",
+                        )}
+                    />
+                    {bucket === "previous" ? "Completed" : "Upcoming"}
+                </Badge>
             </td>
             <td className={cellClass}>
                 <RowActionsMenu

@@ -1,17 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { userInfo, Workspace } from "@/types/userTypes";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
 import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
 import TeamStep from "./workspaceModalSteps/TeamStep";
 import FeedbackStep from "./workspaceModalSteps/FeedbackStep";
 import ReviewStep from "./workspaceModalSteps/ReviewStep";
-import Button from "./Button";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import Stepper from "@/components/ui/Stepper";
+import { XIcon } from "lucide-react";
 
 export type WorkspaceModalMode =
     | { kind: "create" }
@@ -207,104 +213,74 @@ const WorkspaceModal = ({
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
 
-    return createPortal(
-        <div
-            onClick={onClose}
-            className="fixed left-0 top-0 w-full h-full bg-background/80 z-500 flex items-center justify-center"
-        >
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className="bg-card-background radius-surface p-8 w-150 max-w-[92vw] h-[55dvh] flex flex-col gap-6 text-foreground"
+    return (
+        <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="h-[55dvh] sm:max-w-150"
             >
                 <div className="flex items-center justify-between">
-                    <div className="text-subheading">
+                    <DialogTitle>
                         {mode.kind === "create"
                             ? "Create workspace"
                             : "Edit workspace"}
-                    </div>
+                    </DialogTitle>
                     <div className="flex items-center gap-4">
                         {mode.kind === "edit" &&
                             (confirmingDelete ? (
-                                <div className="flex items-center gap-3 text-caption">
+                                <div className="flex items-center gap-1 text-caption">
                                     <span className="text-foreground-third">
                                         Delete this workspace?
                                     </span>
-                                    <button
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={handleDelete}
                                         disabled={deleting}
-                                        className={cn(
-                                            "text-red-500 hover:text-red-600 font-inter-bold",
-                                            deleting
-                                                ? "opacity-40 cursor-not-allowed"
-                                                : "cursor-pointer",
-                                        )}
+                                        className="text-red-500 font-inter-bold hover:text-red-600"
                                     >
                                         {deleting ? "Deleting..." : "Delete"}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         onClick={() =>
                                             setConfirmingDelete(false)
                                         }
                                         disabled={deleting}
-                                        className="text-foreground-third hover:text-foreground cursor-pointer"
+                                        className="text-foreground-third hover:text-foreground"
                                     >
                                         Cancel
-                                    </button>
+                                    </Button>
                                 </div>
                             ) : (
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => setConfirmingDelete(true)}
-                                    className="text-red-500 hover:text-red-600 text-caption cursor-pointer"
+                                    className="text-red-500 hover:text-red-600"
                                 >
                                     Delete
-                                </button>
+                                </Button>
                             ))}
-                        <button
-                            onClick={onClose}
-                            className="text-foreground-third hover:text-foreground text-subheading leading-none cursor-pointer"
-                            aria-label="Close"
-                        >
-                            ×
-                        </button>
+                        <DialogClose asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label="Close"
+                                className="text-foreground-third hover:text-foreground"
+                            >
+                                <XIcon />
+                            </Button>
+                        </DialogClose>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between px-2">
-                    {STEPS.map((s, i) => (
-                        <React.Fragment key={s.id}>
-                            <button
-                                onClick={() => setStep(s.id)}
-                                className="flex flex-col items-center gap-1 cursor-pointer"
-                            >
-                                <div
-                                    className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center text-caption font-inter-bold transition-colors",
-                                        step === s.id
-                                            ? "bg-foreground text-background"
-                                            : step > s.id
-                                              ? "border border-foreground text-foreground"
-                                              : "border border-foreground-third text-foreground-third",
-                                    )}
-                                >
-                                    {s.id}
-                                </div>
-                                <div
-                                    className={cn(
-                                        "text-caption",
-                                        step === s.id
-                                            ? "text-foreground"
-                                            : "text-foreground-third",
-                                    )}
-                                >
-                                    {s.label}
-                                </div>
-                            </button>
-                            {i < STEPS.length - 1 && (
-                                <div className="flex-1 h-px bg-foreground-third mx-2 -mt-4" />
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
+                <Stepper
+                    steps={[...STEPS]}
+                    current={step}
+                    onStepChange={setStep}
+                />
 
                 <div className="flex-1 min-h-80 overflow-y-auto pr-1">
                     {step === 1 && (
@@ -357,34 +333,31 @@ const WorkspaceModal = ({
 
                 <div className="flex items-center justify-between">
                     <Button
-                        text="Back"
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}
-                    />
+                    >
+                        Back
+                    </Button>
                     {isFinalStep ? (
-                        <Button
-                            text={
-                                submitting
-                                    ? "Saving..."
-                                    : mode.kind === "create"
-                                      ? "Create"
-                                      : "Save"
-                            }
-                            onClick={handleSubmit}
-                            disabled={submitting}
-                        />
+                        <Button onClick={handleSubmit} disabled={submitting}>
+                            {submitting
+                                ? "Saving..."
+                                : mode.kind === "create"
+                                  ? "Create"
+                                  : "Save"}
+                        </Button>
                     ) : (
                         <Button
-                            text="Next"
                             onClick={() =>
                                 setStep((s) => Math.min(STEPS.length, s + 1))
                             }
-                        />
+                        >
+                            Next
+                        </Button>
                     )}
                 </div>
-            </div>
-        </div>,
-        document.body,
+            </DialogContent>
+        </Dialog>
     );
 };
 

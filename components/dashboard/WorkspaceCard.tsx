@@ -3,8 +3,12 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Button from "./Button";
-import Tooltip from "./Tooltip";
+import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import WorkspaceModal from "./WorkspaceModal";
 import { useUser } from "@clerk/nextjs";
 import { userInfo, Workspace } from "@/types/userTypes";
@@ -57,43 +61,76 @@ const WorkspaceCard = ({
         <>
             <div className="group relative w-full flex flex-col gap-4 p-5 radius-surface bg-background-second text-left hover:z-10">
                 <div className="absolute top-4 right-4 flex gap-2">
-                    <Tooltip
-                        label={expanded ? "Collapse" : "Expand"}
-                        className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto"
-                    >
-                        <Button
-                            text={expanded ? "Collapse" : "Expand"}
-                            icon="/icons/chevron-down-dark.svg"
-                            iconClassName={`transition-transform duration-200 ${
-                                expanded ? "rotate-180" : ""
-                            }`}
-                            onClick={() => setExpanded((prev) => !prev)}
-                        />
-                    </Tooltip>
-                    {canManage && (
-                        <Tooltip
-                            label="Edit workspace"
-                            className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto"
-                        >
-                            <Button
-                                text="Edit workspace"
-                                icon="/icons/square-pen-dark.svg"
-                                onClick={() => setEditOpen(true)}
-                            />
+                    <div className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    aria-label={
+                                        expanded ? "Collapse" : "Expand"
+                                    }
+                                    onClick={() => setExpanded((prev) => !prev)}
+                                >
+                                    <Image
+                                        src="/icons/chevron-down-dark.svg"
+                                        alt=""
+                                        width={18}
+                                        height={18}
+                                        className={`pointer-events-none transition-transform duration-200 ${
+                                            expanded ? "rotate-180" : ""
+                                        }`}
+                                    />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {expanded ? "Collapse" : "Expand"}
+                            </TooltipContent>
                         </Tooltip>
+                    </div>
+                    {canManage && (
+                        <div className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="icon"
+                                        aria-label="Edit workspace"
+                                        onClick={() => setEditOpen(true)}
+                                    >
+                                        <Image
+                                            src="/icons/square-pen-dark.svg"
+                                            alt=""
+                                            width={18}
+                                            height={18}
+                                            className="pointer-events-none"
+                                        />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit workspace</TooltipContent>
+                            </Tooltip>
+                        </div>
                     )}
-                    <Tooltip
-                        label="Join workspace"
-                        className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto"
-                    >
-                        <Button
-                            text="Join workspace"
-                            icon="/icons/external-link-dark.svg"
-                            onClick={() =>
-                                router.push(`/board/${workspace.id}`)
-                            }
-                        />
-                    </Tooltip>
+                    <div className="-translate-y-3 opacity-0 pointer-events-none transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100 group-hover:pointer-events-auto">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    aria-label="Join workspace"
+                                    onClick={() =>
+                                        router.push(`/board/${workspace.id}`)
+                                    }
+                                >
+                                    <Image
+                                        src="/icons/external-link-dark.svg"
+                                        alt=""
+                                        width={18}
+                                        height={18}
+                                        className="pointer-events-none"
+                                    />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Join workspace</TooltipContent>
+                        </Tooltip>
+                    </div>
                 </div>
                 <div className="flex gap-4 items-center">
                     {counterparty?.imageUrl ? (

@@ -29,7 +29,7 @@ const WorkspaceTableRowSkeleton = () => {
                 <Skeleton className="h-4 w-2/3" />
             </td>
             <td className={cellClass}>
-                {/* StatusTag pill */}
+                {/* Status badge */}
                 <Skeleton className="h-6 w-24 radius-tag" />
             </td>
             <td className={cellClass}>

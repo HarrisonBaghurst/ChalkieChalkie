@@ -1,4 +1,5 @@
 import React from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 type FeedbackStepProps = {
     feedback: string;
@@ -18,13 +19,13 @@ const FeedbackStep = ({ feedback, onChange }: FeedbackStepProps) => {
                 Notes for after the session — leave blank if you&apos;re not
                 ready.
             </p>
-            <textarea
+            <Textarea
                 id="workspace-feedback"
                 value={feedback}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder="How did it go? What should you remember for next time?"
                 rows={8}
-                className="border border-foreground-third radius-control py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground resize-none mt-2"
+                className="mt-2"
             />
         </div>
     );

@@ -2,8 +2,24 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import Button from "@/components/dashboard/Button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import Stepper from "@/components/ui/Stepper";
+import { XIcon } from "lucide-react";
 
 type SendMessageMode = "beta" | "contact";
 
@@ -24,9 +40,6 @@ const SeverityOptions: SeverityType[] = [
     "High - Blocks usage",
     "Critical - Data loss",
 ];
-
-const inputClass =
-    "border border-foreground-third radius-control py-2 px-3 text-small placeholder:text-foreground-third focus:outline-none bg-transparent text-foreground";
 
 const labelClass = "text-caption text-foreground-third";
 
@@ -157,7 +170,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                 >
                                     FIRST NAME
                                 </label>
-                                <input
+                                <Input
                                     id="send-firstname"
                                     type="text"
                                     value={firstName}
@@ -165,7 +178,6 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                         setFirstName(e.target.value)
                                     }
                                     placeholder="John"
-                                    className={inputClass}
                                 />
                             </div>
                             <div className="flex flex-col gap-2 flex-1">
@@ -175,7 +187,7 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                 >
                                     LAST NAME
                                 </label>
-                                <input
+                                <Input
                                     id="send-lastname"
                                     type="text"
                                     value={lastName}
@@ -183,7 +195,6 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                         setLastName(e.target.value)
                                     }
                                     placeholder="Doe"
-                                    className={inputClass}
                                 />
                             </div>
                         </div>
@@ -191,13 +202,12 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                             <label htmlFor="send-email" className={labelClass}>
                                 EMAIL
                             </label>
-                            <input
+                            <Input
                                 id="send-email"
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="john@email.com"
-                                className={inputClass}
                             />
                         </div>
                     </div>
@@ -213,13 +223,12 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                             >
                                 HOW WOULD YOU USE CHALKIE CHALKIE?
                             </label>
-                            <textarea
+                            <Textarea
                                 id="send-usecase"
                                 value={useCase}
                                 onChange={(e) => setUseCase(e.target.value)}
                                 placeholder="Tell us about your use case..."
                                 rows={5}
-                                className={`${inputClass} resize-none`}
                             />
                         </div>
                         <div className="flex flex-col gap-2">
@@ -229,13 +238,12 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                             >
                                 HOW WERE YOU REFERRED TO US?
                             </label>
-                            <textarea
+                            <Textarea
                                 id="send-referral"
                                 value={referral}
                                 onChange={(e) => setReferral(e.target.value)}
                                 placeholder="Where did you hear about Chalkie Chalkie..."
                                 rows={3}
-                                className={`${inputClass} resize-none`}
                             />
                         </div>
                     </div>
@@ -266,46 +274,50 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                         <label htmlFor="send-email" className={labelClass}>
                             EMAIL
                         </label>
-                        <input
+                        <Input
                             id="send-email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="john@email.com"
-                            className={inputClass}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="send-summary" className={labelClass}>
                             SUMMARY
                         </label>
-                        <input
+                        <Input
                             id="send-summary"
                             type="text"
                             value={summary}
                             onChange={(e) => setSummary(e.target.value)}
                             placeholder="One line summary of the issue"
-                            className={inputClass}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="send-severity" className={labelClass}>
                             ISSUE SEVERITY
                         </label>
-                        <select
-                            id="send-severity"
+                        <Select
                             value={severity}
-                            onChange={(e) =>
-                                setSeverity(e.target.value as SeverityType)
+                            onValueChange={(value) =>
+                                setSeverity(value as SeverityType)
                             }
-                            className={inputClass}
                         >
-                            {SeverityOptions.map((s) => (
-                                <option key={s} value={s}>
-                                    {s}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger
+                                id="send-severity"
+                                className="w-full"
+                            >
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {SeverityOptions.map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                        {s}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             );
@@ -317,20 +329,19 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                         <label htmlFor="send-reproduce" className={labelClass}>
                             STEPS TO REPRODUCE
                         </label>
-                        <textarea
+                        <Textarea
                             id="send-reproduce"
                             value={reproduceSteps}
                             onChange={(e) => setReproduceSteps(e.target.value)}
                             placeholder="Go to ... and click ..."
                             rows={5}
-                            className={`${inputClass} resize-none`}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="send-expected" className={labelClass}>
                             EXPECTED VS ACTUAL BEHAVIOUR
                         </label>
-                        <textarea
+                        <Textarea
                             id="send-expected"
                             value={expectedVsActual}
                             onChange={(e) =>
@@ -338,20 +349,18 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                             }
                             placeholder="Expected... Actual..."
                             rows={5}
-                            className={`${inputClass} resize-none`}
                         />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="send-browser" className={labelClass}>
                             BROWSER AND OS
                         </label>
-                        <input
+                        <Input
                             id="send-browser"
                             type="text"
                             value={browserAndOS}
                             onChange={(e) => setBrowserAndOS(e.target.value)}
                             placeholder="e.g. Chrome 124 on macOS 14"
-                            className={inputClass}
                         />
                     </div>
                 </div>
@@ -384,69 +393,31 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
     };
 
     return (
-        <div
-            onClick={onClose}
-            className="fixed left-0 top-0 w-full h-full bg-background/80 z-1000 flex items-center justify-center"
-        >
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className="bg-card-background radius-surface p-8 w-150 max-w-[92vw] h-[70dvh] 2xl:h-[60dvh] flex flex-col gap-6 text-foreground"
+        <Dialog open onOpenChange={(next) => !next && onClose()}>
+            <DialogContent
+                showCloseButton={false}
+                className="h-[70dvh] sm:max-w-150 2xl:h-[60dvh]"
             >
                 <div className="flex items-center justify-between">
-                    <div className="text-subheading">{headerTitle}</div>
-                    <button
-                        onClick={onClose}
-                        className="text-foreground-third hover:text-foreground text-subheading leading-none cursor-pointer"
-                        aria-label="Close"
-                    >
-                        ×
-                    </button>
+                    <DialogTitle>{headerTitle}</DialogTitle>
+                    <DialogClose asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Close"
+                            className="text-foreground-third hover:text-foreground"
+                        >
+                            <XIcon />
+                        </Button>
+                    </DialogClose>
                 </div>
 
-                <div className="flex items-center justify-between px-2">
-                    {steps.map((s, i) => (
-                        <React.Fragment key={s.id}>
-                            <button
-                                onClick={() => {
-                                    if (canJumpTo(s.id)) setStep(s.id);
-                                }}
-                                disabled={!canJumpTo(s.id)}
-                                className={cn(
-                                    "flex flex-col items-center gap-1",
-                                    canJumpTo(s.id)
-                                        ? "cursor-pointer"
-                                        : "cursor-not-allowed",
-                                )}
-                            >
-                                <div
-                                    className={cn(
-                                        "w-7 h-7 rounded-full flex items-center justify-center text-caption font-inter-bold transition-colors",
-                                        step === s.id
-                                            ? "bg-foreground text-background"
-                                            : step > s.id
-                                              ? "border border-foreground text-foreground"
-                                              : "border border-foreground-third text-foreground-third",
-                                    )}
-                                >
-                                    {s.id}
-                                </div>
-                                <div
-                                    className={cn(
-                                        "text-caption",
-                                        step === s.id
-                                            ? "text-foreground"
-                                            : "text-foreground-third",
-                                    )}
-                                >
-                                    {s.label}
-                                </div>
-                            </button>
-                            {i < steps.length - 1 && (
-                                <div className="flex-1 h-px bg-foreground-third mx-2 -mt-4" />
-                            )}
-                        </React.Fragment>
-                    ))}
-                </div>
+                <Stepper
+                    steps={[...steps]}
+                    current={step}
+                    onStepChange={setStep}
+                    canJumpTo={canJumpTo}
+                />
 
                 <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                     {renderBody()}
@@ -454,28 +425,31 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
 
                 <div className="flex items-center justify-between">
                     <Button
-                        text="Back"
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}
-                    />
+                    >
+                        Back
+                    </Button>
                     {isFinalStep ? (
                         <Button
-                            text={isSubmitting ? "Sending..." : "Submit"}
                             onClick={handleSubmit}
                             disabled={isSubmitting || !allValid}
-                        />
+                        >
+                            {isSubmitting ? "Sending..." : "Submit"}
+                        </Button>
                     ) : (
                         <Button
-                            text="Next"
                             onClick={() =>
                                 setStep((s) => Math.min(steps.length, s + 1))
                             }
                             disabled={!canAdvance}
-                        />
+                        >
+                            Next
+                        </Button>
                     )}
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

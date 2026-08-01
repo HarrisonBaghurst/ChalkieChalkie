@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Button from "./dashboard/Button";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { SignedIn } from "@clerk/nextjs";
 
@@ -14,7 +14,9 @@ const DashboardLinkButton = () => {
 
     return (
         <SignedIn>
-            <Button text="Open Dashboard" onClick={handleClick} size="large" />
+            <Button size="lg" onClick={handleClick}>
+                Open Dashboard
+            </Button>
         </SignedIn>
     );
 };

@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import Button from "../dashboard/Button";
+import { Button } from "@/components/ui/button";
 import { SignedOut } from "@clerk/nextjs";
 
 const HeroLoginButton = () => {
@@ -12,7 +12,7 @@ const HeroLoginButton = () => {
 
     return (
         <SignedOut>
-            <Button text="Sign In" onClick={handleLogin} size="regular" />
+            <Button onClick={handleLogin}>Sign In</Button>
         </SignedOut>
     );
 };

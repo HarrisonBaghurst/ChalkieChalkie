@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import CollaboratorCard from "./CollaboratorCard";
 import { userInfo } from "@/types/userTypes";
-import Button from "./Button";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import CollaboratorsPicker from "./CollaboratorsPicker";
 
 type CollaboratorsInputProps = {
@@ -71,51 +76,51 @@ const CollaboratorsInput = ({
                 </div>
             </button>
 
-            {popupOpen && (
-                <div
-                    onClick={handleDiscard}
-                    className="fixed left-0 top-0 w-full h-full bg-background/80 z-500"
+            <Dialog
+                open={popupOpen}
+                onOpenChange={(next) => !next && handleDiscard()}
+            >
+                <DialogContent
+                    showCloseButton={false}
+                    className="h-[65dvh] justify-between sm:max-w-[40%]"
                 >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute left-1/2 top-1/2 w-[40%] h-[65%] -translate-x-1/2 -translate-y-1/2 flex flex-col justify-between card-style"
-                    >
-                        <div className="flex flex-col gap-8">
-                            <CollaboratorsPicker
-                                collaborators={localCollaborators}
-                                friends={friends}
-                                onChange={setLocalCollaborators}
-                            />
-                        </div>
-
-                        <div className="flex gap-6 w-full">
-                            <Button
-                                text="Discard changes"
-                                handleClick={handleDiscard}
-                                variant="secondary"
-                                size="large"
-                                className="w-full"
-                            />
-                            <Button
-                                text="Update collaborators"
-                                handleClick={() => {
-                                    onSave(localCollaborators);
-                                    setPopupOpen(false);
-                                }}
-                                variant="primary"
-                                size="large"
-                                className="w-full"
-                                clickable={
-                                    !areCollaboratorsEqual(
-                                        initialCollaborators,
-                                        localCollaborators,
-                                    )
-                                }
-                            />
-                        </div>
+                    <DialogTitle className="sr-only">
+                        Edit collaborators
+                    </DialogTitle>
+                    <div className="flex flex-col gap-8">
+                        <CollaboratorsPicker
+                            collaborators={localCollaborators}
+                            friends={friends}
+                            onChange={setLocalCollaborators}
+                        />
                     </div>
-                </div>
-            )}
+
+                    <div className="flex gap-6 w-full">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            className="w-full"
+                            onClick={handleDiscard}
+                        >
+                            Discard changes
+                        </Button>
+                        <Button
+                            size="lg"
+                            className="w-full"
+                            onClick={() => {
+                                onSave(localCollaborators);
+                                setPopupOpen(false);
+                            }}
+                            disabled={areCollaboratorsEqual(
+                                initialCollaborators,
+                                localCollaborators,
+                            )}
+                        >
+                            Update collaborators
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };

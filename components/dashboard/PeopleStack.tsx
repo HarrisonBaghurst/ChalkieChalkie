@@ -1,8 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { userInfo } from "@/types/userTypes";
-import Tooltip from "./Tooltip";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PeopleStackProps = {
     // Non-host participants (students). The first is shown as an avatar and any
@@ -33,8 +37,26 @@ const PeopleStack = ({ people, host }: PeopleStackProps) => {
     const firstName = fullName(first);
 
     return (
-        <Tooltip
-            label={
+        <Tooltip>
+            <TooltipTrigger className="flex items-center gap-2">
+                <Avatar className="rounded-md after:rounded-md">
+                    <AvatarImage
+                        src={first.imageUrl}
+                        alt={firstName}
+                        className="rounded-md"
+                    />
+                    <AvatarFallback className="rounded-md bg-foreground-third">
+                        {first.firstName.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+
+                {rest.length > 0 && (
+                    <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">
+                        +{rest.length}
+                    </div>
+                )}
+            </TooltipTrigger>
+            <TooltipContent>
                 <div className="flex flex-col gap-1">
                     <span className="text-caption text-background/50">
                         Participants ({participants.length})
@@ -51,28 +73,7 @@ const PeopleStack = ({ people, host }: PeopleStackProps) => {
                         </div>
                     ))}
                 </div>
-            }
-        >
-            <div className="flex items-center gap-2">
-                <div className="relative w-8 h-8 radius-tag overflow-hidden bg-foreground-third">
-                    {first.imageUrl && (
-                        <Image
-                            src={first.imageUrl}
-                            alt={firstName}
-                            fill
-                            sizes="32px"
-                            className="object-cover"
-                            unoptimized
-                        />
-                    )}
-                </div>
-
-                {rest.length > 0 && (
-                    <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">
-                        +{rest.length}
-                    </div>
-                )}
-            </div>
+            </TooltipContent>
         </Tooltip>
     );
 };

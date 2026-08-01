@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/components/dashboard/Button";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 const notFound = () => {
@@ -17,11 +17,9 @@ const notFound = () => {
                 <p className="pb-4">
                     404 - The page your looking for doesn't exist
                 </p>
-                <Button
-                    text={"Return Home"}
-                    onClick={returnHome}
-                    size="large"
-                />
+                <Button size="lg" onClick={returnHome}>
+                    Return Home
+                </Button>
             </div>
         </div>
     );
