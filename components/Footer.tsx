@@ -24,6 +24,9 @@ const Footer = () => {
                     <div className="flex flex-col gap-5">
                         <p className="text-subheading">Product</p>
                         <div className="flex flex-col gap-1">
+                            <Link href="/" className={linkClass}>
+                                Home
+                            </Link>
                             <Link href="/dashboard" className={linkClass}>
                                 Dashboard
                             </Link>
@@ -38,7 +41,10 @@ const Footer = () => {
                             <Link href="/privacy-policy" className={linkClass}>
                                 Privacy policy
                             </Link>
-                            <Link href="/terms-of-service" className={linkClass}>
+                            <Link
+                                href="/terms-of-service"
+                                className={linkClass}
+                            >
                                 Terms of service
                             </Link>
                             <Link href="/cookie-policy" className={linkClass}>
