@@ -2,7 +2,9 @@
 // hue, so a person keeps one colour across their cursor and the participant
 // roster, every session. Palette is tuned to read on the dark #0d0d0a theme.
 
-const PALETTE = [
+// Exported so the style guide can render the palette itself rather than
+// guessing at it from sample ids.
+export const USER_COLOUR_PALETTE = [
     "#eb7a38", // orange
     "#38bdf8", // sky
     "#a78bfa", // violet
@@ -23,6 +25,6 @@ export function getUserColour(id: string): string {
     for (let i = 0; i < id.length; i++) {
         hash = (hash * 31 + id.charCodeAt(i)) | 0;
     }
-    const index = Math.abs(hash) % PALETTE.length;
-    return PALETTE[index];
+    const index = Math.abs(hash) % USER_COLOUR_PALETTE.length;
+    return USER_COLOUR_PALETTE[index];
 }

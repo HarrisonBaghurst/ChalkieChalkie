@@ -1,4 +1,6 @@
-export type UserRole = "tutor" | "student";
+// Account role stored in Clerk `publicMetadata.role`. Mutually exclusive:
+// see lib/roles.ts for what each one confers.
+export type UserRole = "student" | "tutor" | "admin";
 
 export type userInfo = {
     id: string;
