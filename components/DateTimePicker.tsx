@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 const MONTHS = [
@@ -184,16 +185,16 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
             </div>
             <div>
                 <div className="flex gap-4 items-center justify-center">
-                    <input
-                        className="border border-foreground-third radius-control w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
+                    <Input
+                        className="w-16 h-12 text-center text-body appearance-none"
                         placeholder=""
                         inputMode="numeric"
                         value={selectedHour ?? ""}
                         onChange={handleHourInput}
                     />
                     <div>:</div>
-                    <input
-                        className="border border-foreground-third radius-control w-16 h-12 text-center text-body focus:border-white/50 outline-none appearance-none"
+                    <Input
+                        className="w-16 h-12 text-center text-body appearance-none"
                         placeholder=""
                         inputMode="numeric"
                         value={selectedMin ?? ""}

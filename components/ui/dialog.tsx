@@ -41,6 +41,7 @@ function DialogClose({
 
 function DialogOverlay({
   className,
+  onClick,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
@@ -50,6 +51,15 @@ function DialogOverlay({
         "fixed inset-0 isolate z-50 bg-background/80 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
+      // Dismiss-on-outside-click is Radix's own document-level pointerdown
+      // listener, so it fires regardless. This stopPropagation is only about
+      // React's synthetic tree: a portalled dialog is still a React child of
+      // wherever it's rendered, so without it a click on the overlay bubbles
+      // up to that ancestor's onClick — e.g. a table row's join-on-click.
+      onClick={(e) => {
+        onClick?.(e)
+        e.stopPropagation()
+      }}
       {...props}
     />
   )
@@ -69,7 +79,10 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 flex w-full max-w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-6 rounded-xl bg-card p-8 text-foreground duration-100 outline-none sm:max-w-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // border-foreground-third/15 matches the outer border on
+          // WorkspaceTable's container, so the modal stands off the
+          // background the same way the tables do.
+          "fixed top-1/2 left-1/2 z-50 flex w-full max-w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-6 rounded-xl border border-foreground-third/15 bg-card p-8 text-foreground duration-100 outline-none sm:max-w-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}

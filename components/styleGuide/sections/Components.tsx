@@ -212,7 +212,7 @@ const Components = () => {
 
             <Block
                 title="Form controls"
-                description="Input and Textarea share one class string — transparent fill, foreground-third border, text-small. Both carry the focus-visible ring; never remove it with focus:outline-none, which is what the hand-rolled inputs these replaced did."
+                description="Input and Textarea share one class string, built on .control-surface — a card-background-hover fill (a tier lighter than the card/modal surface they usually sit on), a faint foreground-third hairline border, text-small. Both carry the focus-visible ring; never remove it with focus:outline-none, which is what the hand-rolled inputs these replaced did."
             >
                 <div className="flex max-w-md flex-col gap-5">
                     <Input placeholder="Workspace title" />
