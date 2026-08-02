@@ -62,6 +62,7 @@ When you add a token, utility class or shared component, add a specimen to the s
 - `app/(home)/` — Public landing page (hero, beta sign-up, contact) with its own `Navbar` + `Footer` layout
 - `app/(legal)/` — `privacy-policy`, `terms-of-service`, `cookie-policy`; content authored as JSON in `data/policies/` and rendered by `components/policy/PolicyDocument.tsx`
 - `app/dashboard/` — Authenticated dashboard: upcoming/past lessons, filters, workspace create/edit modal (`components/dashboard/`)
+- `app/dashboard/connections/` — Tutor↔student linking: "Your Students" (tutor) / "Your Tutors" (student), invite-code exchange in a Dialog (`components/dashboard/connections/`)
 - `app/board/[boardId]/` — The whiteboard canvas page; wraps `<Workspace>` in a Liveblocks `<Room>` provider (`Room.tsx`)
 - `app/sign-in/` — Clerk sign-in page (styled via `lib/clerkAppearance.ts`)
 - `app/style-guide/` — Admin-only design system reference (see above)
@@ -70,7 +71,8 @@ When you add a token, utility class or shared component, add a specimen to the s
 - `app/api/` — Backend routes:
   - `liveblocks-auth` — issues Liveblocks tokens after membership check
   - `workspaces` (+ `[workspaceId]`, `[workspaceId]/images`) — workspace CRUD and pasted-image upload/delete; shared validation in `_shared.ts`
-  - `users/batch`, `users/friends`, `users/workspaces` — user lookups
+  - `users/batch`, `users/friends`, `users/workspaces` — user lookups; `friends` returns the caller's linked tutor-student counterparties (see below), not a general user search
+  - `links` (+ `[linkId]`, `invites`, `redeem`) — tutor↔student linking: list/unlink, generate/read/revoke an invite code, redeem a code; shared validation in `_shared.ts`
   - `contact` — contact form via Resend
   - `cron/remove-unused-rooms` — deletes rooms inactive >2 weeks; runs daily at 05:00 via `vercel.json` crons, authenticated with `CRON_SECRET`
 
@@ -116,13 +118,16 @@ components/
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
       └─ DashboardShell   ← sidebar (2xl+) / Navbar swap + inset content column
-           ├─ Sidebar.tsx      ← identity, nav, tutor-only Actions section
+           ├─ Sidebar.tsx      ← identity, nav, role-gated Actions section (Create Workspace for
+           │                     tutors; Add New Student/Tutor for both), mounts LinkCodeDialog
            ├─ Next.tsx         ← the next upcoming lesson
            ├─ Filters.tsx      ← search + collaborator filters
            ├─ WorkspaceLists   ← upcoming/past tabs
            │    ├─ WorkspaceTable + WorkspaceTableRow (+ RowActionsMenu, PeopleStack)
            │    └─ WorkspaceCard
            ├─ WorkspaceModal   ← create/edit, steps in workspaceModalSteps/
+           ├─ connections/     ← app/dashboard/connections: ConnectionsClient, ConnectionsTable +
+           │                     ConnectionRow, LinkCodeDialog (generate/redeem tabs), InviteCountdown
            └─ skeletons/       ← loading states mirroring the real layouts
   home/                   ← Navbar (shared with dashboard/legal), hero CTAs
   policy/PolicyDocument   ← renders data/policies/*.json
@@ -134,11 +139,12 @@ Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybind
 
 Two distinct concepts:
 
-- **Account role** — `student | tutor | admin`, stored in Clerk `publicMetadata.role`. The three are **mutually exclusive and confer separate privileges**; neither tutor nor admin is a superset of the other. `lib/roles.ts` defines them and parses the stored value (failing closed to `student`). Server-side: `lib/serverRole.ts` (`getUserRole`, plus `requireTutor` / `requireAdmin` guards for API routes — each demands its exact role, so `requireTutor` rejects an admin). Client-side: `hooks/useUserRole.tsx`.
-  - `student` — the default. Joins workspaces they were invited to.
-  - `tutor` — creates, edits and deletes workspaces; can look up friends.
-  - `admin` — internal tooling only (currently `/style-guide`). No product privileges. Don't widen a tutor-gated route to admins to make internal tooling easier.
+- **Account role** — `student | tutor | admin`, stored in Clerk `publicMetadata.role`. The three are **mutually exclusive and confer separate privileges**; neither tutor nor admin is a superset of the other. `lib/roles.ts` defines them and parses the stored value (failing closed to `student`). Server-side: `lib/serverRole.ts` (`getUserRole`, plus `requireTutor` / `requireAdmin` guards for API routes — each demands its exact role, so `requireTutor` rejects an admin — and `requireLinkRole`, which returns `"student" | "tutor"` or a 403, for the bidirectional invite-code flow). Client-side: `hooks/useUserRole.tsx`.
+  - `student` — the default. Joins workspaces they were invited to; can link to tutors and see their linked tutors at `/dashboard/connections`.
+  - `tutor` — creates, edits and deletes workspaces; can link to students and see their linked students. The workspace collaborator picker (`CollaboratorsPicker`) only ever offers linked students — `/api/users/friends` is strictly the caller's linked counterparties, not a general user search.
+  - `admin` — internal tooling only (currently `/style-guide`). No product privileges, including linking — an admin can hold no tutor-student links. Don't widen a tutor-gated route to admins to make internal tooling easier.
 - **Workspace host** — the creator of a workspace (`Workspace.host`), the only member allowed to edit it. Helpers in `lib/workspaceHost.ts`.
+- **Tutor-student links** — a separate relation from workspace membership, stored in Supabase `tutor_links` (positional `tutor_id`/`student_id`, not role-stamped) and formed by redeeming a 10-minute invite code (`link_invites`). Either side can remove a link; removing one also strips the student from the tutor's future-dated rooms (`lib/unlinkRooms.ts` — note the accepted Liveblocks-token-revocation gap documented there). See `lib/links.ts`, `lib/inviteCode.ts`, `app/api/links/`.
 
 `useUserRole` returns `student` until Clerk hydrates, so anything privileged must also gate on `isLoaded` or take a server-resolved role as a prop (`app/dashboard/page.tsx` resolves it and passes it to `DashboardClient`/`Sidebar` for this reason).
 
@@ -159,11 +165,12 @@ Two distinct concepts:
 - `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "selector" | "highlighter"` + per-tool cursor map
 - `canvasStateTypes.ts` — `CanvasState`, `Viewport`, `ToolContext`, `ToolCallbacks`, `ToolStrategy`
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`
+- `linkTypes.ts` — `LinkRole`, `TutorLinkRow`/`LinkInviteRow` (raw Supabase shapes), `LinkInvite`/`LinkSummary` (client-facing shapes)
 - `policyTypes.ts` — `PolicyDocument`/`PolicySection`/`PolicyBlock` for the legal pages, including the supported inline markup
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative and session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `supabase/admin.ts` (service-role client).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client).
 
 ### Path Alias
 

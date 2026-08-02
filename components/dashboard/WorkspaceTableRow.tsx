@@ -156,8 +156,17 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 <RowActionsMenu
-                    onJoin={join}
-                    onEdit={canManage ? () => setEditOpen(true) : undefined}
+                    actions={[
+                        { label: "Join workspace", onSelect: join },
+                        ...(canManage
+                            ? [
+                                  {
+                                      label: "Edit workspace",
+                                      onSelect: () => setEditOpen(true),
+                                  },
+                              ]
+                            : []),
+                    ]}
                 />
                 {canManage && (
                     <WorkspaceModal

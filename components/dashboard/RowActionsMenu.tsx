@@ -8,15 +8,24 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type RowActionsMenuProps = {
-    onJoin: () => void;
-    onEdit?: () => void;
+export type RowAction = {
+    label: string;
+    onSelect: () => void;
+    variant?: "default" | "destructive";
 };
 
-// Trailing three-dot menu for a table row. Holds the row's actions (Join
-// always, Edit only when a handler is supplied, i.e. the host). Stops click
-// propagation so opening the menu never triggers the row's join-on-click.
-const RowActionsMenu = ({ onJoin, onEdit }: RowActionsMenuProps) => {
+type RowActionsMenuProps = {
+    actions: RowAction[];
+    label?: string;
+};
+
+// Trailing three-dot menu for a table row. Holds the row's actions. Stops
+// click propagation so opening the menu never triggers the row's own click
+// handler (e.g. join-on-click).
+const RowActionsMenu = ({
+    actions,
+    label = "Row actions",
+}: RowActionsMenuProps) => {
     const runAction = (action: () => void) => (e: React.MouseEvent) => {
         e.stopPropagation();
         action();
@@ -26,7 +35,7 @@ const RowActionsMenu = ({ onJoin, onEdit }: RowActionsMenuProps) => {
         <div className="flex justify-end">
             <DropdownMenu>
                 <DropdownMenuTrigger
-                    aria-label="Row actions"
+                    aria-label={label}
                     onClick={(e) => e.stopPropagation()}
                     className="flex h-8 w-8 cursor-pointer items-center justify-center radius-control text-foreground-third outline-none hover:bg-foreground-third/20 hover:text-foreground-second focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
@@ -41,14 +50,15 @@ const RowActionsMenu = ({ onJoin, onEdit }: RowActionsMenuProps) => {
                     className="w-40"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <DropdownMenuItem onClick={runAction(onJoin)}>
-                        Join workspace
-                    </DropdownMenuItem>
-                    {onEdit && (
-                        <DropdownMenuItem onClick={runAction(onEdit)}>
-                            Edit workspace
+                    {actions.map((action) => (
+                        <DropdownMenuItem
+                            key={action.label}
+                            variant={action.variant}
+                            onClick={runAction(action.onSelect)}
+                        >
+                            {action.label}
                         </DropdownMenuItem>
-                    )}
+                    ))}
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

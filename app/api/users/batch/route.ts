@@ -1,7 +1,8 @@
+import { fetchUserProfiles } from "@/lib/clerkUsers";
 import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 type RequestBody = {
@@ -77,19 +78,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ users: [] });
         }
 
-        const client = await clerkClient();
-        const response = await client.users.getUserList({
-            userId: filteredIds,
-            limit: filteredIds.length,
-        });
-
-        const users = response.data.map((u) => ({
-            id: u.id,
-            firstName: u.firstName,
-            lastName: u.lastName,
-            imageUrl: u.imageUrl,
-            email: u.emailAddresses[0]?.emailAddress ?? null,
-        }));
+        const users = await fetchUserProfiles(filteredIds);
 
         return new NextResponse(JSON.stringify({ users }), {
             headers: {

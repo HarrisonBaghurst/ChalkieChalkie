@@ -1,4 +1,6 @@
-export function getLastEditedText(inputDate: Date): string {
+// Relative time since `inputDate`, e.g. "3 minutes ago", "2 weeks ago".
+// Caller supplies the surrounding phrase (e.g. `Linked ${formatRelativeTime(d)}`).
+export function formatRelativeTime(inputDate: Date | string): string {
     const date = new Date(inputDate);
     const now = new Date();
 
@@ -6,26 +8,34 @@ export function getLastEditedText(inputDate: Date): string {
     const diffSeconds = Math.floor(diff / 1000);
 
     if (diffSeconds < 60) {
-        return `Last opened ${diffSeconds} second${diffSeconds !== 1 ? "s" : ""} ago`;
+        return "just now";
     }
 
     const diffMinutes = Math.floor(diffSeconds / 60);
     if (diffMinutes < 60) {
-        return `Last opened ${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
+        return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
     }
 
     const diffHours = Math.floor(diffMinutes / 60);
     if (diffHours < 24) {
-        return `Last opened ${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+        return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
     }
 
     const diffDays = Math.floor(diffHours / 24);
     if (diffDays < 7) {
-        return `Last opened ${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+        return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
     }
 
     const diffWeeks = Math.floor(diffDays / 7);
-    return `Last opened ${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
+    return `${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
+}
+
+// mm:ss countdown for a remaining duration in milliseconds, floored at 0:00.
+export function formatCountdown(remainingMs: number): string {
+    const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 const SHORT_MONTHS = [

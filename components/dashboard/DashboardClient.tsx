@@ -13,6 +13,7 @@ import {
 } from "@/lib/dashboardFilters";
 import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
+import { LinkSummary } from "@/types/linkTypes";
 import Sidebar from "./Sidebar";
 import DashboardShell from "./DashboardShell";
 import Next from "./Next";
@@ -60,24 +61,29 @@ const DashboardClient = ({
         if (!isLoaded || !isSignedIn) return;
         if (testData) return;
 
-        if (role === "tutor") {
-            const fetchFriends = async () => {
-                try {
-                    const res = await fetch(
-                        `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
-                    );
-                    if (!res.ok) {
-                        console.error("Failed to fetch friends");
-                        return;
-                    }
-                    const data = await res.json();
-                    setFriends(data.friends ?? []);
-                } catch (err) {
-                    console.error(err);
+        // Friends are now linked counterparties (see app/api/users/friends),
+        // which both tutors and students can have — unlike the old "first 50
+        // Clerk users" behaviour, this is no longer tutor-exclusive.
+        const fetchFriends = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/friends`,
+                );
+                if (!res.ok) {
+                    console.error("Failed to fetch friends");
+                    return;
                 }
-            };
-            fetchFriends();
-        }
+                const data = await res.json();
+                const fetched: userInfo[] = data.friends ?? [];
+                setFriends(fetched);
+                // So usersMap can resolve a linked person even before they
+                // appear in any workspace's user_ids.
+                mergeUsers(fetched);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchFriends();
 
         const fetchAll = async () => {
             try {
@@ -201,9 +207,14 @@ const DashboardClient = ({
         [user?.id, upcomingAll, previousAll],
     );
 
+    // Friends (linked counterparties) first, then anyone else who shares a
+    // workspace but isn't (or no longer is) linked. Union, not replacement: a
+    // freshly-linked student with no workspaces yet must still be filterable,
+    // and a past lesson's collaborator you've since unlinked must stay
+    // filterable too, or that history becomes unreachable by filter.
     const collaborators = useMemo(() => {
-        const seen = new Set<string>();
-        const result: userInfo[] = [];
+        const seen = new Set<string>(friends.map((f) => f.id));
+        const result: userInfo[] = [...friends];
         [...upcomingAll, ...previousAll].forEach((w) => {
             w.collaboratorIds?.forEach((id) => {
                 if (isHost(id, w)) return;
@@ -215,7 +226,7 @@ const DashboardClient = ({
             });
         });
         return result;
-    }, [upcomingAll, previousAll, usersMap]);
+    }, [friends, upcomingAll, previousAll, usersMap]);
 
     const upcomingFiltered = useMemo(
         () => applyDashboardFilters(upcomingAll, filters, "asc"),
@@ -253,12 +264,21 @@ const DashboardClient = ({
         setWorkspaces((prev) => prev.filter((w) => w.id !== id));
     };
 
+    const handleLinked = (link: LinkSummary) => {
+        setFriends((prev) => [
+            link.counterparty,
+            ...prev.filter((f) => f.id !== link.counterparty.id),
+        ]);
+        mergeUsers([link.counterparty]);
+    };
+
     return (
         <DashboardShell
             sidebar={
                 <Sidebar
                     friends={friends}
                     onCreated={handleCreated}
+                    onLinked={handleLinked}
                     role={serverRole}
                 />
             }

@@ -8,8 +8,10 @@ import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
 import { userInfo, UserRole, Workspace } from "@/types/userTypes";
+import { LinkSummary } from "@/types/linkTypes";
 import Skeleton from "@/components/ui/Skeleton";
 import WorkspaceModal from "./WorkspaceModal";
+import LinkCodeDialog from "./connections/LinkCodeDialog";
 
 type SidebarItem = {
     text: string;
@@ -29,6 +31,9 @@ type SidebarSection = {
 type SidebarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
+    // Land a freshly-redeemed link in the caller's state. Without it, "Add New
+    // Student"/"Add New Tutor" renders disabled — same idiom as onCreated below.
+    onLinked?: (link: LinkSummary) => void;
     // Role resolved server-side by the caller. Lets the role-gated Actions
     // section render correctly on first paint; without it we fall back to the
     // client role, which reads "student" until Clerk hydrates.
@@ -38,12 +43,14 @@ type SidebarProps = {
 const Sidebar = ({
     friends = [],
     onCreated,
+    onLinked,
     role: serverRole,
 }: SidebarProps) => {
     const { user, isLoaded } = useUser();
     const pathname = usePathname();
     const clientRole = useUserRole();
     const [createOpen, setCreateOpen] = useState(false);
+    const [linkOpen, setLinkOpen] = useState(false);
 
     const role = serverRole ?? clientRole;
     // Absent a server-resolved role we can't tell whether the Actions section
@@ -53,9 +60,13 @@ const Sidebar = ({
     // without one the new workspace would vanish until reload, so the action
     // renders in the disabled style instead.
     const canCreate = !!onCreated;
+    const canLink = !!onLinked;
+    const isTutor = roleKnown && role === "tutor";
+    const isStudent = roleKnown && role === "student";
+    const connectionsLabel = role === "student" ? "Tutors" : "Students";
 
     const sections: SidebarSection[] = [
-        ...(roleKnown && role === "tutor"
+        ...(isTutor
             ? [
                   {
                       title: "Actions",
@@ -68,10 +79,27 @@ const Sidebar = ({
                               onClick: () => setCreateOpen(true),
                           },
                           {
-                              text: "Add New Tutee",
+                              text: "Add New Student",
                               icon: "/icons/user-round-plus.svg",
                               iconDark: "/icons/user-round-plus-dark.svg",
-                              status: false,
+                              status: canLink,
+                              onClick: () => setLinkOpen(true),
+                          },
+                      ],
+                  },
+              ]
+            : []),
+        ...(isStudent
+            ? [
+                  {
+                      title: "Actions",
+                      items: [
+                          {
+                              text: "Add New Tutor",
+                              icon: "/icons/user-round-plus.svg",
+                              iconDark: "/icons/user-round-plus-dark.svg",
+                              status: canLink,
+                              onClick: () => setLinkOpen(true),
                           },
                       ],
                   },
@@ -95,10 +123,12 @@ const Sidebar = ({
                     status: false,
                 },
                 {
-                    text: "Tutees",
+                    text: connectionsLabel,
                     icon: "/icons/graduation-cap.svg",
                     iconDark: "/icons/graduation-cap-dark.svg",
-                    status: false,
+                    status: isTutor || isStudent,
+                    link: "/dashboard/connections",
+                    active: pathname === "/dashboard/connections",
                 },
             ],
         },
@@ -227,6 +257,12 @@ const Sidebar = ({
                 onClose={() => setCreateOpen(false)}
                 onSubmitted={onCreated ?? (() => {})}
                 onDeleted={() => {}}
+            />
+            <LinkCodeDialog
+                open={linkOpen}
+                role={role === "student" ? "student" : "tutor"}
+                onClose={() => setLinkOpen(false)}
+                onLinked={onLinked ?? (() => {})}
             />
         </div>
     );

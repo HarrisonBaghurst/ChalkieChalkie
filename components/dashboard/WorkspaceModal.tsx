@@ -218,6 +218,14 @@ const WorkspaceModal = ({
             <DialogContent
                 showCloseButton={false}
                 className="h-[55dvh] sm:max-w-150"
+                // DialogContent is portaled to document.body, but React
+                // synthetic events bubble along the *React* tree, not the DOM
+                // tree — and this modal is a React child of the row it's
+                // opened from. Without this, any click inside the modal (Save,
+                // a form field, ...) also bubbles up to the row's onClick and
+                // navigates to the board instead of updating it. Same fix
+                // RowActionsMenu already applies to its own portaled content.
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between">
                     <DialogTitle>

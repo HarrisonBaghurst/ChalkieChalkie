@@ -1,6 +1,8 @@
 "use client";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
 import HeroLoginButton from "./HeroLoginButton";
 
 const Navbar = () => {
@@ -13,6 +15,15 @@ const Navbar = () => {
     const isInWorkspace = pathname.startsWith("/board");
     const brandHref = isInWorkspace ? "/dashboard" : "/";
     const isAtBrandTarget = pathname === brandHref;
+
+    // Navbar is shared with (home) and (legal) as well as the sub-2xl
+    // dashboard chrome (DashboardShell only renders Sidebar at 2xl+), so this
+    // cluster must be gated to dashboard routes — otherwise the marketing and
+    // legal pages would grow dashboard nav links. Label is role-neutral
+    // ("Connections", not "Students"/"Tutors"): Navbar has no server-resolved
+    // role prop, unlike Sidebar, so a role-branched label would flash the
+    // wrong text for a frame before Clerk hydrates.
+    const isDashboardRoute = pathname.startsWith("/dashboard");
 
     return (
         <div className="h-fit py-[2dvh] px-[6dvw] fixed w-full flex justify-between items-center z-1000">
@@ -44,6 +55,32 @@ const Navbar = () => {
                         </p>
                         <p>Chalkie Chalkie</p>
                     </div>
+                    {isDashboardRoute && (
+                        <div className="flex items-center gap-1 control-surface p-1">
+                            <Link
+                                href="/dashboard"
+                                className={cn(
+                                    "radius-tag px-3 py-1.5 text-small",
+                                    pathname === "/dashboard"
+                                        ? "bg-foreground-third/30 text-foreground"
+                                        : "text-foreground-third",
+                                )}
+                            >
+                                Dashboard
+                            </Link>
+                            <Link
+                                href="/dashboard/connections"
+                                className={cn(
+                                    "radius-tag px-3 py-1.5 text-small",
+                                    pathname === "/dashboard/connections"
+                                        ? "bg-foreground-third/30 text-foreground"
+                                        : "text-foreground-third",
+                                )}
+                            >
+                                Connections
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </SignedIn>
             <SignedOut>

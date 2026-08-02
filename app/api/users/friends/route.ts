@@ -1,24 +1,16 @@
-// TODO: "friend" semantics are unimplemented. This route currently returns
-// the first 50 users in the Clerk tenant for any authenticated tutor, which
-// exposes name + email of arbitrary users. Replace with a real friend relation
-// (mutual workspace membership, invite graph, or explicit table) before
-// scaling beyond the initial user base. Known and deferred.
+import { fetchUserProfiles } from "@/lib/clerkUsers";
 import { errorResponse } from "@/lib/errorResponse";
+import { counterpartyIdOf, listLinksFor } from "@/lib/links";
 import { enforceRateLimit } from "@/lib/ratelimit";
-import { requireTutor } from "@/lib/serverRole";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { userInfo } from "@/types/userTypes";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export type FriendMetadata = {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    imageUrl: string;
-    email: string | null;
-};
-
 /**
- * Retrieve all friends of the current authenticated user
+ * Retrieve the users the authenticated account is linked to: a tutor's
+ * students, or a student's tutors (see app/api/links for how links are
+ * formed). Role-agnostic — an admin, who can hold no links, simply gets an
+ * empty list.
  *
  * @route /api/users/friends
  */
@@ -37,30 +29,13 @@ export async function GET(req: Request) {
         const blocked = await enforceRateLimit(req, "users:friends", userId);
         if (blocked) return blocked;
 
-        // tutor-only endpoint (used to invite collaborators into workspaces)
-        const forbidden = await requireTutor(userId);
-        if (forbidden) return forbidden;
+        const rows = await listLinksFor(userId);
+        if (rows.length === 0) {
+            return NextResponse.json({ friends: [] });
+        }
 
-        // create clerk client
-        const client = await clerkClient();
-
-        // fetch users from clerk
-        const usersResponse = await client.users.getUserList({
-            limit: 50,
-        });
-
-        // only return necessary data, excluding the caller themselves
-        const friends = usersResponse.data
-            .filter((user) => user.id !== userId)
-            .map(
-                (user): FriendMetadata => ({
-                    id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    imageUrl: user.imageUrl,
-                    email: user.emailAddresses[0]?.emailAddress ?? null,
-                }),
-            );
+        const counterpartyIds = rows.map((r) => counterpartyIdOf(r, userId));
+        const friends: userInfo[] = await fetchUserProfiles(counterpartyIds);
 
         return NextResponse.json({ friends });
     } catch (err) {

@@ -123,6 +123,11 @@ const CollaboratorsPicker = ({
                             : "border-foreground-third bg-transparent"
                     }`}
                 >
+                    {availableFriends.length === 0 && (
+                        <div className="flex-1 flex items-center justify-center p-4 text-center text-foreground-third">
+                            No linked students yet. Link one from Students.
+                        </div>
+                    )}
                     {availableFriends.map((friend) => (
                         <div
                             key={friend.email}

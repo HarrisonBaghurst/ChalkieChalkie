@@ -28,6 +28,13 @@ export const RATE_LIMITS = {
     "users:friends":          { keyBy: "userId", limit: 30,  window: "1 m" },
     "users:workspaces":       { keyBy: "userId", limit: 60,  window: "1 m" },
     "users:batch":            { keyBy: "userId", limit: 30,  window: "1 m" },
+    "links:list":             { keyBy: "userId", limit: 30,  window: "1 m"  },
+    "links:invite:get":       { keyBy: "userId", limit: 30,  window: "1 m"  },
+    "links:generate":         { keyBy: "userId", limit: 5,   window: "10 m" },
+    "links:revoke":           { keyBy: "userId", limit: 10,  window: "10 m" },
+    "links:redeem":           { keyBy: "userId", limit: 5,   window: "10 m" },
+    "links:redeem:ip":        { keyBy: "ip",     limit: 20,  window: "1 h"  },
+    "links:delete":           { keyBy: "userId", limit: 10,  window: "1 m"  },
 } as const satisfies Record<string, LimiterConfig>;
 
 export type RateLimitKey = keyof typeof RATE_LIMITS;

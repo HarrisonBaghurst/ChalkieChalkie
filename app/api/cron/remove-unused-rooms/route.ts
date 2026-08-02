@@ -5,9 +5,14 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 
 const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
+const INVITE_RETENTION_DAYS = 7;
 
 /**
- * Delete all workspaces that are more than INACTIVITY_HOURS old from Supabase
+ * Delete all workspaces that are more than INACTIVITY_HOURS old from Supabase,
+ * and prune old link_invites rows. The invite prune is hygiene, not
+ * correctness — redemption already checks expires_at, so an unpruned row is
+ * inert, not a liability. 7 days keeps a short audit tail of who redeemed
+ * what before the row disappears.
  *
  * @route /api/cron/remove-unused-rooms
  */
@@ -51,6 +56,19 @@ export async function GET(request: Request) {
         } catch (err) {
             console.error(`Failed to delete room ${room.id}`, err);
         }
+    }
+
+    const inviteCutoff = new Date(
+        Date.now() - INVITE_RETENTION_DAYS * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    const { error: inviteError } = await supabaseAdmin
+        .from("link_invites")
+        .delete()
+        .lt("created_at", inviteCutoff);
+
+    if (inviteError) {
+        console.error("Failed to prune old link_invites:", inviteError);
     }
 
     return Response.json({ deleted: deletedCount });

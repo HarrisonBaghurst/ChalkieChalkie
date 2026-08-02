@@ -54,6 +54,8 @@ import {
 import Skeleton from "@/components/ui/Skeleton";
 import Spinner from "@/components/ui/Spinner";
 import Stepper from "@/components/ui/Stepper";
+import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
+import InviteCountdown from "@/components/dashboard/connections/InviteCountdown";
 import { Block, Caption, Code, Note, Section } from "../primitives";
 
 const STEPS = [
@@ -84,6 +86,13 @@ const Item = ({
  */
 const Components = () => {
     const [step, setStep] = useState(2);
+
+    // The invite-code specimens below need a real Date.now() to derive their
+    // expiresAt values. A lazy initializer keeps it fixed for the component's
+    // lifetime (so re-renders don't restart the ticking specimens); InviteCountdown
+    // itself carries suppressHydrationWarning for the resulting server/client
+    // text drift, same as React's own guidance for rendering the current time.
+    const [inviteNow] = useState(() => Date.now());
 
     return (
         <Section
@@ -347,6 +356,37 @@ const Components = () => {
             </Block>
 
             <Block
+                title="Row actions"
+                description="Trailing three-dot menu for a table row (components/dashboard/RowActionsMenu). Takes a flat actions array — each with its own label, handler and optional destructive variant — rather than a bespoke onX prop per possible action, so a row can offer anything from a single Remove to a full Join/Edit set."
+            >
+                <div className="flex flex-wrap items-center gap-8">
+                    <Item label="single action">
+                        <RowActionsMenu
+                            actions={[
+                                {
+                                    label: "Remove link",
+                                    variant: "destructive",
+                                    onSelect: () => {},
+                                },
+                            ]}
+                        />
+                    </Item>
+                    <Item label="default + destructive">
+                        <RowActionsMenu
+                            actions={[
+                                { label: "Edit workspace", onSelect: () => {} },
+                                {
+                                    label: "Delete workspace",
+                                    variant: "destructive",
+                                    onSelect: () => {},
+                                },
+                            ]}
+                        />
+                    </Item>
+                </div>
+            </Block>
+
+            <Block
                 title="Identity"
                 description="Avatars are always circular and always ringed against the page. AvatarGroup overlaps them with a background-coloured ring; AvatarGroupCount closes an overflowing stack."
             >
@@ -379,6 +419,50 @@ const Components = () => {
                             </Avatar>
                             <AvatarGroupCount>+3</AvatarGroupCount>
                         </AvatarGroup>
+                    </Item>
+                </div>
+            </Block>
+
+            <Block
+                title="Invite code"
+                description="The tutor↔student linking flow (app/dashboard/connections, components/dashboard/connections). A 6-character Crockford Base32 code, live for 10 minutes; InviteCountdown steps from text-foreground-second to text-destructive under a minute remaining, then to text-foreground-third once expired."
+            >
+                <div className="flex flex-wrap items-center gap-8">
+                    <Item label="live, > 1 minute">
+                        <div className="flex flex-col items-center gap-3 control-surface px-10 py-6">
+                            <span className="text-heading font-inter-bold tracking-[0.3em]">
+                                K3M9QF
+                            </span>
+                            <InviteCountdown
+                                expiresAt={new Date(
+                                    inviteNow + 5 * 60 * 1000,
+                                ).toISOString()}
+                            />
+                        </div>
+                    </Item>
+                    <Item label="live, < 1 minute">
+                        <div className="flex flex-col items-center gap-3 control-surface px-10 py-6">
+                            <span className="text-heading font-inter-bold tracking-[0.3em]">
+                                7RT2XB
+                            </span>
+                            <InviteCountdown
+                                expiresAt={new Date(
+                                    inviteNow + 45 * 1000,
+                                ).toISOString()}
+                            />
+                        </div>
+                    </Item>
+                    <Item label="expired">
+                        <div className="flex flex-col items-center gap-3 control-surface px-10 py-6 opacity-60">
+                            <span className="text-heading font-inter-bold tracking-[0.3em]">
+                                7RT2XB
+                            </span>
+                            <InviteCountdown
+                                expiresAt={new Date(
+                                    inviteNow - 1000,
+                                ).toISOString()}
+                            />
+                        </div>
                     </Item>
                 </div>
             </Block>
