@@ -15,6 +15,7 @@ import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LinkSummary } from "@/types/linkTypes";
 import Sidebar from "./Sidebar";
+import TabBar from "./mobile/TabBar";
 import DashboardShell from "./DashboardShell";
 import Next from "./Next";
 import WorkspaceLists from "./WorkspaceLists";
@@ -276,6 +277,14 @@ const DashboardClient = ({
         <DashboardShell
             sidebar={
                 <Sidebar
+                    friends={friends}
+                    onCreated={handleCreated}
+                    onLinked={handleLinked}
+                    role={serverRole}
+                />
+            }
+            bottomBar={
+                <TabBar
                     friends={friends}
                     onCreated={handleCreated}
                     onLinked={handleLinked}

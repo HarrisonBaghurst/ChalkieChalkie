@@ -217,7 +217,8 @@ const WorkspaceModal = ({
         <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
             <DialogContent
                 showCloseButton={false}
-                className="h-[55dvh] sm:max-w-150"
+                mobileFullScreen
+                className="2xl:h-[55dvh]"
                 // DialogContent is portaled to document.body, but React
                 // synthetic events bubble along the *React* tree, not the DOM
                 // tree — and this modal is a React child of the row it's
@@ -227,13 +228,16 @@ const WorkspaceModal = ({
                 // RowActionsMenu already applies to its own portaled content.
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between">
+                {/* flex-wrap so the delete-confirmation cluster drops to its
+                    own line rather than overflowing when the title and it
+                    together exceed a phone's width. */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
                     <DialogTitle>
                         {mode.kind === "create"
                             ? "Create workspace"
                             : "Edit workspace"}
                     </DialogTitle>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 2xl:gap-4">
                         {mode.kind === "edit" &&
                             (confirmingDelete ? (
                                 <div className="flex items-center gap-1 text-caption">
@@ -339,7 +343,11 @@ const WorkspaceModal = ({
                     )}
                 </div>
 
-                <div className="flex items-center justify-between">
+                {/* pb-safe with no --safe-pb adds nothing but the device's
+                    bottom inset, which is exactly what these buttons need when
+                    the dialog is full-screen and they sit on the viewport
+                    edge. It resolves to zero everywhere else. */}
+                <div className="flex items-center justify-between pb-safe">
                     <Button
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}

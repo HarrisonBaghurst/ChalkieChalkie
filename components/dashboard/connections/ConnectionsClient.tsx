@@ -9,6 +9,8 @@ import { LinkRole, LinkSummary } from "@/types/linkTypes";
 import { UserRole } from "@/types/userTypes";
 import DashboardShell from "../DashboardShell";
 import Sidebar from "../Sidebar";
+import TabBar from "../mobile/TabBar";
+import ConnectionsList from "../mobile/ConnectionsList";
 import ConnectionsSkeleton from "../skeletons/ConnectionsSkeleton";
 import ConnectionsTable from "./ConnectionsTable";
 import LinkCodeDialog from "./LinkCodeDialog";
@@ -117,6 +119,13 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
                     onLinked={handleLinked}
                 />
             }
+            bottomBar={
+                <TabBar
+                    role={serverRole}
+                    friends={friends}
+                    onLinked={handleLinked}
+                />
+            }
         >
             {loading || !isLoaded ? (
                 <ConnectionsSkeleton heading={heading} />
@@ -142,16 +151,33 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
                                     : "The tutors you're linked to."}
                             </p>
                         </div>
-                        <Button onClick={() => setDialogOpen(true)}>
+                        {/* Below 2xl this same action is the TabBar's floating
+                            button, so showing it here too would offer it
+                            twice. */}
+                        <Button
+                            onClick={() => setDialogOpen(true)}
+                            className="hidden 2xl:inline-flex"
+                        >
                             Link a {linkRole === "tutor" ? "student" : "tutor"}
                         </Button>
                     </div>
 
-                    <ConnectionsTable
-                        links={links}
-                        role={linkRole}
-                        onRemove={handleRemove}
-                    />
+                    {/* Swapped by CSS rather than a media-query hook, same as
+                        the dashboard's list — see WorkspaceLists. */}
+                    <div className="2xl:hidden">
+                        <ConnectionsList
+                            links={links}
+                            role={linkRole}
+                            onRemove={handleRemove}
+                        />
+                    </div>
+                    <div className="hidden 2xl:block">
+                        <ConnectionsTable
+                            links={links}
+                            role={linkRole}
+                            onRemove={handleRemove}
+                        />
+                    </div>
 
                     <LinkCodeDialog
                         open={dialogOpen}

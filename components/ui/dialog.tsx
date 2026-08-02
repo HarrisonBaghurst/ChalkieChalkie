@@ -65,13 +65,25 @@ function DialogOverlay({
   )
 }
 
+/*  Below 2xl a centred panel leaves a phone's dialog cramped between the
+    viewport edges and fighting the on-screen keyboard, so the multi-step
+    dialogs fill the screen instead and restore the centred panel at 2xl.
+
+    Every geometry class the centred default sets has to be undone explicitly
+    — including `sm:max-w-150`, which would otherwise reassert a 600px cap from
+    640px up and break the full-screen layout across most of its range. */
+const MOBILE_FULL_SCREEN =
+  "inset-0 h-full w-full max-w-none translate-x-0 translate-y-0 rounded-none p-6 sm:max-w-none 2xl:inset-auto 2xl:top-1/2 2xl:left-1/2 2xl:h-auto 2xl:w-full 2xl:max-w-150 2xl:-translate-x-1/2 2xl:-translate-y-1/2 2xl:rounded-xl 2xl:p-8"
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  mobileFullScreen = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  mobileFullScreen?: boolean
 }) {
   return (
     <DialogPortal>
@@ -83,6 +95,7 @@ function DialogContent({
           // WorkspaceTable's container, so the modal stands off the
           // background the same way the tables do.
           "fixed top-1/2 left-1/2 z-50 flex w-full max-w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col gap-6 rounded-xl border border-foreground-third/15 bg-card p-8 text-foreground duration-100 outline-none sm:max-w-150 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          mobileFullScreen && MOBILE_FULL_SCREEN,
           className
         )}
         {...props}

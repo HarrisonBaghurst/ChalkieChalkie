@@ -298,6 +298,23 @@
     }
 }
 @layer utilities {
+    /* ── Bottom safe-area clearance ──────────────────────────────────────
+       Adds the device's bottom inset (the iOS home-indicator strip) on top of
+       the padding the element wants, so a bar or sheet flush with the bottom
+       edge doesn't sit under it. Set the base padding through `--safe-pb`
+       rather than a `pb-*` utility — two padding-bottom utilities on one
+       element would leave the winner up to stylesheet order:
+
+           <div className="pb-safe [--safe-pb:0.5rem]">
+
+       Requires `viewportFit: "cover"` (set in app/layout.tsx); without it the
+       browser reports every inset as 0 and this is just the base padding. */
+    .pb-safe {
+        padding-bottom: calc(
+            var(--safe-pb, 0px) + env(safe-area-inset-bottom, 0px)
+        );
+    }
+
     .dotted-paper {
         background-image: radial-gradient(#272724 1.5px, transparent 1.5px);
         background-size: 40px 40px;
@@ -467,6 +484,14 @@
        site-wide --background. Scoped via :has() so the global bg is untouched. */
     body:has(.dashboard-root) {
         background: var(--card-background);
+    }
+    /* Below 2xl the content column runs edge-to-edge, so none of that frame
+       colour is on screen — overscrolling into it would flash a surface the
+       page never shows. Match the column instead. */
+    @media (width < 96rem) {
+        body:has(.dashboard-root) {
+            background: var(--background);
+        }
     }
 }
 

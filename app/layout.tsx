@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
@@ -12,6 +12,17 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
     title: "Chalkie Chalkie",
     description: "Where effort becomes understanding",
+};
+
+// Next's defaults, restated because `viewportFit` has to ride along with them:
+// it opts the page into the display cutout area, which is what makes
+// env(safe-area-inset-*) report real values. The `.pb-safe` utility in
+// globals.css reads those to keep the dashboard's bottom bar clear of the iOS
+// home indicator.
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    viewportFit: "cover",
 };
 
 export default function RootLayout({

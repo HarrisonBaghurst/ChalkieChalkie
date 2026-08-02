@@ -5,6 +5,8 @@ import Filters from "./Filters";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import WorkspaceTable, { WorkspaceRow } from "./WorkspaceTable";
+import WorkspaceList from "./mobile/WorkspaceList";
+import FiltersSheet from "./mobile/FiltersSheet";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { DashboardFilterState } from "@/lib/dashboardFilters";
 import { cn } from "@/lib/utils";
@@ -70,15 +72,20 @@ const WorkspaceLists = ({
 
     return (
         <div className="w-full flex flex-col gap-4 h-fit">
-            {/* Free-floating control row: tabs on the left, shared search /
-                member filter / clear on the right, disconnected from the table
-                below (mirrors the reference layout). */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Free-floating control row, disconnected from the list below
+                (mirrors the reference layout). One column on a phone — tabs,
+                then a full-width search, then the filters sheet; at 2xl it
+                becomes the original single row, tabs left and controls right. */}
+            <div className="flex flex-col gap-3 2xl:flex-row 2xl:flex-wrap 2xl:items-center 2xl:justify-between 2xl:gap-4">
                 <Tabs
                     value={activeTab}
                     onValueChange={(id) => setActiveTab(id as TabId)}
+                    className="w-full 2xl:w-auto"
                 >
-                    <TabsList>
+                    {/* Full width on a phone so the three triggers, which are
+                        already flex-1, split the row evenly instead of
+                        huddling at the left edge. */}
+                    <TabsList className="w-full 2xl:w-fit">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id}>
                                 <span className="text-small">{tab.label}</span>
@@ -91,7 +98,7 @@ const WorkspaceLists = ({
                         ))}
                     </TabsList>
                 </Tabs>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
                     {/* Sits in the control row beside the tabs and filters, so
                         it takes the filled `.control-surface` chrome rather
                         than the bare-field default. `border-border` restates
@@ -102,36 +109,65 @@ const WorkspaceLists = ({
                         value={filters.search}
                         onChange={(e) => onChangeSearch(e.target.value)}
                         placeholder="Search sessions..."
-                        className="w-56 control-surface border-border"
+                        className="w-full 2xl:w-56 control-surface border-border"
                     />
-                    <Filters
-                        collaborators={collaborators}
-                        selectedIds={filters.collaboratorIds}
-                        onChange={onChangeCollaboratorIds}
-                    />
-                    <button
-                        type="button"
-                        onClick={onClearFilters}
-                        disabled={!hasActiveFilters}
-                        className={cn(
-                            "control-surface text-foreground-third py-2 px-3 text-small whitespace-nowrap cursor-pointer",
-                            hasActiveFilters
-                                ? "hover:bg-card-background-hover"
-                                : "cursor-not-allowed opacity-60",
-                        )}
-                    >
-                        Clear filters
-                    </button>
+                    {/* The popover filter and clear button together overflow a
+                        phone's width, so below 2xl they collapse into one
+                        sheet. */}
+                    <div className="2xl:hidden">
+                        <FiltersSheet
+                            collaborators={collaborators}
+                            selectedIds={filters.collaboratorIds}
+                            onChange={onChangeCollaboratorIds}
+                            hasActiveFilters={hasActiveFilters}
+                            onClearFilters={onClearFilters}
+                        />
+                    </div>
+                    <div className="hidden 2xl:flex 2xl:items-center 2xl:gap-3">
+                        <Filters
+                            collaborators={collaborators}
+                            selectedIds={filters.collaboratorIds}
+                            onChange={onChangeCollaboratorIds}
+                        />
+                        <button
+                            type="button"
+                            onClick={onClearFilters}
+                            disabled={!hasActiveFilters}
+                            className={cn(
+                                "control-surface text-foreground-third py-2 px-3 text-small whitespace-nowrap cursor-pointer",
+                                hasActiveFilters
+                                    ? "hover:bg-card-background-hover"
+                                    : "cursor-not-allowed opacity-60",
+                            )}
+                        >
+                            Clear filters
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <WorkspaceTable
-                rows={rowsByTab[activeTab]}
-                usersMap={usersMap}
-                friends={friends}
-                onWorkspaceUpdated={onWorkspaceUpdated}
-                onWorkspaceDeleted={onWorkspaceDeleted}
-            />
+            {/* Two renderings of the same rows, swapped by CSS rather than a
+                media-query hook: no hydration mismatch, no first-paint flash,
+                and the table keeps its join-on-click while the mobile rows
+                simply never carry one. */}
+            <div className="2xl:hidden">
+                <WorkspaceList
+                    rows={rowsByTab[activeTab]}
+                    usersMap={usersMap}
+                    friends={friends}
+                    onWorkspaceUpdated={onWorkspaceUpdated}
+                    onWorkspaceDeleted={onWorkspaceDeleted}
+                />
+            </div>
+            <div className="hidden 2xl:block">
+                <WorkspaceTable
+                    rows={rowsByTab[activeTab]}
+                    usersMap={usersMap}
+                    friends={friends}
+                    onWorkspaceUpdated={onWorkspaceUpdated}
+                    onWorkspaceDeleted={onWorkspaceDeleted}
+                />
+            </div>
         </div>
     );
 };

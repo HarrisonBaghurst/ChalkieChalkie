@@ -1,8 +1,6 @@
 "use client";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
-import { cn } from "@/lib/utils";
 import HeroLoginButton from "./HeroLoginButton";
 
 const Navbar = () => {
@@ -16,17 +14,13 @@ const Navbar = () => {
     const brandHref = isInWorkspace ? "/dashboard" : "/";
     const isAtBrandTarget = pathname === brandHref;
 
-    // Navbar is shared with (home) and (legal) as well as the sub-2xl
-    // dashboard chrome (DashboardShell only renders Sidebar at 2xl+), so this
-    // cluster must be gated to dashboard routes — otherwise the marketing and
-    // legal pages would grow dashboard nav links. Label is role-neutral
-    // ("Connections", not "Students"/"Tutors"): Navbar has no server-resolved
-    // role prop, unlike Sidebar, so a role-branched label would flash the
-    // wrong text for a frame before Clerk hydrates.
-    const isDashboardRoute = pathname.startsWith("/dashboard");
-
     return (
-        <div className="h-fit py-[2svh] px-[6dvw] fixed w-full flex justify-between items-center z-1000">
+        // z-40 keeps the navbar above page content while staying under the
+        // z-50 overlay layer (dialogs, sheets, popovers, tooltips), which
+        // portal to the body and must cover it. At its previous z-1000 it
+        // painted over modal scrims and would sit on top of the full-screen
+        // mobile dialogs entirely.
+        <div className="h-fit py-[2svh] px-[6dvw] fixed w-full flex justify-between items-center z-40">
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-transparent to-background"
@@ -55,32 +49,10 @@ const Navbar = () => {
                         </p>
                         <p>Chalkie Chalkie</p>
                     </div>
-                    {isDashboardRoute && (
-                        <div className="flex items-center gap-1 control-surface p-1">
-                            <Link
-                                href="/dashboard"
-                                className={cn(
-                                    "radius-tag px-3 py-1.5 text-small",
-                                    pathname === "/dashboard"
-                                        ? "bg-foreground-third/30 text-foreground"
-                                        : "text-foreground-third",
-                                )}
-                            >
-                                Dashboard
-                            </Link>
-                            <Link
-                                href="/dashboard/connections"
-                                className={cn(
-                                    "radius-tag px-3 py-1.5 text-small",
-                                    pathname === "/dashboard/connections"
-                                        ? "bg-foreground-third/30 text-foreground"
-                                        : "text-foreground-third",
-                                )}
-                            >
-                                Connections
-                            </Link>
-                        </div>
-                    )}
+                    {/* The dashboard nav pill that used to sit here is gone:
+                        DashboardShell only renders this Navbar below 2xl, and
+                        below 2xl the bottom TabBar carries the same two
+                        destinations with role-aware labels. */}
                 </div>
             </SignedIn>
             <SignedOut>

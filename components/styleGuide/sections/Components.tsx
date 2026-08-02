@@ -33,6 +33,16 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+    Sheet,
+    SheetBody,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import {
     Popover,
     PopoverContent,
     PopoverDescription,
@@ -342,6 +352,29 @@ const Components = () => {
                         <TooltipContent>Inverted, caption-sized</TooltipContent>
                     </Tooltip>
 
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline">Open sheet</Button>
+                        </SheetTrigger>
+                        <SheetContent>
+                            <SheetHeader>
+                                <SheetTitle>Algebra revision</SheetTitle>
+                                <SheetDescription>
+                                    Tuesday, 16:00
+                                </SheetDescription>
+                            </SheetHeader>
+                            <SheetBody>
+                                <p className="text-small text-foreground-second">
+                                    The scrolling middle. Header and footer stay
+                                    put; only this area moves.
+                                </p>
+                            </SheetBody>
+                            <SheetFooter>
+                                <Button size="lg">Primary action</Button>
+                            </SheetFooter>
+                        </SheetContent>
+                    </Sheet>
+
                     <Button
                         variant="outline"
                         onClick={() =>
@@ -353,6 +386,16 @@ const Components = () => {
                         Fire a toast
                     </Button>
                 </div>
+                <Note tone="rule">
+                    <Code>Sheet</Code> is Dialog anchored to an edge —{" "}
+                    <Code>side=&quot;bottom&quot;</Code> by default, which is
+                    what the mobile dashboard uses for a row&apos;s detail
+                    panel. It caps at <Code>85dvh</Code> and scrolls inside{" "}
+                    <Code>SheetBody</Code>. For a dialog that should fill a
+                    phone&apos;s screen instead of centring, pass{" "}
+                    <Code>mobileFullScreen</Code> to <Code>DialogContent</Code>:
+                    full-bleed below <Code>2xl</Code>, centred panel above it.
+                </Note>
             </Block>
 
             <Block

@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { userInfo, Workspace } from "@/types/userTypes";
+import { cn } from "@/lib/utils";
 import { formatSessionTime, daysUntil } from "@/lib/textUtils";
 import { pickCounterparty } from "@/lib/dashboardCounterparty";
 import {
@@ -39,6 +40,76 @@ type NextProps = {
     viewerIsHost: boolean;
 };
 
+// Card body, shared by both wrappers below, so one tree covers both layouts.
+const NextContent = ({
+    workspace,
+    counterparty,
+    days,
+}: {
+    workspace: Workspace;
+    counterparty: userInfo | null;
+    days: number;
+}) => (
+    <div className="flex flex-col gap-6 2xl:pr-8">
+        <p className="text-caption font-inter-regular gradient-text">
+            COMING UP NEXT
+        </p>
+        {/* A grid rather than nested flex, because the two layouts differ in
+            shape and not just direction: on a phone the avatar sits beside the
+            time only, with the description and tags running the full width
+            beneath it; from 2xl every text block shares the avatar's second
+            column. Rows are auto-placed, so dropping the description closes
+            its row instead of leaving a doubled gap behind. */}
+        <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
+            <Avatar className="size-12 rounded-md after:rounded-md">
+                <AvatarImage
+                    src={counterparty?.imageUrl}
+                    alt={`${counterparty?.firstName ?? ""} ${counterparty?.lastName ?? ""}`}
+                    className="rounded-md"
+                />
+                <AvatarFallback className="rounded-md bg-foreground-third" />
+            </Avatar>
+            <div>
+                <p className="text-heading font-inter-bold">
+                    {formatSessionTime(workspace.startTime)}
+                </p>
+                <p className="text-body font-inter-bold text-foreground-second">
+                    {workspace.title}
+                </p>
+            </div>
+            {workspace.description && (
+                <div className="col-span-2 flex flex-col gap-1 2xl:col-span-1 2xl:col-start-2">
+                    <p className="text-caption text-foreground-third">
+                        Description
+                    </p>
+                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2">
+                        {workspace.description}
+                    </p>
+                </div>
+            )}
+            <div className="col-span-2 flex flex-wrap gap-2 2xl:col-span-1 2xl:col-start-2">
+                <Badge>
+                    <TagIcon src="/icons/clock.svg" />
+                    60 mins
+                </Badge>
+                {days > 0 && (
+                    <Badge>
+                        <TagIcon src="/icons/calendar.svg" />
+                        {`${days} day${days !== 1 ? "s" : ""} away`}
+                    </Badge>
+                )}
+            </div>
+        </div>
+    </div>
+);
+
+// No `display` utility here: the two wrappers below set their own, and a
+// `flex` baked in would fight the `hidden` each of them needs at the other
+// breakpoint — a fight decided by stylesheet order rather than by anything
+// readable at the call site.
+const CARD_CLASS =
+    "w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+
 const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
     const counterparty = workspace
         ? pickCounterparty(workspace, usersMap, viewerIsHost)
@@ -60,73 +131,51 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
     }
 
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <button
-                    type="button"
-                    onClick={() => router.push(`/board/${workspace.id}`)}
-                    className="group relative w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 text-left cursor-pointer gradient-border"
-                >
-                    <div className="absolute top-5 right-5">
-                        <Image
-                            src="/icons/external-link.svg"
-                            alt="Open workspace"
-                            width={20}
-                            height={20}
-                            className="opacity-50 group-hover:opacity-100 transition-opacity"
-                        />
-                    </div>
-                    <div className="flex flex-col gap-6 pr-8">
-                        <p className="text-caption font-inter-regular gradient-text">
-                            COMING UP NEXT
-                        </p>
-                        <div className="flex gap-5">
-                            <Avatar className="size-12 rounded-md after:rounded-md">
-                                <AvatarImage
-                                    src={counterparty?.imageUrl}
-                                    alt={`${counterparty?.firstName ?? ""} ${counterparty?.lastName ?? ""}`}
-                                    className="rounded-md"
-                                />
-                                <AvatarFallback className="rounded-md bg-foreground-third" />
-                            </Avatar>
-                            <div className="flex flex-col gap-6">
-                                <div>
-                                    <p className="text-heading font-inter-bold">
-                                        {formatSessionTime(workspace.startTime)}
-                                    </p>
-                                    <p className="text-body font-inter-bold text-foreground-second">
-                                        {workspace.title}
-                                    </p>
-                                </div>
-                                {workspace.description && (
-                                    <div className="flex flex-col gap-1">
-                                        <p className="text-caption text-foreground-third">
-                                            Description
-                                        </p>
-                                        <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2">
-                                            {workspace.description}
-                                        </p>
-                                    </div>
-                                )}
-                                <div className="flex gap-2">
-                                    <Badge>
-                                        <TagIcon src="/icons/clock.svg" />
-                                        60 mins
-                                    </Badge>
-                                    {days > 0 && (
-                                        <Badge>
-                                            <TagIcon src="/icons/calendar.svg" />
-                                            {`${days} day${days !== 1 ? "s" : ""} away`}
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
+        <>
+            {/* Below 2xl the card is inert: the board is desktop-only for now,
+                so nothing here links to it. Rendered as a separate element
+                rather than a disabled button so there is no tap target and no
+                open-in-new affordance to mislead. */}
+            <div className={cn(CARD_CLASS, "flex 2xl:hidden")}>
+                <NextContent
+                    workspace={workspace}
+                    counterparty={counterparty}
+                    days={days}
+                />
+                <p className="text-caption text-foreground-third">
+                    Open Chalkie Chalkie on a computer to join this workspace.
+                </p>
+            </div>
+
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        type="button"
+                        onClick={() => router.push(`/board/${workspace.id}`)}
+                        className={cn(
+                            CARD_CLASS,
+                            "group relative hidden text-left cursor-pointer 2xl:flex",
+                        )}
+                    >
+                        <div className="absolute top-5 right-5">
+                            <Image
+                                src="/icons/external-link.svg"
+                                alt="Open workspace"
+                                width={20}
+                                height={20}
+                                className="opacity-50 group-hover:opacity-100 transition-opacity"
+                            />
                         </div>
-                    </div>
-                </button>
-            </TooltipTrigger>
-            <TooltipContent>Join workspace</TooltipContent>
-        </Tooltip>
+                        <NextContent
+                            workspace={workspace}
+                            counterparty={counterparty}
+                            days={days}
+                        />
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>Join workspace</TooltipContent>
+            </Tooltip>
+        </>
     );
 };
 

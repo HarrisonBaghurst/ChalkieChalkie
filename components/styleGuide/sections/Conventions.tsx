@@ -38,12 +38,26 @@ const Conventions = () => (
                     copy is capped at <Code>max-w-4xl</Code> and centred.
                 </Rule>
                 <Rule title="Dashboard">
-                    <Code>DashboardShell</Code> owns the chrome: sidebar at{" "}
-                    <Code>2xl</Code> and above, <Code>Navbar</Code> below it, and
-                    an inset content column (<Code>m-2</Code>,{" "}
-                    <Code>radius-surface</Code>, <Code>p-[2.5dvw]</Code>) that
-                    floats on the card surface. Page content goes in the column;
-                    don&apos;t reach outside it.
+                    <Code>DashboardShell</Code> owns the chrome, mobile-first
+                    with a single seam at <Code>2xl</Code>. Below it:{" "}
+                    <Code>Navbar</Code> on top, the bottom <Code>TabBar</Code>{" "}
+                    and its floating action button beneath, and a content column
+                    running edge-to-edge. At <Code>2xl</Code> the sidebar
+                    returns and the column becomes the inset panel (
+                    <Code>m-2</Code>, <Code>rounded-xl</Code>,{" "}
+                    <Code>p-[2.5dvw]</Code>) floating on the card surface. Page
+                    content goes in the column; don&apos;t reach outside it.
+                </Rule>
+                <Rule title="Mobile dashboard">
+                    Both tables swap for a compact row list below{" "}
+                    <Code>2xl</Code>, each row opening a <Code>Sheet</Code> that
+                    holds the detail and actions hover can&apos;t reach. Swap by
+                    CSS (<Code>2xl:hidden</Code> / <Code>hidden 2xl:block</Code>
+                    ), not a media-query hook — no hydration mismatch, no
+                    first-paint flash. Nothing below <Code>2xl</Code> links to{" "}
+                    <Code>/board</Code>: the canvas is desktop-only for now, and
+                    that is enforced by omitting the links, not by a route
+                    guard.
                 </Rule>
                 <Rule title="Board">
                     Everything is fixed chrome over a full-viewport canvas:
@@ -52,9 +66,23 @@ const Conventions = () => (
                     should be fixed and small — the canvas is the page.
                 </Rule>
                 <Rule title="Stacking">
-                    The navbar sits at <Code>z-1000</Code>; Radix overlays
-                    portal to the body at <Code>z-50</Code> and render above it.
-                    Avoid inventing new z-index values.
+                    Two layers, and only two. Fixed chrome — <Code>Navbar</Code>
+                    , the mobile <Code>TabBar</Code> — sits at <Code>z-40</Code>
+                    ; every Radix overlay portals to the body at{" "}
+                    <Code>z-50</Code> and covers it. They share one value on
+                    purpose: overlays nest by DOM order at equal z-index, so a
+                    popover opened inside a dialog lands above it. Raising one
+                    overlay above the rest breaks that. Avoid inventing new
+                    z-index values.
+                </Rule>
+                <Rule title="Safe area">
+                    Anything flush with the bottom edge on a phone — the tab
+                    bar, a bottom sheet, a full-screen dialog&apos;s footer —
+                    takes <Code>pb-safe</Code>, which adds the device&apos;s
+                    home-indicator inset to whatever <Code>--safe-pb</Code>{" "}
+                    sets. Set the base padding through that variable rather than
+                    a <Code>pb-*</Code> utility; two padding-bottom declarations
+                    on one element resolve by stylesheet order.
                 </Rule>
             </div>
         </Block>
