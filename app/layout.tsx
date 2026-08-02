@@ -10,8 +10,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-    title: "Chalkie Chalkie | Your Teaching & Learning tool",
-    description: "Your Teaching & Learning tool",
+    title: "Chalkie Chalkie",
+    description: "Where effort becomes understanding",
 };
 
 export default function RootLayout({
