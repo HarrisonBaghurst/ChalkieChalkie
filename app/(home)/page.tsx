@@ -5,7 +5,7 @@ import Image from "next/image";
 
 const page = () => {
     return (
-        <div className="px-[8dvw] py-[5dvh] h-full flex flex-col items-center gap-[16dvh]">
+        <div className="px-[8dvw] py-[5svh] h-full flex flex-col items-center gap-[16svh]">
             <div className="flex flex-col gap-12 items-center">
                 <div className="flex flex-col gap-8 items-center">
                     <div className="flex gap-3 flex-col items-center">
@@ -27,22 +27,28 @@ const page = () => {
                 <DashboardLinkButton />
             </div>
             <div className="w-full aspect-4/3 relative pointer-events-none">
+                {/* Both fill a 84dvw-wide box that scale-110 widens to ~92dvw,
+                    so `sizes` is the same for each. Both are above the fold:
+                    without `priority` the ellipse renders loading="lazy" and
+                    the backdrop arrives after the mockup it sits behind. */}
                 <Image
                     src={"/imgs/heroEllipse.webp"}
                     alt="background ellipse"
                     fill
+                    sizes="92vw"
                     className="scale-110 pointer-events-none"
+                    priority
                 />
                 <Image
                     src={"/imgs/dashboardMockup.webp"}
                     alt="dashboard mockup image"
                     fill
+                    sizes="92vw"
                     className="scale-110 animate-bob pointer-events-none"
                     priority
-                    unoptimized
                 />
             </div>
-            <div className="pt-[20dvh] relative w-full">
+            <div className="pt-0 2xl:pt-[16svh] relative w-full">
                 <Footer />
             </div>
         </div>

@@ -10,8 +10,8 @@ const Footer = () => {
     const [showSendMessage, setShowSendMessage] = useState(false);
 
     return (
-        <div className="w-full h-[40dvh] pb-8 radius-surface shrink-0 flex flex-col justify-between">
-            <div className="flex justify-between">
+        <div className="w-full min-h-[40svh] pb-8 radius-surface shrink-0 flex flex-col justify-between gap-10">
+            <div className="flex flex-col gap-10 sm:flex-row sm:justify-between sm:gap-0">
                 <div>
                     <p className="text-foreground-second text-body">
                         More about
@@ -20,7 +20,7 @@ const Footer = () => {
                         Chalkie Chalkie
                     </p>
                 </div>
-                <div className="flex gap-[8dvw]">
+                <div className="grid grid-cols-2 gap-y-12 2xl:flex 2xl:gap-[8dvw]">
                     <div className="flex flex-col gap-5">
                         <p className="text-subheading">Product</p>
                         <div className="flex flex-col gap-1">

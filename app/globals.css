@@ -404,15 +404,18 @@
         );
     }
 
-    /* Slow floating "hover" bob. Bakes in scale(1.1) so it doesn't
-       override the mockup's scale-110 utility. */
+    /* Slow floating "hover" bob. Translation only: Tailwind v4 compiles
+       `scale-110` to the standalone `scale` property, which composes with
+       `transform` rather than being overridden by it. Re-stating scale(1.1)
+       here multiplied against the utility for an effective 1.21x, which
+       pushed the hero mockup past the viewport edge. */
     @keyframes bob {
         0%,
         100% {
-            transform: translateY(0) scale(1.1);
+            transform: translateY(0);
         }
         50% {
-            transform: translateY(-16px) scale(1.1);
+            transform: translateY(-16px);
         }
     }
     .animate-bob {
