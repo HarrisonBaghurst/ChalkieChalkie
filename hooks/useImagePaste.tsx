@@ -10,19 +10,40 @@ interface UseImagePasteProps {
     addImageMeta: (meta: PastedImageMeta) => void;
 }
 
+// must stay in sync with ALLOWED_MIME_TYPES in
+// app/api/workspaces/[workspaceId]/images/route.ts
+const ALLOWED_PASTE_TYPES = new Set(["image/png", "image/jpeg"]);
+const LUMINANCE_SAMPLE_SIZE = 50;
+const LUMINANCE_THRESHOLD = 128;
+const JPEG_QUALITY = 0.92;
+
 // _____ helper functions _________________________________________________________________________
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Image failed to load"));
+        img.src = url;
+    });
+}
 
 function shouldInvert(img: HTMLImageElement): boolean {
     const canvas = document.createElement("canvas");
-    canvas.width = 50;
-    canvas.height = 50;
+    canvas.width = LUMINANCE_SAMPLE_SIZE;
+    canvas.height = LUMINANCE_SAMPLE_SIZE;
     const ctx = canvas.getContext("2d");
     if (!ctx) return false;
 
-    ctx.drawImage(img, 0, 0, 50, 50);
+    ctx.drawImage(img, 0, 0, LUMINANCE_SAMPLE_SIZE, LUMINANCE_SAMPLE_SIZE);
     let data: ImageData;
     try {
-        data = ctx.getImageData(0, 0, 50, 50);
+        data = ctx.getImageData(
+            0,
+            0,
+            LUMINANCE_SAMPLE_SIZE,
+            LUMINANCE_SAMPLE_SIZE,
+        );
     } catch {
         return false;
     }
@@ -39,7 +60,56 @@ function shouldInvert(img: HTMLImageElement): boolean {
         total += 0.299 * r + 0.587 * g + 0.114 * b;
     }
 
-    return total / pixelCount > 128;
+    return total / pixelCount > LUMINANCE_THRESHOLD;
+}
+
+/**
+ * Bakes an inversion into the image's pixels and re-encodes it in its source
+ * format, so the uploaded bytes are what every user renders. Returns null if
+ * the browser cannot produce the inverted file, in which case the caller
+ * uploads the original untouched.
+ */
+async function invertImageFile(
+    img: HTMLImageElement,
+    file: File,
+): Promise<File | null> {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    ctx.drawImage(img, 0, 0);
+
+    // inverted per-pixel rather than with ctx.filter — canvas filter support is
+    // engine-dependent and assigning an unsupported value fails silently
+    let data: ImageData;
+    try {
+        data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    } catch {
+        return null;
+    }
+
+    const pixels = data.data;
+    for (let i = 0; i < pixels.length; i += 4) {
+        pixels[i] = 255 - pixels[i];
+        pixels[i + 1] = 255 - pixels[i + 1];
+        pixels[i + 2] = 255 - pixels[i + 2];
+    }
+    ctx.putImageData(data, 0, 0);
+
+    // re-encoding as the source type keeps the upload roughly its original
+    // size — a photo forced to PNG can blow past the route's 5 MB limit
+    const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(
+            resolve,
+            file.type,
+            file.type === "image/jpeg" ? JPEG_QUALITY : undefined,
+        );
+    });
+    if (!blob) return null;
+
+    return new File([blob], file.name || "pasted-image", { type: file.type });
 }
 
 // _____ hooks ____________________________________________________________________________________
@@ -66,7 +136,6 @@ export const usePastedImagesSync = ({
                     local.y = meta.y;
                     local.width = meta.width;
                     local.height = meta.height;
-                    local.inverted = meta.inverted;
                 }
             } else {
                 const img = new Image();
@@ -79,7 +148,6 @@ export const usePastedImagesSync = ({
                         width: meta.width,
                         height: meta.height,
                         url: meta.url,
-                        inverted: meta.inverted,
                     });
                 };
                 img.src = meta.url;
@@ -109,33 +177,73 @@ export const useImagePaste = ({
                 const file = item.getAsFile();
                 if (!file) continue;
 
+                // must happen before the first await — once the handler yields,
+                // the default paste has already run
+                e.preventDefault();
+
+                if (!ALLOWED_PASTE_TYPES.has(file.type)) {
+                    toast.error("Unsupported image type.", {
+                        description: "Only PNG and JPEG images can be pasted.",
+                    });
+                    break;
+                }
+
                 const imageId = crypto.randomUUID();
                 const { x, y } = canvasStateRef.current.cursorPosition;
-                const blobUrl = URL.createObjectURL(file);
+                const sourceUrl = URL.createObjectURL(file);
 
-                const img = new Image();
-                await new Promise<void>((resolve) => {
-                    img.onload = () => resolve();
-                    img.src = blobUrl;
-                });
+                let sourceImage: HTMLImageElement;
+                try {
+                    sourceImage = await loadImage(sourceUrl);
+                } catch {
+                    URL.revokeObjectURL(sourceUrl);
+                    toast.error("Could not read the pasted image.");
+                    break;
+                }
 
-                const inverted = shouldInvert(img);
+                // bright images are inverted for the dark canvas. The inversion
+                // is baked into the uploaded bytes rather than carried as a
+                // flag, so every user renders identical pixels with no
+                // per-client filter support to depend on
+                let uploadFile = file;
+                let displayImage = sourceImage;
+                let displayUrl = sourceUrl;
+
+                if (shouldInvert(sourceImage)) {
+                    const invertedFile = await invertImageFile(
+                        sourceImage,
+                        file,
+                    );
+                    if (invertedFile) {
+                        const invertedUrl = URL.createObjectURL(invertedFile);
+                        try {
+                            displayImage = await loadImage(invertedUrl);
+                            uploadFile = invertedFile;
+                            displayUrl = invertedUrl;
+                            URL.revokeObjectURL(sourceUrl);
+                        } catch {
+                            URL.revokeObjectURL(invertedUrl);
+                        }
+                    }
+                }
+
+                const { naturalWidth: width, naturalHeight: height } =
+                    displayImage;
 
                 canvasStateRef.current.pastedImages.push({
                     id: imageId,
-                    element: img,
+                    element: displayImage,
                     x,
                     y,
-                    width: img.naturalWidth,
-                    height: img.naturalHeight,
-                    url: blobUrl,
-                    inverted,
+                    width,
+                    height,
+                    url: displayUrl,
                 });
 
                 (async () => {
                     try {
                         const formData = new FormData();
-                        formData.append("file", file);
+                        formData.append("file", uploadFile);
                         formData.append("imageId", imageId);
                         formData.append("workspaceId", workspaceId);
 
@@ -160,7 +268,7 @@ export const useImagePaste = ({
                             newImg.onload = () => {
                                 local.element = newImg;
                                 local.url = permanentUrl;
-                                URL.revokeObjectURL(blobUrl);
+                                URL.revokeObjectURL(displayUrl);
                             };
                             newImg.src = permanentUrl;
                         }
@@ -170,9 +278,8 @@ export const useImagePaste = ({
                             url: permanentUrl,
                             x,
                             y,
-                            width: img.naturalWidth,
-                            height: img.naturalHeight,
-                            inverted,
+                            width,
+                            height,
                         });
                     } catch (err) {
                         console.error("Failed to upload image:", err);
@@ -183,11 +290,10 @@ export const useImagePaste = ({
                             canvasStateRef.current.pastedImages.filter(
                                 (i) => i.id !== imageId,
                             );
-                        URL.revokeObjectURL(blobUrl);
+                        URL.revokeObjectURL(displayUrl);
                     }
                 })();
 
-                e.preventDefault();
                 break;
             }
         };

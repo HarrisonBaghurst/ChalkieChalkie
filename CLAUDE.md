@@ -101,7 +101,7 @@ All mutations (add/delete/move strokes, add/move/resize images) go through hooks
 2. All mutable interaction state (viewport/camera, in-progress stroke, selection, images) lives in a single `CanvasState` object held in one ref — see `types/canvasStateTypes.ts`. Tools receive a `ToolContext` with that state plus `ToolCallbacks` (Liveblocks mutations) and commit on mouse-up.
 3. `hooks/useCanvasRenderLoop.tsx` runs a `requestAnimationFrame` loop calling primitives in `lib/canvasDrawing.ts` to render all strokes and images.
 4. Stroke points are simplified via `lib/strokeOptimisation.ts` before being stored. Hit-testing (eraser, selector) uses `lib/genometry.ts`, which tests segments rather than points because simplification discards intermediate points.
-5. Pasted images (`hooks/useImagePaste.tsx`) are uploaded to Supabase storage via `api/workspaces/[workspaceId]/images`, which returns a signed URL stored in Liveblocks meta.
+5. Pasted images (`hooks/useImagePaste.tsx`) are uploaded to Supabase storage via `api/workspaces/[workspaceId]/images`, which returns a signed URL stored in Liveblocks meta. Only PNG and JPEG are accepted, on both the paste handler and the route. Images too bright for the dark canvas are inverted **before upload** — the pixels are inverted in place and re-encoded, so what is stored is what every client renders. Do not reintroduce a render-time inversion flag: it made appearance depend on `ctx.filter`, which is silently a no-op on engines that lack it.
 
 ### Component Structure
 
@@ -174,7 +174,7 @@ Two distinct concepts:
 ### Key Type Definitions (`types/`)
 
 - `strokeTypes.ts` — `Point`, `Stroke { id, points[], colour, highlight? }`
-- `imageTypes.ts` — `PastedImageMeta` (position/size, `inverted` flag for dark-mode inversion), `PastedImage` (meta + loaded element), `ResizeHandle`
+- `imageTypes.ts` — `PastedImageMeta` (position/size), `PastedImage` (meta + loaded element), `ResizeHandle`
 - `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "selector" | "highlighter"` + per-tool cursor map
 - `canvasStateTypes.ts` — `CanvasState`, `Viewport`, `ToolContext`, `ToolCallbacks`, `ToolStrategy`
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`

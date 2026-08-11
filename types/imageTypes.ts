@@ -5,7 +5,6 @@ export type PastedImageMeta = {
     y: number;
     width: number;
     height: number;
-    inverted?: boolean;
 };
 
 export type PastedImage = PastedImageMeta & {

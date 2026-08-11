@@ -8,12 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ID_MAX_LENGTH = 64;
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_MIME_TYPES = new Set([
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "image/gif",
-]);
+// must stay in sync with ALLOWED_PASTE_TYPES in hooks/useImagePaste.tsx
+const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
 // TODO: this signed URL is stored permanently in Liveblocks meta, but rooms
 // that stay *active* past 14 days outlive it and show broken images (the cron
 // only deletes inactive rooms). Store the storage path in the meta instead

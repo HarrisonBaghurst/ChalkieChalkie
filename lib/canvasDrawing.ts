@@ -76,26 +76,14 @@ const drawToCanvas = ({
 
     // Draw images (world coordinates)
     pastedImages?.forEach((image) => {
-        if (image.inverted) {
-            ctx.save();
-            ctx.filter = "invert(1)";
-            ctx.drawImage(
-                image.element,
-                image.x,
-                image.y,
-                image.width,
-                image.height,
-            );
-            ctx.restore();
-        } else {
-            ctx.drawImage(
-                image.element,
-                image.x,
-                image.y,
-                image.width,
-                image.height,
-            );
-        }
+        // images arrive already inverted where needed — see hooks/useImagePaste
+        ctx.drawImage(
+            image.element,
+            image.x,
+            image.y,
+            image.width,
+            image.height,
+        );
 
         if (image.id === selectedImageId) {
             // border + resize handles (pointer tool single-selection)
