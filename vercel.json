@@ -4,6 +4,10 @@
         {
             "path": "/api/cron/remove-unused-rooms",
             "schedule": "0 5 * * *"
+        },
+        {
+            "path": "/api/cron/promote-latest",
+            "schedule": "0 0 * * *"
         }
     ]
 }

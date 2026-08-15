@@ -33,6 +33,7 @@ Create `.env.local` with:
 - `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000`)
 - `RESEND_API_KEY`, `CONTACT_EMAIL`
 - `CRON_SECRET`
+- `VERCEL_TOKEN` — Vercel access token used by the nightly promotion cron; `VERCEL_TEAM_ID` as well if the project ever moves off a personal account. `VERCEL_PROJECT_ID` comes free from Vercel's system environment variables.
 - `ENVIRONMENT` — set to `testing` to render the dashboard from `data/testWorkspaces.json` instead of live API data
 
 ## Design System
@@ -75,6 +76,7 @@ When you add a token, utility class or shared component, add a specimen to the s
   - `links` (+ `[linkId]`, `invites`, `redeem`) — tutor↔student linking: list/unlink, generate/read/revoke an invite code, redeem a code; shared validation in `_shared.ts`
   - `contact` — contact form via Resend
   - `cron/remove-unused-rooms` — deletes rooms inactive >2 weeks; runs daily at 05:00 via `vercel.json` crons, authenticated with `CRON_SECRET`
+  - `cron/promote-latest` — promotes the newest staged production build to live (see Deployment below)
 
 `proxy.ts` is the Clerk middleware: protects `/board(.*)` and `/dashboard(.*)`. `/style-guide` is deliberately **not** listed there — a middleware redirect to sign-in would advertise that the route exists, so the page gates itself and 404s instead.
 
@@ -163,6 +165,14 @@ Two distinct concepts:
 
 `app/api/liveblocks-auth/route.ts` gates room access: checks Supabase to confirm the authenticated Clerk user is in the room's `user_ids` array before issuing a Liveblocks token. Returns 403 otherwise (client redirects to `/forbidden`).
 
+### Deployment (staged, promoted nightly)
+
+Pushes to `main` build but **do not go live**. The Vercel project has **Auto-assign Custom Production Domains** turned off (Project Settings → Environments → Production → Branch Tracking), so each push produces a production deployment in the `STAGED` substate serving no traffic. `app/api/cron/promote-latest` promotes the newest staged build overnight, so a mid-afternoon push can't interrupt a lesson in progress.
+
+- Scheduled `0 0 * * *` in `vercel.json`. Vercel cron expressions are UTC-only and DST-blind, and Hobby-plan crons only fire to within the hour, so the real window is roughly 00:00–02:00 UK local depending on the season. That imprecision is accepted deliberately — it is all outside tutoring hours, and pinning it tighter costs a second cron entry and a DST guard for no practical gain.
+- Crons invoke the **currently live** deployment, i.e. the one *before* whatever is about to be promoted. Changes to `promote-latest` itself only take effect the night after they go live, and the first deploy containing the route has to be promoted by hand once to bootstrap it.
+- Vercel API access lives in `lib/vercelDeployments.ts`. Promotion is an alias swap, not a rebuild, and a deployment can only be promoted once — hence the `readySubstate === "STAGED"` filter. To ship something urgently, promote by hand in the dashboard; the cron will find nothing staged and no-op.
+
 ### Rate Limiting
 
 `lib/ratelimit.ts` is the single source of truth: a `RATE_LIMITS` table mapping each route key to `{ keyBy: "userId" | "ip", limit, window }`, enforced via Upstash sliding window (`enforceRateLimit` returns a 429 Response or null). Fail-open if Upstash is unreachable, with the outage reported. Every API route calls this before doing work.
@@ -183,7 +193,7 @@ Two distinct concepts:
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
 
 ### Path Alias
 
