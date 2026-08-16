@@ -1,33 +1,17 @@
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-
-const DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-const MONTHS = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-];
-
-const getDaysInMonth = (year: number, month: number) =>
-    new Date(year, month + 1, 0).getDate();
-
-const getFirstDayOfMonth = (year: number, month: number) => {
-    const day = new Date(year, month, 1).getDay();
-    return (day + 6) % 7;
-};
+import React, { useMemo, useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const pad = (n: number) => String(n).padStart(2, "0");
+
+const HOURS = Array.from({ length: 24 }, (_, i) => pad(i));
+const QUARTER_HOURS = ["00", "15", "30", "45"];
 
 type DateTimePickerProps = {
     value: Date | null;
@@ -35,171 +19,104 @@ type DateTimePickerProps = {
 };
 
 const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
-    const now = new Date();
-    const seed = value ?? now;
-
-    const [viewYear, setViewYear] = useState(seed.getFullYear());
-    const [viewMonth, setViewMonth] = useState(seed.getMonth());
-
-    const [selectedDate, setSelectedDate] = useState<number | null>(
-        value ? value.getDate() : null,
-    );
-    const [selectedMonth, setSelectedMonth] = useState<number | null>(
-        value ? value.getMonth() : null,
-    );
-    const [selectedYear, setSelectedYear] = useState<number | null>(
-        value ? value.getFullYear() : null,
-    );
-    const [selectedHour, setSelectedHour] = useState<string | null>(
+    const [day, setDay] = useState<Date | undefined>(value ?? undefined);
+    const [hour, setHour] = useState<string | null>(
         value ? pad(value.getHours()) : null,
     );
-    const [selectedMin, setSelectedMin] = useState<string | null>(
+    const [minute, setMinute] = useState<string | null>(
         value ? pad(value.getMinutes()) : null,
     );
 
-    const incrementMonth = (change: number) => {
-        const newMonth = viewMonth + change;
-        const newYear = viewYear + Math.floor(newMonth / 12);
-        const normalisedMonth = ((newMonth % 12) + 12) % 12;
-        setViewYear(newYear);
-        setViewMonth(normalisedMonth);
-    };
+    /*  The two free-text boxes this replaced accepted any minute, so a
+        workspace saved earlier can hold e.g. 14:37. Offering only the
+        quarter hours would leave that value unselectable and silently
+        rewrite the lesson time on the next save, so a stored off-grid
+        minute is merged into the list. */
+    const minuteOptions = useMemo(() => {
+        if (minute === null || QUARTER_HOURS.includes(minute)) {
+            return QUARTER_HOURS;
+        }
+        return [...QUARTER_HOURS, minute].sort();
+    }, [minute]);
 
-    const selectDate = (date: number) => {
-        setSelectedDate(date);
-        setSelectedMonth(viewMonth);
-        setSelectedYear(viewYear);
-    };
-
-    const handleMinInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let min = e.target.value.replace(/\D/g, "").slice(0, 2);
-        if (Number(min) > 60) min = "60";
-        setSelectedMin(min);
-    };
-
-    const handleHourInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let hour = e.target.value.replace(/\D/g, "").slice(0, 2);
-        if (Number(hour) > 24) hour = "24";
-        setSelectedHour(hour);
-    };
-
-    useEffect(() => {
-        if (
-            selectedMin === null ||
-            selectedMin === "" ||
-            selectedHour === null ||
-            selectedHour === "" ||
-            selectedDate === null ||
-            selectedMonth === null ||
-            selectedYear === null
-        ) {
+    /*  Emitted straight from the handlers rather than a useEffect on the
+        parts. The effect this replaces had to re-derive the Date, compare it
+        against the incoming prop and carry an exhaustive-deps suppression to
+        avoid a loop; passing the new values in directly needs none of that. */
+    const emit = (
+        nextDay: Date | undefined,
+        nextHour: string | null,
+        nextMinute: string | null,
+    ) => {
+        if (!nextDay || nextHour === null || nextMinute === null) {
             onChange(null);
             return;
         }
-
-        const built = new Date(
-            selectedYear,
-            selectedMonth,
-            selectedDate,
-            Number(selectedHour),
-            Number(selectedMin),
+        onChange(
+            new Date(
+                nextDay.getFullYear(),
+                nextDay.getMonth(),
+                nextDay.getDate(),
+                Number(nextHour),
+                Number(nextMinute),
+            ),
         );
+    };
 
-        if (!value || built.getTime() !== value.getTime()) {
-            onChange(built);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedMin, selectedHour, selectedDate, selectedMonth, selectedYear]);
+    const handleDaySelect = (next: Date | undefined) => {
+        setDay(next);
+        emit(next, hour, minute);
+    };
 
-    const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-    const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
-    const cells = Array.from({ length: firstDay + daysInMonth }, (_, i) =>
-        i < firstDay ? null : i - firstDay + 1,
-    );
-    while (cells.length % 7 !== 0) cells.push(null);
+    const handleHourChange = (next: string) => {
+        setHour(next);
+        emit(day, next, minute);
+    };
+
+    const handleMinuteChange = (next: string) => {
+        setMinute(next);
+        emit(day, hour, next);
+    };
 
     return (
         <div className="grid grid-cols-2 gap-6">
-            <div className="flex flex-col gap-4">
-                <div className="flex gap-4 justify-center items-center">
-                    <button
-                        className="relative w-6 h-6 rounded-full bg-white/5 border border-white/15 cursor-pointer flex items-center justify-center"
-                        onClick={() => incrementMonth(-1)}
+            <Calendar
+                mode="single"
+                selected={day}
+                onSelect={handleDaySelect}
+                defaultMonth={day ?? new Date()}
+            />
+            <div className="flex flex-col gap-2">
+                <div className="text-caption text-foreground-third">TIME</div>
+                <div className="flex items-center gap-2">
+                    <Select value={hour ?? ""} onValueChange={handleHourChange}>
+                        <SelectTrigger className="w-full" aria-label="Hour">
+                            <SelectValue placeholder="Hour" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {HOURS.map((h) => (
+                                <SelectItem key={h} value={h}>
+                                    {h}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <div className="text-small text-foreground-third">:</div>
+                    <Select
+                        value={minute ?? ""}
+                        onValueChange={handleMinuteChange}
                     >
-                        <Image
-                            src={"/icons/chevron-down.svg"}
-                            alt="arrow"
-                            fill
-                            className="rotate-90"
-                        />
-                    </button>
-                    <div className="w-35 text-center">{`${MONTHS[viewMonth]} ${viewYear}`}</div>
-                    <button
-                        className="relative w-6 h-6 rounded-full bg-white/5 border border-white/15 cursor-pointer flex items-center justify-center"
-                        onClick={() => incrementMonth(1)}
-                    >
-                        <Image
-                            src={"/icons/chevron-down.svg"}
-                            alt="arrow"
-                            fill
-                            className="rotate-270"
-                        />
-                    </button>
-                </div>
-                <div className="grid grid-cols-7">
-                    {DAYS.map((day) => (
-                        <div
-                            key={day}
-                            className="text-small text-foreground-third w-full text-center"
-                        >
-                            {day}
-                        </div>
-                    ))}
-                </div>
-                <div className="grid grid-cols-7 w-full gap-2">
-                    {cells.map((cell, i) =>
-                        cell ? (
-                            <button
-                                key={i}
-                                className={cn(
-                                    "w-full h-8 rounded-full flex items-center justify-center cursor-pointer",
-                                    selectedDate === cell &&
-                                        selectedMonth === viewMonth &&
-                                        selectedYear === viewYear
-                                        ? "bg-[#e2ad4c] border-white/50 text-background"
-                                        : now.getDate() === cell &&
-                                            now.getMonth() === viewMonth &&
-                                            now.getFullYear() === viewYear
-                                          ? "border border-white/30 bg-white/2"
-                                          : "bg-white/2",
-                                )}
-                                onClick={() => selectDate(cell)}
-                            >
-                                {cell}
-                            </button>
-                        ) : (
-                            <div key={i} className="w-full h-8 rounded-full" />
-                        ),
-                    )}
-                </div>
-            </div>
-            <div>
-                <div className="flex gap-4 items-center justify-center">
-                    <Input
-                        className="w-16 h-12 text-center text-body appearance-none"
-                        placeholder=""
-                        inputMode="numeric"
-                        value={selectedHour ?? ""}
-                        onChange={handleHourInput}
-                    />
-                    <div>:</div>
-                    <Input
-                        className="w-16 h-12 text-center text-body appearance-none"
-                        placeholder=""
-                        inputMode="numeric"
-                        value={selectedMin ?? ""}
-                        onChange={handleMinInput}
-                    />
+                        <SelectTrigger className="w-full" aria-label="Minute">
+                            <SelectValue placeholder="Min" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {minuteOptions.map((m) => (
+                                <SelectItem key={m} value={m}>
+                                    {m}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
         </div>

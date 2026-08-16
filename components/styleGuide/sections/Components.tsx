@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
 import {
     Select,
     SelectContent,
@@ -225,7 +226,7 @@ const Components = () => {
                 description="Input and Textarea share one class string, built on .control-surface — a card-background-hover fill (a tier lighter than the card/modal surface they usually sit on), a faint foreground-third hairline border, text-small. Both carry the focus-visible ring; never remove it with focus:outline-none, which is what the hand-rolled inputs these replaced did."
             >
                 <div className="flex max-w-md flex-col gap-5">
-                    <Input placeholder="Workspace title" />
+                    <Input placeholder="Search sessions..." />
                     <Input placeholder="Invalid value" aria-invalid />
                     <Input placeholder="Disabled" disabled />
                     <Textarea placeholder="Lesson description" rows={3} />
@@ -246,6 +247,34 @@ const Components = () => {
                         </span>
                     </label>
                 </div>
+            </Block>
+
+            <Block
+                title="Floating labels"
+                description="Passing `label` to Input or Textarea replaces the caption-above-the-field pattern: the label rests where the value will appear, then rises and shrinks on focus, or whenever the field holds a value. The placeholder demotes to an example that only fades in once focused, so a field shows one string at a time. Click into these to see it — the second is pre-filled, so its label starts floated. Padding goes to pt-6 pb-2 to make room; a field given no label has nothing to raise and stays exactly as the row above, which is what leaves the search box and DateTimePicker's hh:mm boxes untouched."
+            >
+                <div className="flex max-w-md flex-col gap-5">
+                    <Input label="Title" placeholder="e.g. Maths tutoring" />
+                    <Input
+                        label="Email"
+                        type="email"
+                        defaultValue="john@email.com"
+                    />
+                    <Input label="Invalid value" aria-invalid />
+                    <Input label="Disabled" disabled />
+                    <Textarea
+                        label="Description"
+                        placeholder="What is this workspace for?"
+                        rows={3}
+                    />
+                </div>
+            </Block>
+
+            <Block
+                title="Calendar"
+                description="shadcn's calendar (react-day-picker), restyled onto the tokens: type scale instead of text-sm/text-xs, radius-tag cells, a transparent root so it sits on whatever surface hosts it, and the selected day on bg-primary — the same white pill as the primary button. Weeks start Monday and weekday headers are two letters, app-wide. Arrow keys move between days, PageUp/PageDown between months. Pair it with two Selects for time, as DateTimePicker does; shadcn ships no date-time picker."
+            >
+                <Calendar mode="single" defaultMonth={new Date()} />
             </Block>
 
             <Block

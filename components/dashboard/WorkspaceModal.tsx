@@ -294,7 +294,16 @@ const WorkspaceModal = ({
                     onStepChange={setStep}
                 />
 
-                <div className="flex-1 min-h-80 overflow-y-auto pr-1">
+                {/*  `-m-1 p-1` rather than a bare `pr-1`: overflow-y-auto makes
+                    overflow-x compute to auto as well (the spec resolves a
+                    `visible` axis to `auto` when the other axis isn't), so this
+                    clips on every side, not just vertically. A w-full field sits
+                    flush against the content edge and its focus-visible ring-3 —
+                    a box-shadow 3px outside the border box — was being sliced
+                    off. The padding gives the ring room and the matching
+                    negative margin pulls the box back so nothing shifts. Same
+                    idiom as SheetBody. */}
+                <div className="flex-1 min-h-80 overflow-y-auto -m-1 p-1">
                     {step === 1 && (
                         <BasicsStep
                             title={form.title}

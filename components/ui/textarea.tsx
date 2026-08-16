@@ -1,21 +1,50 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { fieldClasses, floatingLabelClasses } from "@/components/ui/input"
 
-/*  Mirrors `Input` exactly — built on `.control-surface` with `resize-none`
-    appended, baked in here rather than repeated at every call site. See the
-    note in input.tsx on `.control-surface`, the card-background-hover fill,
-    and on why no `text-*` utility appears in this list. */
-function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
-  return (
+/*  Mirrors `Input` exactly — same class string with `resize-none` appended,
+    baked in here rather than repeated at every call site, and the same
+    floating label when `label` is passed. See the notes in input.tsx on
+    `.control-surface`, the card-background-hover fill, why no `text-*`
+    utility appears in this list, and how the label is driven.
+
+    The one divergence: the resting label sits on the first text line rather
+    than at the vertical centre. Centring is right for a single-line input,
+    where the label is the only thing in the box until it floats — in a
+    five-row textarea it would strand the label in open space. */
+function Textarea({
+  className,
+  label,
+  id,
+  placeholder,
+  ...props
+}: React.ComponentProps<"textarea"> & { label?: string }) {
+  const generatedId = React.useId()
+  const textareaId = id ?? generatedId
+
+  const field = (
     <textarea
+      id={label ? textareaId : id}
       data-slot="textarea"
-      className={cn(
-        "control-surface bg-card-background-hover flex w-full min-w-0 resize-none px-3 py-2 text-small text-foreground transition-colors outline-none placeholder:text-foreground-third focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
-        className
-      )}
+      placeholder={label ? placeholder || " " : placeholder}
+      className={cn(fieldClasses(!!label), "flex resize-none", className)}
       {...props}
     />
+  )
+
+  if (!label) return field
+
+  return (
+    <div className="relative">
+      {field}
+      <label
+        htmlFor={textareaId}
+        className={cn(floatingLabelClasses, "top-6 translate-y-0")}
+      >
+        {label}
+      </label>
+    </div>
   )
 }
 

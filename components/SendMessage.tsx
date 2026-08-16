@@ -163,16 +163,11 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                 return (
                     <div className="flex flex-col gap-6">
                         <div className="flex gap-4">
-                            <div className="flex flex-col gap-2 flex-1">
-                                <label
-                                    htmlFor="send-firstname"
-                                    className={labelClass}
-                                >
-                                    FIRST NAME
-                                </label>
+                            <div className="flex-1">
                                 <Input
                                     id="send-firstname"
                                     type="text"
+                                    label="First name"
                                     value={firstName}
                                     onChange={(e) =>
                                         setFirstName(e.target.value)
@@ -180,16 +175,11 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                     placeholder="John"
                                 />
                             </div>
-                            <div className="flex flex-col gap-2 flex-1">
-                                <label
-                                    htmlFor="send-lastname"
-                                    className={labelClass}
-                                >
-                                    LAST NAME
-                                </label>
+                            <div className="flex-1">
                                 <Input
                                     id="send-lastname"
                                     type="text"
+                                    label="Last name"
                                     value={lastName}
                                     onChange={(e) =>
                                         setLastName(e.target.value)
@@ -198,54 +188,36 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                                 />
                             </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <label htmlFor="send-email" className={labelClass}>
-                                EMAIL
-                            </label>
-                            <Input
-                                id="send-email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="john@email.com"
-                            />
-                        </div>
+                        <Input
+                            id="send-email"
+                            type="email"
+                            label="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="john@email.com"
+                        />
                     </div>
                 );
             }
             if (step === 2) {
                 return (
                     <div className="flex flex-col gap-6">
-                        <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="send-usecase"
-                                className={labelClass}
-                            >
-                                HOW WOULD YOU USE CHALKIE CHALKIE?
-                            </label>
-                            <Textarea
-                                id="send-usecase"
-                                value={useCase}
-                                onChange={(e) => setUseCase(e.target.value)}
-                                placeholder="Tell us about your use case..."
-                                rows={5}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label
-                                htmlFor="send-referral"
-                                className={labelClass}
-                            >
-                                HOW WERE YOU REFERRED TO US?
-                            </label>
-                            <Textarea
-                                id="send-referral"
-                                value={referral}
-                                onChange={(e) => setReferral(e.target.value)}
-                                placeholder="Where did you hear about Chalkie Chalkie..."
-                                rows={3}
-                            />
-                        </div>
+                        <Textarea
+                            id="send-usecase"
+                            label="How would you use Chalkie Chalkie?"
+                            value={useCase}
+                            onChange={(e) => setUseCase(e.target.value)}
+                            placeholder="Tell us about your use case..."
+                            rows={5}
+                        />
+                        <Textarea
+                            id="send-referral"
+                            label="How were you referred to us?"
+                            value={referral}
+                            onChange={(e) => setReferral(e.target.value)}
+                            placeholder="Where did you hear about Chalkie Chalkie..."
+                            rows={3}
+                        />
                     </div>
                 );
             }
@@ -270,30 +242,22 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
         if (step === 1) {
             return (
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="send-email" className={labelClass}>
-                            EMAIL
-                        </label>
-                        <Input
-                            id="send-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="john@email.com"
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="send-summary" className={labelClass}>
-                            SUMMARY
-                        </label>
-                        <Input
-                            id="send-summary"
-                            type="text"
-                            value={summary}
-                            onChange={(e) => setSummary(e.target.value)}
-                            placeholder="One line summary of the issue"
-                        />
-                    </div>
+                    <Input
+                        id="send-email"
+                        type="email"
+                        label="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="john@email.com"
+                    />
+                    <Input
+                        id="send-summary"
+                        type="text"
+                        label="Summary"
+                        value={summary}
+                        onChange={(e) => setSummary(e.target.value)}
+                        placeholder="One line summary of the issue"
+                    />
                     <div className="flex flex-col gap-2">
                         <label htmlFor="send-severity" className={labelClass}>
                             ISSUE SEVERITY
@@ -325,44 +289,30 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
         if (step === 2) {
             return (
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="send-reproduce" className={labelClass}>
-                            STEPS TO REPRODUCE
-                        </label>
-                        <Textarea
-                            id="send-reproduce"
-                            value={reproduceSteps}
-                            onChange={(e) => setReproduceSteps(e.target.value)}
-                            placeholder="Go to ... and click ..."
-                            rows={5}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="send-expected" className={labelClass}>
-                            EXPECTED VS ACTUAL BEHAVIOUR
-                        </label>
-                        <Textarea
-                            id="send-expected"
-                            value={expectedVsActual}
-                            onChange={(e) =>
-                                setExpectedVsActual(e.target.value)
-                            }
-                            placeholder="Expected... Actual..."
-                            rows={5}
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="send-browser" className={labelClass}>
-                            BROWSER AND OS
-                        </label>
-                        <Input
-                            id="send-browser"
-                            type="text"
-                            value={browserAndOS}
-                            onChange={(e) => setBrowserAndOS(e.target.value)}
-                            placeholder="e.g. Chrome 124 on macOS 14"
-                        />
-                    </div>
+                    <Textarea
+                        id="send-reproduce"
+                        label="Steps to reproduce"
+                        value={reproduceSteps}
+                        onChange={(e) => setReproduceSteps(e.target.value)}
+                        placeholder="Go to ... and click ..."
+                        rows={5}
+                    />
+                    <Textarea
+                        id="send-expected"
+                        label="Expected vs actual behaviour"
+                        value={expectedVsActual}
+                        onChange={(e) => setExpectedVsActual(e.target.value)}
+                        placeholder="Expected... Actual..."
+                        rows={5}
+                    />
+                    <Input
+                        id="send-browser"
+                        type="text"
+                        label="Browser and OS"
+                        value={browserAndOS}
+                        onChange={(e) => setBrowserAndOS(e.target.value)}
+                        placeholder="e.g. Chrome 124 on macOS 14"
+                    />
                 </div>
             );
         }
@@ -419,7 +369,9 @@ const SendMessage = ({ mode, onClose }: SendMessageProps) => {
                     canJumpTo={canJumpTo}
                 />
 
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                {/* `-m-1 p-1` so the fields' focus ring isn't clipped — see the
+                    note on the same container in WorkspaceModal. */}
+                <div className="flex-1 min-h-0 overflow-y-auto -m-1 p-1">
                     {renderBody()}
                 </div>
 

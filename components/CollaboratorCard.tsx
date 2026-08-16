@@ -17,7 +17,7 @@ const CollaboratorCard = ({
 }: CollaboratorCardProps) => {
     return (
         <div className="flex justify-between items-center">
-            <div className="flex gap-3 items-center p-2 rounded-full border border-transparent">
+            <div className="flex gap-3 items-center p-2">
                 <div className="relative w-8 h-8 rounded-full overflow-hidden">
                     <Image src={image} alt={`${firstName} icon`} fill />
                 </div>
