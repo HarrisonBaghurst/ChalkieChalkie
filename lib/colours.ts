@@ -21,6 +21,22 @@ export const PEN_COLOURS: { colour: string; code: string }[] = [
     },
 ];
 
+/**
+ * Selection chrome for the pointer tool. Drawn into the <canvas>, where CSS
+ * variables don't reach, so these are literal rgba mirrors of
+ * `--foreground-second` (hsl(0, 2%, 80%) = rgb(205, 203, 203)) rather than
+ * token references. All three are semitransparent so the board reads through
+ * them — a selection marks what is picked up, it doesn't recolour it.
+ */
+export const SELECTION_COLOURS = {
+    /** Outline of the drag marquee and of every selected image. */
+    border: "rgba(205, 203, 203, 0.55)",
+    /** Wash filling the marquee and each selected image. */
+    fill: "rgba(205, 203, 203, 0.1)",
+    /** Thicker wash traced over selected strokes, which have no area to fill. */
+    stroke: "rgba(205, 203, 203, 0.28)",
+} as const;
+
 export const HIGHLIGHT_COLOURS: { colour: string; code: string }[] = [
     {
         colour: "Butter",

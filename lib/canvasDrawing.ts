@@ -1,7 +1,46 @@
 import { PastedImage } from "@/types/imageTypes";
 import { Point, Stroke } from "@/types/strokeTypes";
 import { normaliseRect, Rect } from "@/lib/genometry";
+import { SELECTION_COLOURS } from "@/lib/colours";
 import { RefObject } from "react";
+
+// Selection chrome for an image: a light wash over it plus a hairline outline,
+// so it reads as picked up rather than recoloured. Fill first, then stroke, so
+// the outline isn't laid under its own wash.
+const drawImageSelection = (
+    ctx: CanvasRenderingContext2D,
+    image: PastedImage,
+    withHandles: boolean,
+) => {
+    ctx.save();
+
+    ctx.fillStyle = SELECTION_COLOURS.fill;
+    ctx.fillRect(image.x, image.y, image.width, image.height);
+
+    ctx.strokeStyle = SELECTION_COLOURS.border;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(image.x, image.y, image.width, image.height);
+
+    if (withHandles) {
+        const size = 8;
+        const corners = [
+            { x: image.x, y: image.y }, // nw
+            { x: image.x + image.width, y: image.y }, // ne
+            { x: image.x, y: image.y + image.height }, // sw
+            { x: image.x + image.width, y: image.y + image.height }, // se
+        ];
+
+        ctx.fillStyle = SELECTION_COLOURS.border;
+        corners.forEach((corner) => {
+            ctx.beginPath();
+            ctx.rect(corner.x - size / 2, corner.y - size / 2, size, size);
+            ctx.fill();
+            ctx.stroke();
+        });
+    }
+
+    ctx.restore();
+};
 
 type DrawToCanvasParameters = {
     strokes: readonly Stroke[];
@@ -86,30 +125,11 @@ const drawToCanvas = ({
         );
 
         if (image.id === selectedImageId) {
-            // border + resize handles (pointer tool single-selection)
-            ctx.strokeStyle = "#3a86ff";
-            ctx.lineWidth = 1;
-            ctx.strokeRect(image.x, image.y, image.width, image.height);
-
-            const size = 8;
-            const corners = [
-                { x: image.x, y: image.y }, // nw
-                { x: image.x + image.width, y: image.y }, // ne
-                { x: image.x, y: image.y + image.height }, // sw
-                { x: image.x + image.width, y: image.y + image.height }, // se
-            ];
-
-            corners.forEach((corner) => {
-                ctx.beginPath();
-                ctx.rect(corner.x - size / 2, corner.y - size / 2, size, size);
-                ctx.fill();
-                ctx.stroke();
-            });
+            // clicked directly — resizable, so it carries corner handles
+            drawImageSelection(ctx, image, true);
         } else if (selectedImageIds?.includes(image.id)) {
-            // border only — selector tool multi-selection (no resize handles)
-            ctx.strokeStyle = "#3a86ff";
-            ctx.lineWidth = 1;
-            ctx.strokeRect(image.x, image.y, image.width, image.height);
+            // swept up by a marquee — one of several, so no resize handles
+            drawImageSelection(ctx, image, false);
         }
     });
 
@@ -190,12 +210,13 @@ const drawToCanvas = ({
         ctx.restore();
     }
 
-    // Selected-stroke highlight pass (selector tool)
+    // Selected-stroke wash. Strokes have no area to fill, so the selection is
+    // traced over each one wider than the stroke itself, leaving a soft halo.
     if (selectedStrokeIds && selectedStrokeIds.length > 0) {
         const dx = selectorDelta?.x ?? 0;
         const dy = selectorDelta?.y ?? 0;
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = "rgba(58, 134, 255, 0.45)";
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = SELECTION_COLOURS.stroke;
         for (const stroke of allStrokes) {
             if (!selectedStrokeIds.includes(stroke.id)) continue;
             if (stroke.points.length < 2) continue;
@@ -218,16 +239,15 @@ const drawToCanvas = ({
         }
     }
 
-    // Selection rect overlay (drawn last, on top of everything)
+    // Marquee overlay (drawn last, on top of everything)
     if (selectorRect) {
         const r = normaliseRect(selectorRect);
         ctx.save();
-        ctx.strokeStyle = "#3a86ff";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 4]);
-        ctx.strokeRect(r.x, r.y, r.width, r.height);
-        ctx.fillStyle = "rgba(58, 134, 255, 0.07)";
+        ctx.fillStyle = SELECTION_COLOURS.fill;
         ctx.fillRect(r.x, r.y, r.width, r.height);
+        ctx.strokeStyle = SELECTION_COLOURS.border;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(r.x, r.y, r.width, r.height);
         ctx.restore();
     }
 };

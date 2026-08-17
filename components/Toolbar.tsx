@@ -54,12 +54,6 @@ const Toolbar = ({
                         isActive={currentTool === "eraser"}
                         onSelect={() => handleToolChange("eraser")}
                     />
-                    <ToolbarButton
-                        icon={"/icons/square-dashed.svg"}
-                        label="selector icon"
-                        isActive={currentTool === "selector"}
-                        onSelect={() => handleToolChange("selector")}
-                    />
                 </div>
                 <div className="w-full h-px bg-foreground-third/15" />
                 <div className="flex flex-col gap-2 p-2">

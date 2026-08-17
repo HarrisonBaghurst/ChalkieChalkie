@@ -24,14 +24,15 @@ export interface CanvasState {
     highlightColour: string;
     tool: Tools;
 
-    // images
+    // images — selectedImageId is the single image clicked with the pointer,
+    // the only selection that can be resized
     cursorPosition: Point;
     selectedImageId: string | null;
     imageDragOffset: Point | null;
     activeResizeHandle: ResizeHandle;
     pastedImages: PastedImage[];
 
-    // selector
+    // marquee selection — the pointer's drag-out box and what it swept up
     selectorRect: Rect | null;
     selectorRectOrigin: Rect | null;
     selectorStart: Point | null;

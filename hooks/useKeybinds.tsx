@@ -39,7 +39,7 @@ export const useKeybinds = ({
                 event.preventDefault();
                 redo();
             } else if (event.key === "Delete" || event.key === "Backspace") {
-                // Delete selector-selected strokes
+                // Delete marquee-selected strokes
                 const hadSelectorSelection =
                     state.selectedStrokeIds.length > 0 ||
                     state.selectedImageIds.length > 0;
@@ -49,7 +49,7 @@ export const useKeybinds = ({
                     state.selectedStrokeIds = [];
                 }
 
-                // Delete selector-selected images. Only the Liveblocks meta is
+                // Delete marquee-selected images. Only the Liveblocks meta is
                 // removed here; the storage blob is left for the cleanup cron
                 // so that Ctrl+Z can restore the image without breaking.
                 const selectorImageIds = [...state.selectedImageIds];
@@ -63,12 +63,12 @@ export const useKeybinds = ({
                     state.selectedImageIds = [];
                 }
 
-                // Clear the selection box if the selector had a selection
+                // Clear the selection box if the marquee had a selection
                 if (hadSelectorSelection) {
                     state.selectorRect = null;
                 }
 
-                // Delete pointer-tool single-selected image (meta only).
+                // Delete the single click-selected image (meta only).
                 const id = state.selectedImageId;
                 if (id && !selectorImageIds.includes(id)) {
                     removeImageMeta(id);
