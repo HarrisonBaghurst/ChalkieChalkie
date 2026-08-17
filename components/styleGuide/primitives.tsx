@@ -55,7 +55,7 @@ export const Block = ({
 );
 
 export const Code = ({ children }: { children: React.ReactNode }) => (
-    <code className="rounded-[4px] bg-white/5 px-1.5 py-0.5 font-mono text-caption text-foreground-second">
+    <code className="rounded-lg bg-white/5 px-1.5 py-0.5 font-mono text-caption text-foreground-second">
         {children}
     </code>
 );
@@ -76,7 +76,7 @@ export const Note = ({
 }) => (
     <p
         className={cn(
-            "text-small text-foreground-second max-w-3xl border-l-2 bg-white/[0.03] py-3 pl-4",
+            "text-small text-foreground-second max-w-3xl border-l-2 bg-white/3 py-3 pl-4",
             NOTE_TONES[tone],
         )}
     >
@@ -129,13 +129,7 @@ export const Swatch = ({
     );
 };
 
-export const HexSwatch = ({
-    name,
-    code,
-}: {
-    name: string;
-    code: string;
-}) => (
+export const HexSwatch = ({ name, code }: { name: string; code: string }) => (
     <div className="flex flex-col gap-1.5">
         <div
             className="radius-tag h-12 w-full border border-border"
