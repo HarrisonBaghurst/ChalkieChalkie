@@ -13,16 +13,8 @@ import { validateRedeemBody, type RedeemBody } from "../_shared";
 // this endpoint is never an existence oracle for guessed codes.
 const INVALID_CODE_MESSAGE = "That code is invalid or has expired";
 
-/**
- * Redeem an invite code, creating a tutor_links row between the issuer and
- * the caller. Works in both directions — a student's code is redeemable only
- * by a tutor, and vice versa.
- *
- * @route POST /api/links/redeem
- */
 export async function POST(req: Request) {
-    // Per-IP guard before auth (cheap flood defence), mirroring
-    // liveblocks-auth's ordering.
+    // Per-IP guard runs before auth as cheap flood defence.
     const ipBlocked = await enforceRateLimit(req, "links:redeem:ip");
     if (ipBlocked) return ipBlocked;
 
@@ -46,8 +38,7 @@ export async function POST(req: Request) {
         const role = await requireLinkRole(userId);
         if (role instanceof Response) return role;
 
-        // Read-only checks before any write, so a wrong-role redeemer can
-        // never burn someone else's code.
+        // Every check is read-only, so a wrong-role redeemer can't burn a code.
         const { data: invite, error: inviteError } = await supabaseAdmin
             .from("link_invites")
             .select(
@@ -107,11 +98,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Atomic claim: a compare-and-swap under a row lock, so exactly one
-        // concurrent redeem request can win. Claim before insert — a failed
-        // claim leaves the code untouched (10 more minutes of validity, no
-        // harm); a failed insert after a successful claim just burns one
-        // code, recoverable by the issuer regenerating.
+        // Compare-and-swap so exactly one concurrent redeem wins. Claiming
+        // before the insert means the worst case is one burnt code.
         const { data: claimed, error: claimError } = await supabaseAdmin
             .from("link_invites")
             .update({
@@ -154,8 +142,7 @@ export async function POST(req: Request) {
 
         if (insertError) {
             if ((insertError as { code?: string }).code === "23505") {
-                // A concurrent redeem already created this exact pair —
-                // idempotent, so look the row up rather than failing.
+                // Concurrent redeem beat us to this pair; treat it as success.
                 const { data: existing, error: lookupError } =
                     await supabaseAdmin
                         .from("tutor_links")

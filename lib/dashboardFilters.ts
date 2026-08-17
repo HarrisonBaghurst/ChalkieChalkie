@@ -4,9 +4,6 @@ export const DASHBOARD_GRACE_MS = 5 * 60 * 1000;
 
 export type SortDirection = "asc" | "desc";
 
-// Central description of every dashboard filter. Add new filter fields here and
-// they flow through EMPTY_DASHBOARD_FILTERS / hasActiveDashboardFilters and the
-// shared topbar without touching call sites.
 export type DashboardFilterState = {
     search: string;
     collaboratorIds: string[];

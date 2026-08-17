@@ -15,8 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-// Masks an SVG into the current text colour, so a tag's icon tracks the tag's
-// own foreground rather than shipping a second, pre-tinted asset.
+// Masked rather than tinted, so the icon tracks its tag's text colour.
 const TagIcon = ({ src }: { src: string }) => (
     <span
         aria-hidden
@@ -40,7 +39,6 @@ type NextProps = {
     viewerIsHost: boolean;
 };
 
-// Card body, shared by both wrappers below, so one tree covers both layouts.
 const NextContent = ({
     workspace,
     counterparty,
@@ -103,10 +101,8 @@ const NextContent = ({
     </div>
 );
 
-// No `display` utility here: the two wrappers below set their own, and a
-// `flex` baked in would fight the `hidden` each of them needs at the other
-// breakpoint — a fight decided by stylesheet order rather than by anything
-// readable at the call site.
+// No `display` utility: each wrapper sets its own, and a baked-in `flex` would
+// fight the `hidden` it needs at the other breakpoint.
 const CARD_CLASS =
     "w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 

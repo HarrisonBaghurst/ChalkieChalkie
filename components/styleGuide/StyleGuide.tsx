@@ -13,14 +13,7 @@ const NAV = [
     { id: "conventions", label: "Layout & conventions" },
 ];
 
-/**
- * The admin-only style guide. Rendered by `app/style-guide/page.tsx`, which
- * gates it on the `admin` account role.
- *
- * This is the reference for any new UI work: it shows the real tokens and the
- * real primitives, not a description of them, so it can't quietly go stale. If
- * you add a token, a utility class or a shared component, add it here too.
- */
+// Add a specimen here whenever you add a token, utility class or primitive.
 const StyleGuide = () => (
     <div className="min-h-dvh bg-background">
         <header className="border-b border-border px-[6dvw] py-16">

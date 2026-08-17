@@ -11,17 +11,8 @@ type CollaboratorsPickerProps = {
     onChange: (collaborators: userInfo[]) => void;
 };
 
-/*  Both drop zones wear the same chrome as `Input`/`Textarea` — the
-    `.control-surface` hairline over a card-background-hover fill, a tier
-    lighter than the modal they sit on — so the picker reads as a field
-    rather than a hand-drawn box.
-
-    The active drop target reuses Input's focus-visible treatment
-    (border-ring plus the ring) instead of the literal white tint this
-    replaced, so "this is where the drop lands" looks the same as "this
-    field has focus". `border-ring` is a utility-layer border-colour, which
-    outranks the `border` shorthand `.control-surface` sets in the component
-    layer — the same mechanism as the bg override. */
+// border-ring is a utility-layer colour, so it outranks the border shorthand
+// .control-surface sets in the component layer.
 const zoneClasses = (isActiveTarget: boolean) =>
     cn(
         "control-surface bg-card-background-hover flex min-h-75 flex-col p-2",
@@ -68,10 +59,8 @@ const CollaboratorsPicker = ({
         setDragOverTarget(null);
     };
 
-    /*  A <label htmlFor> would be invalid here — a drop zone is a region, not
-        a labelable control — so the caption is associated the equivalent way,
-        via role="group" + aria-labelledby, and styled exactly as the field
-        captions in BasicsStep. */
+    // A drop zone is a region, not a labelable control, so the caption is
+    // associated with role="group" + aria-labelledby instead of htmlFor.
     const isTarget = (zone: Zone) =>
         dragOverTarget === zone &&
         draggedUser !== null &&

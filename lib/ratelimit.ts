@@ -10,10 +10,6 @@ type LimiterConfig = {
     window: Duration;
 };
 
-// ─── EDIT RATE LIMITS HERE ──────────────────────────────────────────
-// Single source of truth. Adjust `keyBy`, `limit`, or `window` for any
-// route and the change applies app-wide. Adding a new entry requires
-// updating the RateLimitKey union and using it in the route handler.
 export const RATE_LIMITS = {
     "liveblocks-auth:user":   { keyBy: "userId", limit: 30,  window: "1 m" },
     "liveblocks-auth:ip":     { keyBy: "ip",     limit: 100, window: "1 m" },
@@ -38,7 +34,6 @@ export const RATE_LIMITS = {
 } as const satisfies Record<string, LimiterConfig>;
 
 export type RateLimitKey = keyof typeof RATE_LIMITS;
-// ────────────────────────────────────────────────────────────────────
 
 const redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -70,17 +65,7 @@ function getIp(req: Request): string {
     return "unknown";
 }
 
-/**
- * Enforce a rate limit. Returns null when the request is allowed,
- * or a 429 Response when blocked.
- *
- * For userId-keyed limits, pass the authenticated Clerk userId.
- * For ip-keyed limits, the userId argument is ignored.
- *
- * Fail-open: if Upstash is unreachable the request is allowed through, and
- * the outage is reported via reportError so silent failures are visible in
- * the error_logs table.
- */
+// Returns null when allowed, a 429 Response when blocked.
 export async function enforceRateLimit(
     req: Request,
     key: RateLimitKey,

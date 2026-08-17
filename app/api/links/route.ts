@@ -10,14 +10,7 @@ import { LinkSummary } from "@/types/linkTypes";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-/**
- * List every tutor_links row the caller is a party to, joined with the
- * counterparty's Clerk profile and the number of workspaces shared with
- * them. No role guard — the query is scoped to the caller's own rows
- * regardless of their current Clerk role.
- *
- * @route GET /api/links
- */
+// No role guard: the query is scoped to the caller's own rows.
 export async function GET(req: Request) {
     try {
         const { userId } = await auth();
@@ -49,8 +42,7 @@ export async function GET(req: Request) {
             .map((row): LinkSummary | null => {
                 const counterpartyId = counterpartyIdOf(row, userId);
                 const counterparty = profileById.get(counterpartyId);
-                // Drop rows whose Clerk profile is missing (deleted account).
-                if (!counterparty) return null;
+                if (!counterparty) return null; // deleted account
                 return {
                     linkId: row.id,
                     counterparty,

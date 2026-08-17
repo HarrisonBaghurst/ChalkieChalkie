@@ -1,8 +1,7 @@
 import { Point, Stroke } from "@/types/strokeTypes";
 
-// Squared distance from point p to the segment a–b. Strokes are RDP-simplified
-// on commit (a straight line stores only its 2 endpoints), so hit-testing has to
-// consider the segments between stored points, not just the points themselves.
+// Segment-based, not point-based: RDP simplification on commit discards the
+// intermediate points a stroke was drawn with.
 function pointToSegmentDistanceSq(p: Point, a: Point, b: Point): number {
     const abx = b.x - a.x;
     const aby = b.y - a.y;
@@ -61,7 +60,6 @@ export function pointInRect(point: Point, rect: Rect): boolean {
     );
 }
 
-// True if segments p1–p2 and p3–p4 properly cross.
 function segmentsIntersect(
     p1: Point,
     p2: Point,
@@ -85,11 +83,10 @@ export function strokeIntersectsRect(stroke: Stroke, rect: Rect): boolean {
     const pts = stroke.points;
     if (pts.length === 0) return false;
 
-    // Any stored point inside the rect counts (covers dots and endpoints).
+    // Covers dots and endpoints.
     if (pts.some((p) => pointInRect(p, r))) return true;
     if (pts.length === 1) return false;
 
-    // Otherwise a segment must cross one of the rect's four edges.
     const corners = [
         { x: r.x, y: r.y },
         { x: r.x + r.width, y: r.y },

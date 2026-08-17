@@ -8,10 +8,6 @@ export type ValidatedRedeem = {
     code: string;
 };
 
-/**
- * Parse + validate the redeem body. Returns a 400 Response on failure, or the
- * normalised code on success.
- */
 export function validateRedeemBody(
     body: RedeemBody,
 ): ValidatedRedeem | Response {

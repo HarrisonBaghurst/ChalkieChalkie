@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import { getUserColour } from "@/lib/userColour";
 
-// raw Supabase "Room" row shape returned by GET /api/workspaces/[id]
+// Raw snake_case row from GET /api/workspaces/[id].
 type RoomRow = {
     user_ids?: string[];
 };
@@ -27,14 +27,12 @@ const ParticipantRoster = () => {
     const others = useOthers();
     const self = useSelf();
 
-    // ids currently connected to the room (remote peers + this user)
     const onlineIds = useMemo(() => {
         const ids = new Set(others.map((o) => o.id));
         if (self?.id) ids.add(self.id);
         return ids;
     }, [others, self?.id]);
 
-    // resolve the workspace's full member list once on mount
     useEffect(() => {
         if (!workspaceId) return;
         let cancelled = false;
@@ -45,7 +43,6 @@ const ParticipantRoster = () => {
                 if (!wsRes.ok) return;
                 const ws: RoomRow = await wsRes.json();
 
-                // user_ids already contains every member (incl. the host)
                 const memberIds = Array.from(
                     new Set((ws.user_ids ?? []).filter(Boolean)),
                 );
@@ -61,7 +58,7 @@ const ParticipantRoster = () => {
                 const { users }: { users: Member[] } = await usersRes.json();
                 if (!cancelled) setMembers(users);
             } catch {
-                // roster is non-critical; fail silently
+                // Non-critical chrome; fail silently.
             }
         };
 

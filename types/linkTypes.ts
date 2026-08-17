@@ -1,11 +1,9 @@
 import { userInfo } from "@/types/userTypes";
 
-// Role an invite code was issued under. A student's code is redeemable only
-// by a tutor, and vice versa. Deliberately excludes "admin": admin confers no
-// product privileges (lib/roles.ts), so an admin can hold no links.
+// A student's code is redeemable only by a tutor, and vice versa. Admin is
+// excluded because it confers no product privileges.
 export type LinkRole = "student" | "tutor";
 
-// Raw `tutor_links` row shape (snake_case, as stored in Supabase).
 export type TutorLinkRow = {
     id: string;
     tutor_id: string;
@@ -14,7 +12,6 @@ export type TutorLinkRow = {
     created_by: string;
 };
 
-// Raw `link_invites` row shape (snake_case, as stored in Supabase).
 export type LinkInviteRow = {
     code: string;
     issuer_id: string;
@@ -26,15 +23,12 @@ export type LinkInviteRow = {
     revoked_at: string | null;
 };
 
-// Client-facing view of a live invite code.
 export type LinkInvite = {
     code: string;
     expiresAt: string;
     issuerRole: LinkRole;
 };
 
-// One row in the students/tutors list: the counterparty's profile plus context
-// about the relationship.
 export type LinkSummary = {
     linkId: string;
     counterparty: userInfo;

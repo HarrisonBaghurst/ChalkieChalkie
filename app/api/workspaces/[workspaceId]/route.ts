@@ -9,11 +9,6 @@ import {
     type WorkspaceBody,
 } from "../_shared";
 
-/**
- * Retrieve workspace data given ID for authenticated user
- *
- * @route api/workspaces/[workspaceId]
- */
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -43,12 +38,6 @@ export async function GET(
     return Response.json(data);
 }
 
-/**
- * Update workspace details in database. True PATCH semantics: only fields
- * actually present in the request body are written to the row.
- *
- * @route api/workspaces/[workspaceId]
- */
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -62,7 +51,6 @@ export async function PATCH(
     const blocked = await enforceRateLimit(req, "workspace:patch", userId);
     if (blocked) return blocked;
 
-    // tutor-only action
     const forbidden = await requireTutor(userId);
     if (forbidden) return forbidden;
 
@@ -78,7 +66,7 @@ export async function PATCH(
         return new Response("Invalid JSON body", { status: 400 });
     }
 
-    // reject mismatched roomId from body (route uses URL param as authoritative)
+    // The URL param is authoritative; a body roomId may only agree with it.
     if (
         body.roomId !== undefined &&
         body.roomId !== null &&
@@ -90,8 +78,7 @@ export async function PATCH(
     const validated = validateWorkspaceBody(body);
     if (validated instanceof Response) return validated;
 
-    // Build the update payload from keys actually present in the body, so a
-    // partial PATCH only touches the columns the caller specified.
+    // Keyed on presence, not value, so a PATCH only touches what it names.
     const update: Record<string, unknown> = {};
     if ("title" in body) update.title = validated.title;
     if ("description" in body) update.description = validated.description;
@@ -107,7 +94,6 @@ export async function PATCH(
         return new Response("No fields to update", { status: 400 });
     }
 
-    // only the host of the workspace may edit it
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
         .from("Room")
         .select("id, host_id")
@@ -132,12 +118,6 @@ export async function PATCH(
     return Response.json(data);
 }
 
-/**
- * Delete a workspace and all of its backing resources (Liveblocks room,
- * pasted images, Supabase row). Host-only and irreversible.
- *
- * @route api/workspaces/[workspaceId]
- */
 export async function DELETE(
     req: Request,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -151,7 +131,6 @@ export async function DELETE(
     const blocked = await enforceRateLimit(req, "workspace:delete", userId);
     if (blocked) return blocked;
 
-    // tutor-only action
     const forbidden = await requireTutor(userId);
     if (forbidden) return forbidden;
 
@@ -160,7 +139,6 @@ export async function DELETE(
         return new Response("roomId is required", { status: 400 });
     }
 
-    // only the host of the workspace may delete it
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
         .from("Room")
         .select("id, host_id")

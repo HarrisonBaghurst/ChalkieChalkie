@@ -31,12 +31,9 @@ type SidebarSection = {
 type SidebarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
-    // Land a freshly-redeemed link in the caller's state. Without it, "Add New
-    // Student"/"Add New Tutor" renders disabled — same idiom as onCreated below.
+    // Without it, the add-link action renders disabled.
     onLinked?: (link: LinkSummary) => void;
-    // Role resolved server-side by the caller. Lets the role-gated Actions
-    // section render correctly on first paint; without it we fall back to the
-    // client role, which reads "student" until Clerk hydrates.
+    // Server-resolved; the client role reads "student" until Clerk hydrates.
     role?: UserRole;
 };
 
@@ -53,12 +50,10 @@ const Sidebar = ({
     const [linkOpen, setLinkOpen] = useState(false);
 
     const role = serverRole ?? clientRole;
-    // Absent a server-resolved role we can't tell whether the Actions section
-    // belongs to this user until Clerk hydrates, so its space is reserved.
+    // Until this is true the Actions section only reserves its space.
     const roleKnown = !!serverRole || isLoaded;
-    // Creating needs a callback to land the new workspace in the page's state;
-    // without one the new workspace would vanish until reload, so the action
-    // renders in the disabled style instead.
+    // Without a callback the new workspace would vanish until reload, so the
+    // action renders disabled instead.
     const canCreate = !!onCreated;
     const canLink = !!onLinked;
     const isTutor = roleKnown && role === "tutor";

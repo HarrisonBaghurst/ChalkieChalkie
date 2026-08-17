@@ -10,14 +10,11 @@ interface UseImagePasteProps {
     addImageMeta: (meta: PastedImageMeta) => void;
 }
 
-// must stay in sync with ALLOWED_MIME_TYPES in
-// app/api/workspaces/[workspaceId]/images/route.ts
+// Keep in sync with ALLOWED_MIME_TYPES in the images route.
 const ALLOWED_PASTE_TYPES = new Set(["image/png", "image/jpeg"]);
 const LUMINANCE_SAMPLE_SIZE = 50;
 const LUMINANCE_THRESHOLD = 128;
 const JPEG_QUALITY = 0.92;
-
-// _____ helper functions _________________________________________________________________________
 
 function loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
@@ -56,19 +53,14 @@ function shouldInvert(img: HTMLImageElement): boolean {
         const r = pixels[i];
         const g = pixels[i + 1];
         const b = pixels[i + 2];
-        // relative luminance formula
         total += 0.299 * r + 0.587 * g + 0.114 * b;
     }
 
     return total / pixelCount > LUMINANCE_THRESHOLD;
 }
 
-/**
- * Bakes an inversion into the image's pixels and re-encodes it in its source
- * format, so the uploaded bytes are what every user renders. Returns null if
- * the browser cannot produce the inverted file, in which case the caller
- * uploads the original untouched.
- */
+// Bakes the inversion into the pixels so the uploaded bytes are what everyone
+// renders. Null means the caller should upload the original untouched.
 async function invertImageFile(
     img: HTMLImageElement,
     file: File,
@@ -81,8 +73,7 @@ async function invertImageFile(
 
     ctx.drawImage(img, 0, 0);
 
-    // inverted per-pixel rather than with ctx.filter — canvas filter support is
-    // engine-dependent and assigning an unsupported value fails silently
+    // Per-pixel, not ctx.filter: an unsupported filter value fails silently.
     let data: ImageData;
     try {
         data = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -98,8 +89,8 @@ async function invertImageFile(
     }
     ctx.putImageData(data, 0, 0);
 
-    // re-encoding as the source type keeps the upload roughly its original
-    // size — a photo forced to PNG can blow past the route's 5 MB limit
+    // Source type keeps the size down — a photo forced to PNG can blow past
+    // the route's 5 MB limit.
     const blob = await new Promise<Blob | null>((resolve) => {
         canvas.toBlob(
             resolve,
@@ -111,8 +102,6 @@ async function invertImageFile(
 
     return new File([blob], file.name || "pasted-image", { type: file.type });
 }
-
-// _____ hooks ____________________________________________________________________________________
 
 export const usePastedImagesSync = ({
     canvasStateRef,
@@ -177,8 +166,8 @@ export const useImagePaste = ({
                 const file = item.getAsFile();
                 if (!file) continue;
 
-                // must happen before the first await — once the handler yields,
-                // the default paste has already run
+                // Before the first await: once the handler yields, the default
+                // paste has already run.
                 e.preventDefault();
 
                 if (!ALLOWED_PASTE_TYPES.has(file.type)) {
@@ -201,10 +190,8 @@ export const useImagePaste = ({
                     break;
                 }
 
-                // bright images are inverted for the dark canvas. The inversion
-                // is baked into the uploaded bytes rather than carried as a
-                // flag, so every user renders identical pixels with no
-                // per-client filter support to depend on
+                // Bright images are inverted for the dark canvas, baked into
+                // the bytes rather than carried as a render-time flag.
                 let uploadFile = file;
                 let displayImage = sourceImage;
                 let displayUrl = sourceUrl;

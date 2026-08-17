@@ -1,14 +1,8 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { TutorLinkRow } from "@/types/linkTypes";
 
-/**
- * Every tutor_links row the given user is a party to, either as tutor or
- * student. Positional, not role-stamped, so this never needs the caller's
- * current Clerk role to answer correctly.
- */
 export async function listLinksFor(userId: string): Promise<TutorLinkRow[]> {
-    // Clerk ids match ^user_[a-zA-Z0-9]+$, so there are no PostgREST reserved
-    // characters (comma, dot, parens) to escape when interpolating here.
+    // Safe to interpolate: Clerk ids carry no PostgREST reserved characters.
     const { data, error } = await supabaseAdmin
         .from("tutor_links")
         .select("*")
@@ -22,11 +16,6 @@ export async function listLinksFor(userId: string): Promise<TutorLinkRow[]> {
 export const counterpartyIdOf = (row: TutorLinkRow, userId: string): string =>
     row.tutor_id === userId ? row.student_id : row.tutor_id;
 
-/**
- * Number of Room rows the caller shares with each given counterparty. Reuses
- * the same "rooms containing me" query /api/users/batch already relies on,
- * then tallies per counterparty in JS.
- */
 export async function countSharedWorkspaces(
     userId: string,
     counterpartyIds: string[],

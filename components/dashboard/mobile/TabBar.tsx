@@ -17,19 +17,13 @@ type TabBarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
     onLinked?: (link: LinkSummary) => void;
-    // Role resolved server-side by the caller, same contract as Sidebar's:
-    // without it the client role reads "student" until Clerk hydrates, which
-    // would flash the wrong tab label and the wrong action on the button.
+    // Server-resolved; without it the client role reads "student" until Clerk
+    // hydrates and the tab label flashes.
     role?: UserRole;
 };
 
-// Mobile counterpart to Sidebar, below 2xl. Two tabs mirroring the Sidebar's
-// Menu, plus one floating action button carrying the Actions section — which
-// is otherwise unreachable on a phone, since the Sidebar is hidden.
-//
-// Unlike Navbar, this takes a server-resolved role, so the connections tab can
-// be labelled "Students"/"Tutors" the way the Sidebar labels it rather than
-// falling back to a role-neutral word.
+// The floating action button carries the Sidebar's Actions, which are
+// otherwise unreachable below 2xl.
 const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarProps) => {
     const pathname = usePathname();
     const { isLoaded } = useUser();
@@ -49,8 +43,6 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
             href: "/dashboard",
             icon: "/icons/library.svg",
             iconDark: "/icons/library-dark.svg",
-            // Admins hold no links, so the connections page has nothing for
-            // them — Sidebar dims that row for the same reason.
             enabled: true,
         },
         {
@@ -62,10 +54,8 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
         },
     ];
 
-    // One action, chosen by page and role. Each is gated on the callback that
-    // lands its result in the caller's state — same reasoning as Sidebar,
-    // except a floating button with nowhere to put its result is hidden rather
-    // than shown disabled.
+    // Gated on the callback that lands the result: a floating button with
+    // nowhere to put its output is hidden, not disabled.
     const action = onConnections
         ? isTutor && onLinked
             ? { label: "Link a student", icon: "/icons/user-round-plus-dark.svg", run: () => setLinkOpen(true) }
@@ -81,8 +71,7 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
     return (
         <div className="fixed inset-x-0 bottom-0 z-40">
             {action && (
-                // Anchored to the bar's top edge, so it clears the safe-area
-                // padding the bar already carries without repeating the maths.
+                // Anchored to the bar's top edge, reusing its safe-area padding.
                 <div className="absolute bottom-full right-4 mb-4">
                     <Button
                         aria-label={action.label}

@@ -1,6 +1,4 @@
-// Column layout of the dashboard workspace table. Shared by WorkspaceTable and
-// its loading skeleton so placeholder rows stay aligned with the real ones —
-// change a width here and both surfaces move together.
+// Shared with the loading skeleton so placeholder rows stay aligned.
 export const WORKSPACE_TABLE_COLUMNS = [
     { key: "people", label: "People", width: "w-[12%]" },
     { key: "header", label: "Header", width: "w-[22%]" },

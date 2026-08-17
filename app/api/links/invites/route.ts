@@ -11,14 +11,8 @@ import { NextResponse } from "next/server";
 
 const MAX_GENERATE_ATTEMPTS = 5;
 
-/**
- * Generate a fresh 10-minute invite code for the authenticated tutor or
- * student. Any code the caller already has live is revoked first — that is
- * what enforces one active code per issuer; a partial unique index on
- * link_invites is only a backstop against two concurrent requests.
- *
- * @route POST /api/links/invites
- */
+// Revoking first is what enforces one live code per issuer; the partial unique
+// index is only a backstop against concurrent requests.
 export async function POST(req: Request) {
     try {
         const { userId } = await auth();
@@ -66,8 +60,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            // Primary-key collision: retry with a fresh code. Anything else
-            // is a real failure.
+            // Primary-key collision: retry with a fresh code.
             if ((error as { code?: string }).code !== "23505") {
                 return errorResponse("links:generate", error, 500, {
                     userId,
@@ -88,13 +81,7 @@ export async function POST(req: Request) {
     }
 }
 
-/**
- * The caller's own live invite code, if any. Lets a page reload restore the
- * countdown instead of silently losing a still-valid code. No role guard —
- * the query is already scoped to the caller.
- *
- * @route GET /api/links/invites
- */
+// No role guard: the query is already scoped to the caller.
 export async function GET(req: Request) {
     try {
         const { userId } = await auth();
@@ -134,12 +121,7 @@ export async function GET(req: Request) {
     }
 }
 
-/**
- * Revoke the caller's own live invite code early. No role guard — the WHERE
- * clause (issuer_id = caller) is the authorisation.
- *
- * @route DELETE /api/links/invites
- */
+// No role guard: the issuer_id = caller clause is the authorisation.
 export async function DELETE(req: Request) {
     try {
         const { userId } = await auth();

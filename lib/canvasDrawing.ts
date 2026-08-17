@@ -4,9 +4,7 @@ import { normaliseRect, Rect } from "@/lib/genometry";
 import { SELECTION_COLOURS } from "@/lib/colours";
 import { RefObject } from "react";
 
-// Selection chrome for an image: a light wash over it plus a hairline outline,
-// so it reads as picked up rather than recoloured. Fill first, then stroke, so
-// the outline isn't laid under its own wash.
+// Fill before stroke, so the outline isn't laid under its own wash.
 const drawImageSelection = (
     ctx: CanvasRenderingContext2D,
     image: PastedImage,
@@ -77,11 +75,9 @@ const drawToCanvas = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // match display resolution
     const devicePixelRatio = window.devicePixelRatio || 1;
     const { clientWidth, clientHeight } = canvas;
 
-    // only resize if neccessary
     if (
         canvas.width !== clientWidth * devicePixelRatio ||
         canvas.height !== clientHeight * devicePixelRatio
@@ -113,7 +109,6 @@ const drawToCanvas = ({
     const penStrokes = allStrokes.filter((s) => !s.highlight);
     const highlightStrokes = allStrokes.filter((s) => s.highlight);
 
-    // Draw images (world coordinates)
     pastedImages?.forEach((image) => {
         // images arrive already inverted where needed — see hooks/useImagePaste
         ctx.drawImage(
@@ -125,15 +120,12 @@ const drawToCanvas = ({
         );
 
         if (image.id === selectedImageId) {
-            // clicked directly — resizable, so it carries corner handles
-            drawImageSelection(ctx, image, true);
+            drawImageSelection(ctx, image, true); // clicked directly — resizable
         } else if (selectedImageIds?.includes(image.id)) {
-            // swept up by a marquee — one of several, so no resize handles
-            drawImageSelection(ctx, image, false);
+            drawImageSelection(ctx, image, false); // one of a marquee — no handles
         }
     });
 
-    // render pen strokes
     ctx.lineWidth = 3;
     for (const stroke of penStrokes) {
         if (stroke.points.length < 2) continue;
@@ -158,7 +150,7 @@ const drawToCanvas = ({
         ctx.stroke();
     }
 
-    // Highlight strokes — composited at 35% opacity via offscreen canvas so overlaps don't compound
+    // Composited offscreen so overlapping highlights don't compound.
     if (highlightStrokes.length > 0 && highlightCanvasRef?.current) {
         const hl = highlightCanvasRef.current;
 
@@ -210,8 +202,7 @@ const drawToCanvas = ({
         ctx.restore();
     }
 
-    // Selected-stroke wash. Strokes have no area to fill, so the selection is
-    // traced over each one wider than the stroke itself, leaving a soft halo.
+    // Strokes have no area to fill, so the wash is traced wider than the stroke.
     if (selectedStrokeIds && selectedStrokeIds.length > 0) {
         const dx = selectorDelta?.x ?? 0;
         const dy = selectorDelta?.y ?? 0;
@@ -239,7 +230,6 @@ const drawToCanvas = ({
         }
     }
 
-    // Marquee overlay (drawn last, on top of everything)
     if (selectorRect) {
         const r = normaliseRect(selectorRect);
         ctx.save();

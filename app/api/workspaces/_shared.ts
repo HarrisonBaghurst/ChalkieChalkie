@@ -21,10 +21,6 @@ export type ValidatedFields = {
     collaborators: string[];
 };
 
-/**
- * Parse + validate the optional workspace fields. Returns a 400 Response on
- * the first validation failure, or a ValidatedFields object on success.
- */
 export function validateWorkspaceBody(
     body: WorkspaceBody,
 ): ValidatedFields | Response {

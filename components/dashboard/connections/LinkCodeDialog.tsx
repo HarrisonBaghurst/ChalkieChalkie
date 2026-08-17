@@ -22,9 +22,7 @@ import { LinkInvite, LinkRole, LinkSummary } from "@/types/linkTypes";
 
 type LinkCodeDialogProps = {
     open: boolean;
-    // Caller's own role — decides both the copy ("Link a student" vs "Link a
-    // tutor") and, server-side, which direction a redeemed code must have
-    // been issued in.
+    // Decides the copy, and server-side which direction a code may be redeemed.
     role: LinkRole;
     onClose: () => void;
     onLinked: (link: LinkSummary) => void;
@@ -45,8 +43,7 @@ const LinkCodeDialog = ({
     const [code, setCode] = useState("");
     const [redeeming, setRedeeming] = useState(false);
 
-    // Restore the caller's own live code (and its real remaining time) on
-    // every open, so a dialog re-open after a reload doesn't look like the
+    // Restores a live code on every open, so a reload doesn't look like the
     // code was lost.
     useEffect(() => {
         if (!open) return;

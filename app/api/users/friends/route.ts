@@ -6,17 +6,9 @@ import { userInfo } from "@/types/userTypes";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-/**
- * Retrieve the users the authenticated account is linked to: a tutor's
- * students, or a student's tutors (see app/api/links for how links are
- * formed). Role-agnostic — an admin, who can hold no links, simply gets an
- * empty list.
- *
- * @route /api/users/friends
- */
+// Strictly the caller's linked counterparties, never a general user search.
 export async function GET(req: Request) {
     try {
-        // ensure user is authenticated
         const { userId } = await auth();
 
         if (!userId) {

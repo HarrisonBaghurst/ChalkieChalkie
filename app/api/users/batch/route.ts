@@ -9,13 +9,6 @@ type RequestBody = {
     userIds: string[];
 };
 
-/**
- * Returns a list of user information corresponding to passed user ids.
- * Response is restricted to users who share at least one workspace with
- * the caller to prevent enumeration of arbitrary Clerk users.
- *
- * @route /api/users/batch
- */
 export async function POST(req: Request) {
     try {
         const { userId } = await auth();
@@ -55,8 +48,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ users: [] });
         }
 
-        // intersect requested IDs with users who share a workspace with the
-        // caller (prevents authenticated PII enumeration of arbitrary users)
+        // Restricted to users sharing a workspace, so this can't enumerate
+        // arbitrary Clerk accounts.
         const { data: rooms, error: roomsError } = await supabaseAdmin
             .from("Room")
             .select("user_ids")

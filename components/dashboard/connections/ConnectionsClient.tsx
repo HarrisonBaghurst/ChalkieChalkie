@@ -16,15 +16,11 @@ import ConnectionsTable from "./ConnectionsTable";
 import LinkCodeDialog from "./LinkCodeDialog";
 
 type ConnectionsClientProps = {
-    // Role resolved server-side by the page — same convention as
-    // DashboardClient, so the heading/copy is right on first paint instead of
-    // flashing "Connections" until Clerk hydrates.
+    // Server-resolved, so the heading doesn't flash before Clerk hydrates.
     role?: UserRole;
 };
 
-// Note: unlike app/dashboard/page.tsx, there is no ENVIRONMENT=testing data
-// path for this page — it always hits the live /api/links endpoint, so the
-// testing environment shows a real (likely empty) list here, not fixtures.
+// No ENVIRONMENT=testing fixture path here — this always hits the live API.
 const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
     const { isLoaded, isSignedIn } = useUser();
     const clientRole = useUserRole();
@@ -94,8 +90,6 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
     };
 
     const friends = links.map((l) => l.counterparty);
-    // Admins can hold no links (lib/roles.ts), so they never see "tutor" or
-    // "student" here — this only ever picks between the two real cases.
     const linkRole: LinkRole = role === "tutor" ? "tutor" : "student";
 
     const heading =
@@ -105,9 +99,8 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
               ? "Your Tutors"
               : "Connections";
 
-    // The API already 403s admins from every /api/links route (see
-    // lib/serverRole.ts requireLinkRole), so render an explanatory panel
-    // instead of an empty table they could never populate.
+    // The API 403s admins from every /api/links route, so show a panel rather
+    // than a table they could never populate.
     const isUnsupportedRole = roleKnown && role === "admin";
 
     return (

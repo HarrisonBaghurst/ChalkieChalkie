@@ -19,9 +19,7 @@ type RowActionsMenuProps = {
     label?: string;
 };
 
-// Trailing three-dot menu for a table row. Holds the row's actions. Stops
-// click propagation so opening the menu never triggers the row's own click
-// handler (e.g. join-on-click).
+// Stops propagation so opening the menu doesn't fire the row's own onClick.
 const RowActionsMenu = ({
     actions,
     label = "Row actions",

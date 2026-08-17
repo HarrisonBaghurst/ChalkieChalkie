@@ -7,8 +7,7 @@ const PLACEHOLDER_ROWS = 4;
 
 const cellClass = "px-3 py-3 align-middle border-b border-foreground-third/10";
 
-// Placeholder <tr> mirroring ConnectionRow cell for cell: avatar + name/email,
-// linked-time, workspace-count badge, actions button.
+// Mirrors ConnectionRow cell for cell.
 const ConnectionRowSkeleton = () => (
     <tr>
         <td className={cellClass}>
@@ -38,9 +37,7 @@ type ConnectionsSkeletonProps = {
     heading: string;
 };
 
-// Mirrors ConnectionsClient's populated layout: heading, action button and
-// column headers render for real; only the rows shimmer, so nothing shifts
-// once the /api/links fetch lands. Slots into DashboardShell's content column.
+// Only the rows shimmer, so nothing shifts once the fetch lands.
 const ConnectionsSkeleton = ({ heading }: ConnectionsSkeletonProps) => {
     return (
         <>

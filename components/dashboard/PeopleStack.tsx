@@ -9,30 +9,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PeopleStackProps = {
-    // Non-host participants (students). The first is shown as an avatar and any
-    // remaining are collapsed into a "+n" tag.
-    people: userInfo[];
-    // Workspace host, listed in the hover popover and marked with a dot.
+    people: userInfo[]; // non-host participants
     host?: userInfo;
 };
 
 const fullName = (person: userInfo) =>
     `${person.firstName} ${person.lastName}`.trim();
 
-// Shows a single user avatar plus a "+n" tag for any remaining people. Hovering
-// anywhere over the avatar/tag reveals a titled popover listing every
-// participant (host first, marked with a dot). Avatars use the same radius-tag
-// style as the counterparty image in Next.tsx and share the Tooltip popover.
 const PeopleStack = ({ people, host }: PeopleStackProps) => {
-    // Show a dash when the host is the only participant (no students).
     if (people.length === 0) {
         return <span className="text-caption text-foreground-third">—</span>;
     }
 
-    // Full participant list for the popover, host first.
     const participants = host ? [host, ...people] : people;
 
-    // Avatars rendered in the row: the students.
     const [first, ...rest] = people;
     const firstName = fullName(first);
 

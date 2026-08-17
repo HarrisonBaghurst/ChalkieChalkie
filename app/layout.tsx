@@ -14,11 +14,8 @@ export const metadata: Metadata = {
     description: "Where effort becomes understanding",
 };
 
-// Next's defaults, restated because `viewportFit` has to ride along with them:
-// it opts the page into the display cutout area, which is what makes
-// env(safe-area-inset-*) report real values. The `.pb-safe` utility in
-// globals.css reads those to keep the dashboard's bottom bar clear of the iOS
-// home indicator.
+// Next's defaults, restated so viewportFit can ride along: without it
+// env(safe-area-inset-*) reports zero and .pb-safe does nothing.
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,

@@ -4,14 +4,7 @@ import type {
     PolicyDocument as PolicyDocumentType,
 } from "@/types/policyTypes";
 
-/**
- * Renders a {@link PolicyDocumentType} as a centred information page using the
- * site's typography scale. Flows within the page's own scroll (the (legal)
- * layout owns scrolling and the footer). Content-agnostic: pass a different
- * JSON document to render a different policy page (terms, cookies, etc.).
- *
- * Server component — reads no browser APIs so `contactEmail` stays server-side.
- */
+// Server component, so contactEmail never reaches the client bundle.
 const PolicyDocument = ({
     document,
     contactEmail,
@@ -66,7 +59,6 @@ const PolicyDocument = ({
     );
 };
 
-/** Renders a single content block. */
 const Block = ({
     block,
     contactEmail,
@@ -127,10 +119,7 @@ const Block = ({
 const LINK_CLASS =
     "text-sky-400 underline underline-offset-2 transition-colors hover:text-sky-300";
 
-/**
- * Parses lightweight inline markup into React nodes:
- *   `[label](url)`, `{{CONTACT_EMAIL}}`, and `**bold**`.
- */
+// [label](url), **bold**, {{CONTACT_EMAIL}}
 const INLINE_RE =
     /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\{\{CONTACT_EMAIL\}\}/g;
 
@@ -169,7 +158,6 @@ function renderInline(text: string, contactEmail: string): React.ReactNode {
                 </strong>,
             );
         } else {
-            // {{CONTACT_EMAIL}} placeholder.
             nodes.push(
                 <a
                     key={key++}

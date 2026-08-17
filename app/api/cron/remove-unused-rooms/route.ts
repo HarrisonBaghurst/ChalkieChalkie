@@ -7,23 +7,16 @@ export const runtime = "nodejs";
 const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
 const INVITE_RETENTION_DAYS = 7;
 
-/**
- * Delete all workspaces that are more than INACTIVITY_HOURS old from Supabase,
- * and prune old link_invites rows. The invite prune is hygiene, not
- * correctness — redemption already checks expires_at, so an unpruned row is
- * inert, not a liability. 7 days keeps a short audit tail of who redeemed
- * what before the row disappears.
- *
- * @route /api/cron/remove-unused-rooms
- */
+// Pruning invites is hygiene, not correctness: redemption checks expires_at,
+// so an unpruned row is inert.
 export async function GET(request: Request) {
-    // verify caller is Vercel cron (auto-injects this header when CRON_SECRET is set)
+    // Vercel cron injects this header whenever CRON_SECRET is set.
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response("Unauthorised", { status: 401 });
     }
 
-    // defense-in-depth rate limit after auth so unauth traffic doesn't hit Upstash
+    // After auth, so unauthenticated traffic never reaches Upstash.
     const blocked = await enforceRateLimit(request, "cron");
     if (blocked) return blocked;
 

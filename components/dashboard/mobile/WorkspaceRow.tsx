@@ -22,9 +22,8 @@ type WorkspaceRowProps = {
     onDeleted: (workspaceId: string) => void;
 };
 
-// One session, condensed to two lines for a phone. Everything the desktop
-// table spreads across its columns moves into the detail sheet a tap opens —
-// including the actions, so nothing here depends on hover.
+// Everything the desktop table spreads across columns moves into the tap-open
+// sheet, so nothing here depends on hover.
 const WorkspaceRow = ({
     workspace,
     bucket,
@@ -38,11 +37,9 @@ const WorkspaceRow = ({
     const [detailOpen, setDetailOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
 
-    // Only the workspace host may edit it, mirroring the API route guard.
+    // Mirrors the API route guard.
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
 
-    // Ordered participants, host first — the sheet lists these, and the row
-    // shows one avatar from them.
     const participants = useMemo<userInfo[]>(() => {
         const ordered = [
             workspace.host,
@@ -55,9 +52,7 @@ const WorkspaceRow = ({
             .filter((u): u is userInfo => !!u);
     }, [workspace.host, workspace.collaboratorIds, usersMap]);
 
-    // Whoever is across the table from the viewer: a host sees their first
-    // student, everyone else sees the host. Same intent as pickCounterparty,
-    // resolved per workspace rather than from the viewer's global host flag.
+    // A host sees their first student, everyone else sees the host.
     const counterparty = useMemo<userInfo | null>(() => {
         const viewerHosts = !!user && isHost(user.id, workspace);
         if (!viewerHosts) return usersMap[workspace.host] ?? null;

@@ -18,9 +18,7 @@ export const useKeybinds = ({
 }: UseKeybindsProps) => {
     useEffect(() => {
         const onKeypress = (event: KeyboardEvent) => {
-            // Ignore keybinds while typing in a text field (e.g. the
-            // WorkspaceTopbar title input) so Backspace/Ctrl+Z don't leak
-            // into canvas selections and history.
+            // So Backspace/Ctrl+Z in a text field don't leak into the canvas.
             const target = event.target as HTMLElement | null;
             if (
                 target &&
@@ -39,7 +37,6 @@ export const useKeybinds = ({
                 event.preventDefault();
                 redo();
             } else if (event.key === "Delete" || event.key === "Backspace") {
-                // Delete marquee-selected strokes
                 const hadSelectorSelection =
                     state.selectedStrokeIds.length > 0 ||
                     state.selectedImageIds.length > 0;
@@ -49,9 +46,8 @@ export const useKeybinds = ({
                     state.selectedStrokeIds = [];
                 }
 
-                // Delete marquee-selected images. Only the Liveblocks meta is
-                // removed here; the storage blob is left for the cleanup cron
-                // so that Ctrl+Z can restore the image without breaking.
+                // Meta only — the blob is left for the cleanup cron so Ctrl+Z
+                // can restore the image.
                 const selectorImageIds = [...state.selectedImageIds];
                 if (selectorImageIds.length > 0) {
                     for (const id of selectorImageIds) {
@@ -63,12 +59,10 @@ export const useKeybinds = ({
                     state.selectedImageIds = [];
                 }
 
-                // Clear the selection box if the marquee had a selection
                 if (hadSelectorSelection) {
                     state.selectorRect = null;
                 }
 
-                // Delete the single click-selected image (meta only).
                 const id = state.selectedImageId;
                 if (id && !selectorImageIds.includes(id)) {
                     removeImageMeta(id);

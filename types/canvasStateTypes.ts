@@ -3,17 +3,16 @@ import { PastedImage, PastedImageMeta, ResizeHandle } from "@/types/imageTypes";
 import { Rect } from "@/lib/genometry";
 import { Tools } from "@/types/toolTypes";
 
-// camera — single source of truth for pan/zoom
 export interface Viewport {
     offset: Point;
     zoom: number;
 }
 
-// all mutable canvas interaction state lives in one object held in a single ref
+// All mutable canvas interaction state, held in a single ref.
 export interface CanvasState {
     // camera
     viewport: Viewport;
-    // transient pan session — set on pan-down, cleared on pan-up
+    // set on pan-down, cleared on pan-up
     panOrigin: { startScreen: Point; startOffset: Point } | null;
     lastMouseScreen: Point | null;
 
@@ -24,15 +23,15 @@ export interface CanvasState {
     highlightColour: string;
     tool: Tools;
 
-    // images — selectedImageId is the single image clicked with the pointer,
-    // the only selection that can be resized
+    // images — selectedImageId is the lone click-selected one, the only
+    // selection that can be resized
     cursorPosition: Point;
     selectedImageId: string | null;
     imageDragOffset: Point | null;
     activeResizeHandle: ResizeHandle;
     pastedImages: PastedImage[];
 
-    // marquee selection — the pointer's drag-out box and what it swept up
+    // marquee selection
     selectorRect: Rect | null;
     selectorRectOrigin: Rect | null;
     selectorStart: Point | null;
@@ -43,7 +42,7 @@ export interface CanvasState {
     selectorImageOrigins: Map<string, Point>;
 }
 
-// Liveblocks mutations handed to tools so they can commit on mouse-up
+// Handed to tools so they can commit on mouse-up.
 export interface ToolCallbacks {
     onErase: (ids: string[]) => void;
     onStrokeFinished: (stroke: Stroke) => void;
@@ -51,7 +50,6 @@ export interface ToolCallbacks {
     onMoveStrokes: (moves: { id: string; points: Point[] }[]) => void;
 }
 
-// everything a tool strategy needs, passed to every onDown/onMove/onUp
 export interface ToolContext {
     e: React.MouseEvent;
     state: CanvasState;

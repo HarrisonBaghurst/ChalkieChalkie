@@ -1,37 +1,17 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
 
-/**
- * Strip a student from every future-dated room hosted by a given tutor, as
- * part of unlinking the two.
- *
- * Scope is host_id + membership, never "any room containing both": a room
- * hosted by a DIFFERENT tutor is that tutor's relationship to manage, not
- * this one's business. Scoping by host also guarantees a host can never be
- * stripped from their own room, which would 403 them out of it at
- * liveblocks-auth.
- *
- * "Future" includes start_time IS NULL, because DashboardClient buckets a
- * null-start_time room as Upcoming — leaving it untouched would leave the
- * removed party's room sitting in their Upcoming list, defeating the point of
- * the removal. The cutoff subtracts DASHBOARD_GRACE_MS so this agrees with
- * what the dashboard itself calls "upcoming".
- *
- * Liveblocks note: a student already connected to a room stripped here keeps
- * their access token and stays connected until it expires or the socket
- * drops — Liveblocks access tokens carry their grants inside the token and
- * there is no server-side revocation API. Their NEXT auth round-trip
- * (reload, reconnect, expiry) re-checks Room.user_ids via liveblocks-auth and
- * 403s them, and the board is already unreachable from their dashboard since
- * /api/users/workspaces filters on membership. This is an accepted gap, not
- * something to fix here; hard eviction would require liveblocks.deleteRoom,
- * which destroys the board for every participant, not just the removed one.
- *
- * Returns the number of rooms updated. Throws on the first write failure so
- * the caller's errorResponse catches it — the tutor_links row is deleted by
- * the caller only after this resolves, so a thrown error leaves the link
- * intact and the operation retryable.
- */
+// Scoped by host_id, never "any room containing both": another tutor's room is
+// their relationship to manage, and scoping by host means a host can never be
+// stripped from their own room and 403'd out of it.
+//
+// Null start_time counts as future because the dashboard buckets it as Upcoming.
+//
+// Accepted gap: an already-connected student keeps their Liveblocks token until
+// it expires — grants live inside the token and there is no revocation API.
+//
+// Throws on first write failure, leaving the tutor_links row intact so the
+// caller's retry is safe.
 export async function stripStudentFromFutureRooms(
     tutorId: string,
     studentId: string,
@@ -45,10 +25,8 @@ export async function stripStudentFromFutureRooms(
             .eq("host_id", tutorId)
             .contains("user_ids", [studentId]);
 
-    // Two queries rather than one .or(): an ISO timestamp contains dots, and
-    // "." is PostgREST's operator separator inside an .or() filter string, so
-    // an unquoted value there would silently mis-parse. Row counts here are
-    // small, so the extra round-trip is not a real cost.
+    // Two queries, not one .or(): ISO dots collide with PostgREST's operator
+    // separator and mis-parse silently.
     const [scheduledRes, unscheduledRes] = await Promise.all([
         scoped().gte("start_time", cutoff),
         scoped().is("start_time", null),

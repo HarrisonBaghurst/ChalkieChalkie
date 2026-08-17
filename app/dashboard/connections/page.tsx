@@ -3,9 +3,7 @@ import { getUserRole } from "@/lib/serverRole";
 import { UserRole } from "@/types/userTypes";
 import { auth } from "@clerk/nextjs/server";
 
-// Resolves the account role server-side so the heading ("Your Students" vs
-// "Your Tutors") is right on first paint instead of appearing once Clerk
-// hydrates. Same convention as app/dashboard/page.tsx — see the comment there
+// Server-side so the heading is right on first paint; see app/dashboard/page.tsx
 // for why auth() stays outside the try.
 const resolveRole = async (): Promise<UserRole | undefined> => {
     const { userId } = await auth();

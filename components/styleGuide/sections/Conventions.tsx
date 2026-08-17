@@ -15,11 +15,6 @@ const Rule = ({
     </div>
 );
 
-/**
- * Layout conventions and the rules that keep new work inside the system. This
- * is the section to read before writing a component, and the section to add to
- * when a review turns up a new trap.
- */
 const Conventions = () => (
     <Section
         id="conventions"

@@ -5,11 +5,6 @@ import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
 import { validateWorkspaceBody, type WorkspaceBody } from "./_shared";
 
-/**
- * Create a new workspace for the authenticated tutor.
- *
- * @route POST /api/workspaces
- */
 export async function POST(req: Request) {
     const { userId } = await auth();
     if (!userId) return new Response("Unauthorised", { status: 401 });
@@ -17,7 +12,6 @@ export async function POST(req: Request) {
     const blocked = await enforceRateLimit(req, "workspace:create", userId);
     if (blocked) return blocked;
 
-    // tutor-only action
     const forbidden = await requireTutor(userId);
     if (forbidden) return forbidden;
 
@@ -55,7 +49,6 @@ export async function POST(req: Request) {
     if (error) {
         // TODO: centralise via errorResponse helper
         console.error("[workspace:create] Supabase error:", error);
-        // Postgres unique violation on the primary key
         if ((error as { code?: string }).code === "23505") {
             return new Response("Conflict", { status: 409 });
         }

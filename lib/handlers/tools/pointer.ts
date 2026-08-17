@@ -9,21 +9,13 @@ import {
     strokeIntersectsRect,
 } from "@/lib/genometry";
 
-// The pointer is the only selection tool: a press decides between three modes
-// and the rest of the gesture follows from that choice.
-//
-//   1. inside an existing selection box → drag everything in it
-//   2. on an image                      → select it, then drag or resize it
-//   3. on empty board                   → drag out a marquee to multi-select
-//
-// A plain click is just a zero-length drag, so click-to-select an image and
-// drag-to-marquee are the same gesture distinguished only by distance.
+// A plain click is a zero-length drag, so click-to-select an image and
+// drag-to-marquee are the same gesture, separated only by distance.
 
 const MIN_IMAGE_SIZE = 20;
-// a drag shorter than this is treated as a click, i.e. deselect
+// shorter than this counts as a click, i.e. deselect
 const MIN_DRAG = 4;
-// slack around the selection box that still counts as inside it, so the border
-// itself can be grabbed
+// slack so the selection border itself can be grabbed
 const DRAG_HIT_PADDING = 4;
 
 const clearMarquee = (state: CanvasState) => {
@@ -37,12 +29,9 @@ const clearMarquee = (state: CanvasState) => {
     state.selectorImageOrigins.clear();
 };
 
-// True while a press landed on a single image and is moving or resizing it.
 const isTransformingImage = (state: CanvasState) =>
     state.selectedImageId !== null &&
     (state.activeResizeHandle !== null || state.imageDragOffset !== null);
-
-// ─── DOWN ─────────────────────────────────────────────────────────────────────
 
 const onDown = ({ e, state }: ToolContext) => {
     const worldPoint = getWorldPoint(e, state.viewport);
@@ -60,7 +49,6 @@ const onDown = ({ e, state }: ToolContext) => {
         };
 
         if (pointInRect(worldPoint, hitRect)) {
-            // Enter drag phase — snapshot rect and image origins
             state.selectorDragStart = worldPoint;
             state.selectorDelta = { x: 0, y: 0 };
             state.selectorRectOrigin = { ...state.selectorRect };
@@ -108,8 +96,6 @@ const onDown = ({ e, state }: ToolContext) => {
         height: 0,
     };
 };
-
-// ─── MOVE ─────────────────────────────────────────────────────────────────────
 
 const onMove = ({ e, state }: ToolContext) => {
     const worldPoint = getWorldPoint(e, state.viewport);
@@ -184,7 +170,6 @@ const onMove = ({ e, state }: ToolContext) => {
         const dy = worldPoint.y - state.selectorDragStart.y;
         state.selectorDelta = { x: dx, y: dy };
 
-        // Translate selection box live from its snapshotted origin
         if (state.selectorRectOrigin) {
             state.selectorRect = {
                 ...state.selectorRectOrigin,
@@ -193,7 +178,6 @@ const onMove = ({ e, state }: ToolContext) => {
             };
         }
 
-        // Move images live via local ref (same pattern as a single image drag)
         for (const img of state.pastedImages) {
             const origin = state.selectorImageOrigins.get(img.id);
             if (origin) {
@@ -215,12 +199,9 @@ const onMove = ({ e, state }: ToolContext) => {
     }
 };
 
-// ─── UP ───────────────────────────────────────────────────────────────────────
-
 const onUp = ({ state, strokes, callbacks }: ToolContext) => {
-    // 1. commit a single image's move or resize. handleMouseUp clears
-    // imageDragOffset/activeResizeHandle only after this runs, so they still
-    // report which gesture was in flight.
+    // 1. commit a single image's move or resize — handleMouseUp clears the
+    // gesture state only after this runs, so it still reads here.
     if (isTransformingImage(state)) {
         const id = state.selectedImageId!;
         const img = state.pastedImages.find((i) => i.id === id);
@@ -240,7 +221,6 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
         const { x: dx, y: dy } = state.selectorDelta;
 
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-            // Commit stroke positions to Liveblocks
             const moves = state.selectedStrokeIds.flatMap((id) => {
                 const stroke = (strokes ?? []).find((s) => s.id === id);
                 if (!stroke) return [];
@@ -256,7 +236,6 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
             });
             if (moves.length > 0) callbacks.onMoveStrokes(moves);
 
-            // Commit image positions (already updated in local ref during move)
             for (const img of state.pastedImages) {
                 if (state.selectedImageIds.includes(img.id)) {
                     callbacks.onImageMoved(img.id, { x: img.x, y: img.y });
@@ -281,13 +260,12 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
             state.selectedImageIds = state.pastedImages
                 .filter((img) => imageIntersectsRect(img, normalised))
                 .map((img) => img.id);
-            // Only keep rect as drag hit area if something was actually selected
+            // The rect doubles as the drag hit area, so drop it when empty.
             const hasSelection =
                 state.selectedStrokeIds.length > 0 ||
                 state.selectedImageIds.length > 0;
             state.selectorRect = hasSelection ? normalised : null;
         } else {
-            // Tiny drag treated as click — deselect
             state.selectedStrokeIds = [];
             state.selectedImageIds = [];
             state.selectorRect = null;

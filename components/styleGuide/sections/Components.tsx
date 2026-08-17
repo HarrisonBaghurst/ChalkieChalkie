@@ -76,7 +76,6 @@ const STEPS = [
     { id: 4, label: "Review" },
 ];
 
-/** A labelled cell in a specimen row. */
 const Item = ({
     label,
     children,
@@ -90,19 +89,10 @@ const Item = ({
     </div>
 );
 
-/**
- * The live component gallery. Everything below renders the real primitive from
- * `components/ui`, so a restyle shows up here immediately — that is the point
- * of the page. Add a specimen whenever you add a primitive.
- */
 const Components = () => {
     const [step, setStep] = useState(2);
 
-    // The invite-code specimens below need a real Date.now() to derive their
-    // expiresAt values. A lazy initializer keeps it fixed for the component's
-    // lifetime (so re-renders don't restart the ticking specimens); InviteCountdown
-    // itself carries suppressHydrationWarning for the resulting server/client
-    // text drift, same as React's own guidance for rendering the current time.
+    // Lazy initializer, so re-renders don't restart the ticking specimens.
     const [inviteNow] = useState(() => Date.now());
 
     return (

@@ -4,12 +4,9 @@ import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/serverRole";
 
-// Resolves the account role server-side so the sidebar's tutor-only Actions
-// section is correct on first paint instead of appearing once Clerk hydrates.
-// A failed lookup is non-fatal: the client falls back to reading the role off
-// the Clerk user object. auth() stays outside the try — it reads headers, and
-// Next signals "this route can't be static" by throwing from that call, which
-// must propagate rather than be swallowed as a lookup failure.
+// Server-side so the tutor-only Actions are right on first paint. auth() stays
+// outside the try: Next throws from it to force dynamic rendering, and that
+// throw must propagate rather than read as a lookup failure.
 const resolveRole = async (): Promise<UserRole | undefined> => {
     const { userId } = await auth();
     if (!userId) return undefined;

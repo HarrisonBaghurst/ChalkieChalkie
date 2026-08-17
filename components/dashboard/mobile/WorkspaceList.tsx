@@ -16,13 +16,8 @@ type WorkspaceListProps = {
     onWorkspaceDeleted: (workspaceId: string) => void;
 };
 
-// Mobile stand-in for WorkspaceTable. Same container chrome — surface
-// rounding, hairline border, card fill — so the list reads as the same object
-// the table does at 2xl, just with the columns folded into each row's sheet.
-//
-// overflow-hidden is safe here, unlike on the table: the only overlays these
-// rows open are a Sheet and the WorkspaceModal, both of which portal to the
-// body rather than rendering inside the container.
+// overflow-hidden is safe here, unlike on the table: every overlay these rows
+// open portals to the body.
 const WorkspaceList = ({
     rows,
     usersMap,

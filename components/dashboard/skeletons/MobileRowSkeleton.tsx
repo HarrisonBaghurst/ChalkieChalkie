@@ -1,9 +1,7 @@
 import React from "react";
 import Skeleton from "@/components/ui/Skeleton";
 
-// Placeholder for the compact rows both mobile lists use (mobile/WorkspaceRow
-// and mobile/ConnectionRow): avatar, two stacked lines, trailing chevron. Same
-// padding and divider as the real rows so nothing shifts when data lands.
+// Same padding and divider as the real mobile rows, so nothing shifts.
 const MobileRowSkeleton = ({ showStatus = false }: { showStatus?: boolean }) => (
     <div className="flex items-center gap-3 border-b border-foreground-third/10 px-4 py-3 last:border-b-0">
         <Skeleton className="w-8 h-8 rounded-md" />
@@ -16,7 +14,6 @@ const MobileRowSkeleton = ({ showStatus = false }: { showStatus?: boolean }) => 
     </div>
 );
 
-// The container both mobile lists render their rows into.
 export const MobileListSkeleton = ({
     rows,
     showStatus = false,

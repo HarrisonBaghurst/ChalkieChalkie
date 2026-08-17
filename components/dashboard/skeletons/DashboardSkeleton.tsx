@@ -6,23 +6,13 @@ import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
 
-// Placeholder column shown while the dashboard's workspaces/users fetch is in
-// flight. Mirrors the real tree rendered by DashboardClient: page heading, the
-// Next card, then WorkspaceLists' control row and workspace table. Static
-// chrome (headings, tab labels, control labels, table column headers) is
-// rendered for real and only data-dependent parts shimmer, so nothing moves
-// when the data lands. Slots into DashboardShell's content column.
-//
-// Every breakpoint swap here mirrors one in the real components — change the
-// seam there and it has to change here too, or the placeholder stops matching
-// what replaces it.
+// Only data-dependent parts shimmer, so nothing moves when the data lands.
+// Every breakpoint swap mirrors one in the real components — move a seam there
+// and it has to move here too.
 
 const PLACEHOLDER_ROWS = 5;
 
-// Mirrors Next.tsx's populated card: gradient border, open-in-new icon, the
-// counterparty avatar and the time/title, description and info-tag column.
-// Below 2xl the avatar stacks above the detail column and the card carries the
-// desktop-only note instead of the open-in-new icon, matching the real card.
+// Mirrors Next.tsx.
 const NextSkeleton = () => {
     return (
         <div className="relative w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
@@ -60,10 +50,7 @@ const NextSkeleton = () => {
     );
 };
 
-// Mirrors WorkspaceLists' control row: one column on a phone (tabs, search,
-// filters sheet trigger), the original single row from 2xl. The controls are
-// inert copies of the real chrome — only the per-tab counts, which depend on
-// the fetch, are shimmered.
+// Mirrors WorkspaceLists' control row; only the per-tab counts shimmer.
 const ControlsSkeleton = () => {
     const tabs = ["Upcoming", "Previous", "All"];
 
@@ -117,8 +104,7 @@ const ControlsSkeleton = () => {
     );
 };
 
-// Mirrors WorkspaceTable: same container, same border-separate corner handling
-// and the same column headers, with placeholder rows in the body.
+// Mirrors WorkspaceTable, down to the border-separate corner handling.
 const TableSkeleton = () => {
     return (
         <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">

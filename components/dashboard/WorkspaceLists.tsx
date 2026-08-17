@@ -47,8 +47,7 @@ const WorkspaceLists = ({
 }: WorkspaceListsProps) => {
     const [activeTab, setActiveTab] = useState<TabId>("upcoming");
 
-    // Tag each workspace with its bucket so the table can derive status and so
-    // the "All" tab can carry both sets in one list (upcoming first, then past).
+    // Bucket-tagged so the "All" tab can carry both sets in one list.
     const upcomingRows = useMemo<WorkspaceRow[]>(
         () => upcoming.map((w) => ({ workspace: w, bucket: "upcoming" })),
         [upcoming],

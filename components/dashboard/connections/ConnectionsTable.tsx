@@ -21,9 +21,8 @@ const ConnectionsTable = ({
             : "No tutors yet. Share a code or enter one from a tutor.";
 
     return (
-        // Same border-separate + 13px corner trick as WorkspaceTable (see the
-        // comment there): keeps the table visually rounded without an
-        // overflow-hidden container, which would clip RowActionsMenu's popover.
+        // Rounded without an overflow-hidden container, which would clip
+        // RowActionsMenu's popover.
         <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">
             <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
                 <thead>

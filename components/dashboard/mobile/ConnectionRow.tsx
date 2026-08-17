@@ -22,9 +22,6 @@ type ConnectionRowProps = {
     onRemove: (linkId: string) => void;
 };
 
-// Mobile counterpart to ConnectionRow's table row. The one action a link has —
-// removing it — lives behind the same tap-for-detail sheet the workspace rows
-// use, rather than the desktop row's trailing actions menu.
 const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
     const [open, setOpen] = useState(false);
     const { counterparty } = link;

@@ -219,13 +219,8 @@ const WorkspaceModal = ({
                 showCloseButton={false}
                 mobileFullScreen
                 className="2xl:h-[55dvh]"
-                // DialogContent is portaled to document.body, but React
-                // synthetic events bubble along the *React* tree, not the DOM
-                // tree — and this modal is a React child of the row it's
-                // opened from. Without this, any click inside the modal (Save,
-                // a form field, ...) also bubbles up to the row's onClick and
-                // navigates to the board instead of updating it. Same fix
-                // RowActionsMenu already applies to its own portaled content.
+                // Portaled to the body, but synthetic events bubble along the
+                // React tree, so a click here would reach the row's onClick.
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* flex-wrap so the delete-confirmation cluster drops to its

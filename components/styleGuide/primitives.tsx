@@ -3,17 +3,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-/**
- * Shared furniture for the admin style guide (`app/style-guide`).
- *
- * Everything here is deliberately plain: the page's job is to show the design
- * system, so its own chrome must not invent new patterns to compete with the
- * specimens. Swatches and type samples read their values back off the DOM at
- * runtime rather than repeating literals from globals.css, so the page cannot
- * drift out of date when a token changes.
- */
+// Specimens read their values back off the DOM rather than repeating literals
+// from globals.css, so the page can't drift when a token changes.
 
-/** A top-level, anchored section of the guide. */
 export const Section = ({
     id,
     title,
@@ -38,10 +30,6 @@ export const Section = ({
     </section>
 );
 
-/**
- * A named specimen: heading, prose explaining when to reach for it, then the
- * live example on a control surface.
- */
 export const Block = ({
     title,
     description,
@@ -66,7 +54,6 @@ export const Block = ({
     </div>
 );
 
-/** Inline code — class names, tokens, file paths. */
 export const Code = ({ children }: { children: React.ReactNode }) => (
     <code className="rounded-[4px] bg-white/5 px-1.5 py-0.5 font-mono text-caption text-foreground-second">
         {children}
@@ -79,10 +66,7 @@ const NOTE_TONES = {
     dead: "border-l-foreground-third",
 } as const;
 
-/**
- * A callout. `rule` = do this; `warn` = a trap that has already bitten us;
- * `dead` = defined in globals.css but currently unused.
- */
+// rule = do this; warn = a trap that has bitten us; dead = defined but unused.
 export const Note = ({
     tone = "rule",
     children,
@@ -100,12 +84,10 @@ export const Note = ({
     </p>
 );
 
-/** Caption under a specimen, naming the exact class or prop that produced it. */
 export const Caption = ({ children }: { children: React.ReactNode }) => (
     <span className="text-caption text-foreground-third">{children}</span>
 );
 
-/** Reads a CSS custom property off `:root` so swatches show the real value. */
 const useCssVariable = (name: string): string => {
     const [value, setValue] = useState("");
     useEffect(() => {
@@ -118,10 +100,6 @@ const useCssVariable = (name: string): string => {
     return value;
 };
 
-/**
- * One colour token: a chip filled from the variable itself, the variable name,
- * its resolved value, and what the token is for.
- */
 export const Swatch = ({
     token,
     usage,
@@ -151,7 +129,6 @@ export const Swatch = ({
     );
 };
 
-/** A fixed hex from a TS palette (no CSS variable behind it). */
 export const HexSwatch = ({
     name,
     code,
@@ -171,11 +148,8 @@ export const HexSwatch = ({
     </div>
 );
 
-/**
- * A type-scale specimen. Reports the font size the browser is actually
- * rendering at the current viewport width — the scale is fluid (`clamp`), so a
- * static number in prose would be true at exactly one window size.
- */
+// Measures the rendered size: the scale is fluid, so a static number in prose
+// would be true at exactly one window width.
 export const TypeSpecimen = ({
     className,
     usage,
@@ -211,7 +185,6 @@ export const TypeSpecimen = ({
     );
 };
 
-/** Grid wrapper for swatch/specimen rows. */
 export const Grid = ({
     cols = 2,
     children,

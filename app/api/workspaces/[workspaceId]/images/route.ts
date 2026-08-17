@@ -4,16 +4,13 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-// alphanumeric, dash, underscore — matches UUIDs and crypto.randomUUID output
 const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ID_MAX_LENGTH = 64;
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
-// must stay in sync with ALLOWED_PASTE_TYPES in hooks/useImagePaste.tsx
+// Keep in sync with ALLOWED_PASTE_TYPES in hooks/useImagePaste.tsx.
 const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
-// TODO: this signed URL is stored permanently in Liveblocks meta, but rooms
-// that stay *active* past 14 days outlive it and show broken images (the cron
-// only deletes inactive rooms). Store the storage path in the meta instead
-// and resolve/refresh signed URLs client-side at load time.
+// TODO: rooms active past 14 days outlive this URL and show broken images.
+// Store the storage path in the meta and sign it client-side instead.
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
 
 function isSafeId(value: unknown): value is string {
@@ -25,11 +22,6 @@ function isSafeId(value: unknown): value is string {
     );
 }
 
-/**
- * Upload pasted image to database
- *
- * @route api/workspaces/[workspaceId]/images
- */
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ workspaceId: string }> },
@@ -71,7 +63,7 @@ export async function POST(
         );
     }
 
-    // if the client sent a workspaceId in the form, it must match the URL
+    // The URL param is authoritative; a form workspaceId may only agree.
     if (
         bodyWorkspaceId !== null &&
         bodyWorkspaceId !== "" &&
@@ -104,7 +96,6 @@ export async function POST(
         );
     }
 
-    // verify user is a member of the workspace
     const { data } = await supabaseAdmin
         .from("Room")
         .select("user_ids")
@@ -116,7 +107,6 @@ export async function POST(
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // upload to supabase storage
     const buffer = Buffer.from(await file.arrayBuffer());
     const path = `${urlWorkspaceId}/${imageId}`;
 
@@ -195,7 +185,6 @@ export async function DELETE(
         );
     }
 
-    // verify user is a member of the workspace
     const { data } = await supabaseAdmin
         .from("Room")
         .select("user_ids")

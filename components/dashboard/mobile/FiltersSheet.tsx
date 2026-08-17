@@ -25,10 +25,8 @@ type FiltersSheetProps = {
     onClearFilters: () => void;
 };
 
-// Below 2xl the member popover and the clear-filters button collapse into this
-// single control: the two of them plus the search field overflow a phone's
-// width, and a popover anchored to a full-width trigger is a sheet in all but
-// name anyway.
+// The popover and clear button plus the search field overflow a phone's width,
+// so below 2xl they collapse into this one control.
 const FiltersSheet = ({
     collaborators,
     selectedIds,

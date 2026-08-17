@@ -6,7 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { toast } from "sonner";
 
-// raw Supabase "Room" row shape returned by GET /api/workspaces/[id]
+// Raw snake_case row from GET /api/workspaces/[id].
 type RoomRow = {
     title?: string | null;
     host_id?: string | null;
@@ -21,11 +21,6 @@ type HostInfo = {
 
 const MAX_TITLE_LENGTH = 100;
 
-/**
- * Top-left board chrome. Mirrors the dashboard sidebar identity block (host
- * avatar + "{host}'s Chalkie Chalkie") and exposes the workspace title, which
- * the host can edit inline. Saves on blur via the existing workspace PATCH.
- */
 const BoardHeader = () => {
     const { boardId: workspaceId } = useParams<{ boardId: string }>();
     const { user } = useUser();
@@ -35,12 +30,11 @@ const BoardHeader = () => {
     const [hostId, setHostId] = useState<string | null>(null);
     const [title, setTitle] = useState<string>("");
 
-    // last value persisted to the DB, used to detect real changes on blur
+    // Last persisted value, so blur can tell a real edit from a no-op.
     const savedTitleRef = useRef<string>("");
 
     const isHost = !!user?.id && hostId === user.id;
 
-    // resolve title + host identity once on mount
     useEffect(() => {
         if (!workspaceId) return;
         let cancelled = false;
@@ -67,7 +61,7 @@ const BoardHeader = () => {
                 const { users }: { users: HostInfo[] } = await usersRes.json();
                 if (!cancelled && users[0]) setHost(users[0]);
             } catch {
-                // header identity is non-critical; fail silently
+                // Non-critical chrome; fail silently.
             }
         };
 
@@ -77,7 +71,6 @@ const BoardHeader = () => {
         };
     }, [workspaceId]);
 
-    // persist the title only when it has actually changed (fired on blur)
     const commitTitle = async () => {
         const next = title.trim();
         if (!next || next === savedTitleRef.current) {
@@ -138,9 +131,8 @@ const BoardHeader = () => {
             <div className="w-px h-8 bg-foreground-third/15" />
 
             {isHost ? (
-                // inline-grid sizer: the invisible span sets the column width to
-                // fit the text, the input stretches to fill it — so the field
-                // grows/shrinks exactly with the title.
+                // Grid sizer: the hidden span sets the column width, the input
+                // fills it, so the field tracks the title's length.
                 <div className="grid items-center max-w-[36vw] min-w-[6ch]">
                     <input
                         value={title}

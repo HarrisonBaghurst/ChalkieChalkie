@@ -27,11 +27,8 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
         value ? pad(value.getMinutes()) : null,
     );
 
-    /*  The two free-text boxes this replaced accepted any minute, so a
-        workspace saved earlier can hold e.g. 14:37. Offering only the
-        quarter hours would leave that value unselectable and silently
-        rewrite the lesson time on the next save, so a stored off-grid
-        minute is merged into the list. */
+    // Older workspaces hold arbitrary minutes; without merging the stored
+    // value in, the next save would silently move the lesson.
     const minuteOptions = useMemo(() => {
         if (minute === null || QUARTER_HOURS.includes(minute)) {
             return QUARTER_HOURS;
@@ -39,10 +36,8 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
         return [...QUARTER_HOURS, minute].sort();
     }, [minute]);
 
-    /*  Emitted straight from the handlers rather than a useEffect on the
-        parts. The effect this replaces had to re-derive the Date, compare it
-        against the incoming prop and carry an exhaustive-deps suppression to
-        avoid a loop; passing the new values in directly needs none of that. */
+    // Emitted from the handlers, not an effect on the parts, which needed a
+    // deps suppression to avoid looping.
     const emit = (
         nextDay: Date | undefined,
         nextHour: string | null,

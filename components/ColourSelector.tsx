@@ -9,19 +9,15 @@ interface ColourSelectorProps {
     onColourChosen?: () => void;
 }
 
-// Fan geometry: every card starts at the same anchor point and is rotated
-// about a shared pivot RADIUS px below it, so animating only `rotate` moves
-// each card along the arc while tilting it to stay tangent — position and
-// rotation come from the single transform.
+// Every card shares one anchor and pivots about a point RADIUS below it, so
+// animating `rotate` alone carries it along the arc, tangent as it goes.
 const CARD_W = 72;
 const CARD_H = 86;
 const CARD_GAP = 10;
 const RADIUS = 800;
 const STEP_DEG = ((CARD_W + CARD_GAP) / RADIUS) * (180 / Math.PI);
-// the clip container's left edge sits on the sidebar's right edge; the first
-// card rests FIRST_CARD_X inside it, and every card starts tucked far enough
-// behind the clip edge to be fully hidden, so it slides out from under the
-// sidebar rather than fading in
+// Cards start tucked fully behind the clip edge, so they slide out from under
+// the sidebar rather than fading in.
 const FIRST_CARD_X = 15;
 const TOP_PAD = 12;
 const ENTRY_DEG = ((FIRST_CARD_X + CARD_W + 8) / RADIUS) * (180 / Math.PI);
@@ -38,8 +34,7 @@ const ColourSelector = ({
 
     const count = displayColours.length;
     const lastRad = ((count - 1) * STEP_DEG * Math.PI) / 180;
-    // bounding box sized to the whole fan, with padding so hover scale/lift
-    // isn't clipped at the edges
+    // Padded so the hover lift isn't clipped.
     const fanWidth = FIRST_CARD_X + count * (CARD_W + CARD_GAP) + 20;
     const fanHeight = TOP_PAD + CARD_H + RADIUS * (1 - Math.cos(lastRad)) + 24;
 

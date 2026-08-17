@@ -1,15 +1,9 @@
 import { Point } from "@/types/strokeTypes";
 
-/**
- * Simplify a polyline using the Ramer–Douglas–Peucker algorithm.
- * @param points Input list of points
- * @param epsilon Maximum allowed deviation (pixels)
- * @returns Simplified list of points
- */
+// Ramer–Douglas–Peucker; epsilon is the maximum deviation in pixels.
 export function simplifyRDP(points: Point[], epsilon = 2): Point[] {
   if (points.length < 3) return points;
 
-  // Find point farthest from line between endpoints
   const [start, end] = [points[0], points[points.length - 1]];
   let maxDist = 0;
   let index = 0;
@@ -22,13 +16,11 @@ export function simplifyRDP(points: Point[], epsilon = 2): Point[] {
     }
   }
 
-  // If the max distance exceeds tolerance, recursively simplify
   if (maxDist > epsilon) {
     const left = simplifyRDP(points.slice(0, index + 1), epsilon);
     const right = simplifyRDP(points.slice(index), epsilon);
     return left.slice(0, -1).concat(right);
   } else {
-    // Otherwise, return endpoints
     return [start, end];
   }
 }

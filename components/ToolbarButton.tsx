@@ -15,11 +15,8 @@ interface ToolbarButtonProps {
     highlightColourRef?: RefObject<string>;
 }
 
-// how long the cursor must rest on an unselected colour tool before its colour
-// popover opens
 const HOVER_OPEN_DELAY = 500;
-// grace period after the cursor leaves before the popover closes, so moving
-// across the gap between the button and the fan doesn't dismiss it
+// Grace period, so crossing the gap to the fan doesn't dismiss it.
 const HOVER_CLOSE_DELAY = 500;
 
 const ToolbarButton = ({
@@ -35,7 +32,6 @@ const ToolbarButton = ({
     const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // pen / highlighter carry a colour ref; other tools don't
     const isColourTool = !!currentColourRef || !!highlightColourRef;
     const activeColourRef = currentColourRef ?? highlightColourRef;
 
@@ -53,7 +49,6 @@ const ToolbarButton = ({
         }
     };
 
-    // clean up any pending timers on unmount
     useEffect(
         () => () => {
             clearHover();
@@ -62,8 +57,7 @@ const ToolbarButton = ({
         [],
     );
 
-    // a colour tool reveals its palette after a short hover, whether or not
-    // it is the active tool. Re-entering cancels a pending close.
+    // Hover opens the palette whether or not the tool is active.
     const handleMouseEnter = () => {
         clearClose();
         if (!isColourTool) return;
@@ -74,8 +68,6 @@ const ToolbarButton = ({
         );
     };
 
-    // leaving the button (and its popover) cancels the hover and closes the
-    // popover after a grace period
     const handleMouseLeave = () => {
         clearHover();
         clearClose();
@@ -94,16 +86,13 @@ const ToolbarButton = ({
         clearHover();
         clearClose();
         if (isActive) {
-            // already selected → toggle the palette to change colour
             setShowColourSelect((prev) => !prev);
         } else {
-            // not selected → select the tool with its previous colour, no palette
             setShowColourSelect(false);
             onSelect?.();
         }
     };
 
-    // picking a colour selects the tool and dismisses the palette
     const handleColourChosen = () => {
         setShowColourSelect(false);
         onSelect?.();

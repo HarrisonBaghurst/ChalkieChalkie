@@ -17,10 +17,6 @@ import {
     Swatch,
 } from "../primitives";
 
-/**
- * Colour section: the semantic token set, the shadcn bridge that sits on top of
- * it, and the two fixed palettes that live in TypeScript rather than CSS.
- */
 const Colour = () => (
     <Section
         id="colour"

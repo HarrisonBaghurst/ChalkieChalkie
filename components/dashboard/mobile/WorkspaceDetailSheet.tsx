@@ -22,8 +22,7 @@ type WorkspaceDetailSheetProps = {
     open: boolean;
     workspace: Workspace;
     bucket: WorkspaceBucket;
-    // Ordered participants, host first — resolved by the row that owns this.
-    participants: userInfo[];
+    participants: userInfo[]; // host first
     canManage: boolean;
     onEdit: () => void;
     onClose: () => void;
@@ -42,12 +41,8 @@ const Field = ({
     </div>
 );
 
-// The mobile counterpart to a table row's hover tooltips and actions menu:
-// everything the desktop table shows across seven columns, in one panel a
-// touch device can actually reach.
-//
-// There is deliberately no "Join workspace" action. The board is desktop-only
-// for now, so nothing below 2xl links to it.
+// No "Join workspace" action by design: the board is desktop-only, so nothing
+// below 2xl links to it.
 const WorkspaceDetailSheet = ({
     open,
     workspace,
@@ -60,9 +55,7 @@ const WorkspaceDetailSheet = ({
     return (
         <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
             <SheetContent
-                // Same React-tree guard the WorkspaceModal documents: this is
-                // portalled, but still a React child of the row that opened
-                // it, so clicks inside would otherwise bubble to the row.
+                // Portalled, but still a React child of the row it opened from.
                 onClick={(e) => e.stopPropagation()}
             >
                 <SheetHeader>

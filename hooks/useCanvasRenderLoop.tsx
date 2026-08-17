@@ -13,7 +13,6 @@ interface useCanvasRenderLoopProps {
     strokes: readonly Stroke[] | null;
 }
 
-// runs requestAnimationFrame render loop and syncs background to pan offset + zoom
 export const useCanvasRenderLoop = ({
     canvasRef,
     canvasStateRef,

@@ -1,5 +1,4 @@
-// Relative time since `inputDate`, e.g. "3 minutes ago", "2 weeks ago".
-// Caller supplies the surrounding phrase (e.g. `Linked ${formatRelativeTime(d)}`).
+// e.g. "3 minutes ago" — the caller supplies the surrounding phrase.
 export function formatRelativeTime(inputDate: Date | string): string {
     const date = new Date(inputDate);
     const now = new Date();
@@ -30,7 +29,7 @@ export function formatRelativeTime(inputDate: Date | string): string {
     return `${diffWeeks} week${diffWeeks !== 1 ? "s" : ""} ago`;
 }
 
-// mm:ss countdown for a remaining duration in milliseconds, floored at 0:00.
+// mm:ss, floored at 0:00.
 export function formatCountdown(remainingMs: number): string {
     const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
     const minutes = Math.floor(totalSeconds / 60);

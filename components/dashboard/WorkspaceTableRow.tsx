@@ -29,9 +29,8 @@ type WorkspaceTableRowProps = {
     onDeleted: (workspaceId: string) => void;
 };
 
-// Row divider + hover live on the cells (not the <tr>) because the table uses
-// border-separate, where <tr> borders/backgrounds don't render or clip the
-// last row's rounded corners reliably.
+// On the cells, not the <tr>: border-separate won't render <tr> borders or
+// clip the last row's corners reliably.
 const cellClass =
     "px-3 py-3 align-middle text-small border-b border-foreground-third/10 group-hover:bg-foreground-third/10";
 
@@ -48,11 +47,9 @@ const WorkspaceTableRow = ({
     const role = useUserRole();
     const [editOpen, setEditOpen] = useState(false);
 
-    // Only the workspace host may edit it, mirroring the API route guard.
+    // Mirrors the API route guard.
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
 
-    // Members shown in the People column: everyone on the workspace except the
-    // creator/host, resolved to user records, capped downstream to the first 3.
     const people = useMemo<userInfo[]>(
         () =>
             (workspace.collaboratorIds ?? [])
@@ -62,7 +59,6 @@ const WorkspaceTableRow = ({
         [workspace.collaboratorIds, workspace.host, usersMap],
     );
 
-    // Ordered collaborator list (host first) for the edit modal.
     const collaborators = useMemo<userInfo[]>(() => {
         const ordered = [
             workspace.host,

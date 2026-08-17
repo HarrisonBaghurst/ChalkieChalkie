@@ -2,10 +2,6 @@
 
 import { Block, Code, Note, Section, TypeSpecimen } from "../primitives";
 
-/**
- * Type section: the six-step fluid scale, the three loaded families, and the
- * two traps that come with implementing a scale as component-layer classes.
- */
 const Typography = () => (
     <Section
         id="typography"

@@ -1,10 +1,7 @@
 import React from "react";
 import Skeleton from "@/components/ui/Skeleton";
 
-// Placeholder <tr> mirroring dashboard/WorkspaceTableRow.tsx cell for cell:
-// avatar stack, title, start time, description, feedback, status pill and the
-// trailing actions button. Same padding/divider as the real row (minus hover)
-// so rows don't shift height when the data lands.
+// Same padding and divider as WorkspaceTableRow, so heights don't shift.
 const cellClass = "px-3 py-3 align-middle border-b border-foreground-third/10";
 
 const WorkspaceTableRowSkeleton = () => {

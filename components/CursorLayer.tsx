@@ -11,14 +11,13 @@ interface CursorLayerProps {
 const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
     const others = useOthers();
 
-    // keep latest others without restarting the rAF loop on every presence tick
+    // A ref, so a presence tick doesn't restart the rAF loop.
     const othersRef = useRef(others);
     othersRef.current = others;
     const cursorRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
 
-    // drive cursor transforms off the viewport ref each frame so remote cursors
-    // track smoothly while THIS user pans/zooms (single source of truth, no
-    // stale state mirror that freezes mid-pan)
+    // Transforms come off the viewport ref each frame, so remote cursors keep
+    // tracking while this user pans.
     useEffect(() => {
         let cancelled = false;
         const update = () => {
@@ -45,7 +44,6 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
         <>
             {others.map(({ connectionId, id, presence, info }) => {
                 if (!presence?.cursor) return null;
-                // initial transform from current viewport; rAF keeps it fresh
                 const screenX = presence.cursor.x * zoom + offset.x;
                 const screenY = presence.cursor.y * zoom + offset.y;
                 const colour = getUserColour(id);

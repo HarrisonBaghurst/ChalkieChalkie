@@ -8,18 +8,13 @@ const Navbar = () => {
     const router = useRouter();
     const { user } = useUser();
 
-    // The brand links home, except inside a workspace where it returns to the
-    // dashboard. Suppress the affordance when we're already at the target.
     const isInWorkspace = pathname.startsWith("/board");
     const brandHref = isInWorkspace ? "/dashboard" : "/";
     const isAtBrandTarget = pathname === brandHref;
 
     return (
-        // z-40 keeps the navbar above page content while staying under the
-        // z-50 overlay layer (dialogs, sheets, popovers, tooltips), which
-        // portal to the body and must cover it. At its previous z-1000 it
-        // painted over modal scrims and would sit on top of the full-screen
-        // mobile dialogs entirely.
+        // z-40 stays under the z-50 overlay layer, which portals to the body
+        // and has to cover the navbar.
         <div className="h-fit py-[2svh] px-[6dvw] fixed w-full flex justify-between items-center z-40">
             <div
                 aria-hidden

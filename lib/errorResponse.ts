@@ -1,17 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-/**
- * Central error reporting.
- *
- * Logs to the console (preserving the prior `console.error` behaviour) and
- * persists a row to the `error_logs` table in Supabase so errors can be
- * monitored directly from the Supabase dashboard.
- *
- * Never throws: a failure to persist the log must not break the request that
- * triggered it, nor recurse back into reporting. It is `await`ed rather than
- * fire-and-forget because serverless runtimes terminate the function once the
- * response is returned, which would kill a pending background insert.
- */
+// Awaited, not fire-and-forget: serverless kills the function once the
+// response is returned, which would drop a pending background insert.
 export async function reportError(
     scope: string,
     err: unknown,
@@ -38,19 +28,10 @@ export async function reportError(
 }
 
 type ErrorResponseOptions = {
-    /** Public message returned to the client. Defaults to "Internal server error". */
     publicMessage?: string;
-    /** Authenticated Clerk user id, stored on the log row for context. */
     userId?: string | null;
 };
 
-/**
- * Report an error and return a standardised JSON error response.
- *
- * Single chokepoint for API catch/error branches: every route returns
- * `Response.json({ error }, { status })` with a consistent shape, while the
- * error is logged and persisted via {@link reportError}.
- */
 export async function errorResponse(
     scope: string,
     err: unknown,

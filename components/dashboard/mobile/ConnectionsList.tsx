@@ -10,8 +10,6 @@ type ConnectionsListProps = {
     onRemove: (linkId: string) => void;
 };
 
-// Mobile stand-in for ConnectionsTable, matching WorkspaceList's container so
-// both pages read as the same object below 2xl.
 const ConnectionsList = ({ links, role, onRemove }: ConnectionsListProps) => {
     const emptyLabel =
         role === "tutor"

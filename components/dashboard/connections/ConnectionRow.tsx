@@ -11,9 +11,8 @@ type ConnectionRowProps = {
     onRemove: (linkId: string) => void;
 };
 
-// Divider + hover live on the cells, not the <tr>, matching WorkspaceTableRow
-// — the table uses border-separate, where <tr> borders/backgrounds don't
-// render or clip the last row's rounded corners reliably.
+// On the cells, not the <tr>: border-separate won't render <tr> borders or
+// clip the last row's corners reliably.
 const cellClass =
     "px-3 py-3 align-middle text-small border-b border-foreground-third/10 group-hover:bg-foreground-third/10";
 

@@ -2,10 +2,6 @@
 
 import { Block, Caption, Code, Grid, Note, Section } from "../primitives";
 
-/**
- * Shape, surface and motion: the rounding tiers, the shared control chrome, the
- * chalk gradient family and the handful of animations in the app.
- */
 const Surfaces = () => (
     <Section
         id="surfaces"

@@ -9,20 +9,8 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };
 
-/**
- * Internal design-system reference, restricted to the `admin` account role.
- *
- * Deliberately NOT listed in `proxy.ts`: a protected route would bounce signed
- * out visitors to the sign-in page and so advertise that something exists here.
- * Instead every unauthorised case — signed out, wrong role, or a failed Clerk
- * lookup — renders the ordinary 404, making the route indistinguishable from
- * one that was never built. Fails closed by construction: only an explicit
- * "admin" gets through.
- *
- * Note that admin is not a superset of tutor. Nothing on this page needs tutor
- * data, and nothing tutor-gated should be opened up to admins to make an
- * internal tool easier to build.
- */
+// Gated here rather than in proxy.ts: a sign-in redirect would advertise that
+// the route exists, so every unauthorised case 404s instead.
 const page = async () => {
     const { userId } = await auth();
     if (!userId) notFound();

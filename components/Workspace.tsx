@@ -34,7 +34,6 @@ const ZOOM_RATIO = 1.1;
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    // Liveblocks state and mutations
     const {
         strokes,
         pastedImagesMeta,
@@ -50,9 +49,8 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
 
     const isLoaded = strokes !== null;
 
-    // single source of truth for all mutable canvas interaction state — tools,
-    // drawing, selection, images and the camera (viewport) all live here so
-    // handlers receive one ref instead of ~20 individual ones
+    // One ref for every piece of mutable canvas state, so handlers take one
+    // argument instead of twenty.
     const canvasStateRef = useRef<CanvasState>({
         viewport: { offset: { x: 0, y: 0 }, zoom: 1 },
         panOrigin: null,
@@ -77,11 +75,11 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         selectorImageOrigins: new Map(),
     });
 
-    // reactive tool, drives cursor styling + Sidebar active highlight
+    // Mirrored as state so cursor styling and the toolbar highlight re-render.
     const [currentTool, setCurrentTool] = useState<Tools>("pen");
 
-    // thin RefObject adapters so the Sidebar/ColourSelector subtree can read and
-    // write the colours that live inside canvasStateRef (one source of truth)
+    // Adapters so the toolbar subtree reads and writes the colours that live
+    // inside canvasStateRef rather than keeping a second copy.
     const currentColourRef = useMemo<RefObject<string>>(
         () => ({
             get current() {
@@ -105,7 +103,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         [],
     );
 
-    // Liveblocks mutations handed to the tool strategies
     const callbacks = useMemo<ToolCallbacks>(
         () => ({
             onErase: eraseStrokes,
@@ -116,7 +113,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         [eraseStrokes, addStroke, updateImageMeta, moveStrokes],
     );
 
-    // live presence
     const [_, updateMyPresence] = useMyPresence();
 
     const handlePresenceUpdate = (e: React.MouseEvent) => {
@@ -158,7 +154,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         applyZoom(canvasStateRef.current.viewport.zoom / ZOOM_RATIO, anchor);
     }, []);
 
-    // clear selection state on tool change
     const onToolChanged = (tool: Tools) => {
         setCurrentTool(tool);
         const state = canvasStateRef.current;
@@ -175,7 +170,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         state.selectorImageOrigins.clear();
     };
 
-    // hooks
     useCanvasRenderLoop({ canvasRef, canvasStateRef, strokes });
 
     usePastedImagesSync({ canvasStateRef, pastedImagesMeta });
@@ -190,7 +184,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         eraseStrokes,
     });
 
-    // prevent right click context menu on canvas
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -200,7 +193,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
             canvas.removeEventListener("contextmenu", preventContextMenu);
     }, [isLoaded]);
 
-    // wheel handler — native listener so we can preventDefault (React's onWheel is passive)
+    // Native listener so preventDefault works — React's onWheel is passive.
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -218,7 +211,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         return () => canvas.removeEventListener("wheel", onWheel);
     }, [isLoaded]);
 
-    // lock body scroll when board is mounted
     useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {
@@ -247,10 +239,8 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) => {
-                            // the canvas handler calls preventDefault, which
-                            // suppresses the browser's implicit blur of a
-                            // focused element (e.g. the title input). Blur it
-                            // manually so inline edits commit before drawing.
+                            // The canvas preventDefault suppresses the implicit
+                            // blur, so commit inline edits by hand.
                             if (
                                 document.activeElement instanceof HTMLElement
                             ) {

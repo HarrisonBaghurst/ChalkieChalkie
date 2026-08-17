@@ -22,9 +22,7 @@ import WorkspaceLists from "./WorkspaceLists";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
 
 type DashboardClientProps = {
-    // Role resolved server-side by the page. Passed down so the sidebar's
-    // role-gated section is right on first paint; falls back to the client
-    // role if the lookup failed.
+    // Server-resolved, so the role-gated sidebar is right on first paint.
     role?: UserRole;
     testData?: {
         workspaces: Workspace[];
@@ -32,9 +30,8 @@ type DashboardClientProps = {
     };
 };
 
-// TODO(refactor): duplicates the workspace/users fetching + snake_case
-// mapping in components/Workspaces.tsx — see the TODO there; extract a shared
-// API client once one of the two surfaces is retired.
+// TODO(refactor): duplicates the fetching and snake_case mapping in
+// components/Workspaces.tsx; extract a shared API client.
 const DashboardClient = ({
     role: serverRole,
     testData,
@@ -62,9 +59,6 @@ const DashboardClient = ({
         if (!isLoaded || !isSignedIn) return;
         if (testData) return;
 
-        // Friends are now linked counterparties (see app/api/users/friends),
-        // which both tutors and students can have — unlike the old "first 50
-        // Clerk users" behaviour, this is no longer tutor-exclusive.
         const fetchFriends = async () => {
             try {
                 const res = await fetch(
@@ -77,8 +71,7 @@ const DashboardClient = ({
                 const data = await res.json();
                 const fetched: userInfo[] = data.friends ?? [];
                 setFriends(fetched);
-                // So usersMap can resolve a linked person even before they
-                // appear in any workspace's user_ids.
+                // Resolves a linked person before they appear in any user_ids.
                 mergeUsers(fetched);
             } catch (err) {
                 console.error(err);
@@ -208,11 +201,8 @@ const DashboardClient = ({
         [user?.id, upcomingAll, previousAll],
     );
 
-    // Friends (linked counterparties) first, then anyone else who shares a
-    // workspace but isn't (or no longer is) linked. Union, not replacement: a
-    // freshly-linked student with no workspaces yet must still be filterable,
-    // and a past lesson's collaborator you've since unlinked must stay
-    // filterable too, or that history becomes unreachable by filter.
+    // Union, not replacement: a new link with no workspaces yet and an
+    // unlinked past collaborator both have to stay filterable.
     const collaborators = useMemo(() => {
         const seen = new Set<string>(friends.map((f) => f.id));
         const result: userInfo[] = [...friends];

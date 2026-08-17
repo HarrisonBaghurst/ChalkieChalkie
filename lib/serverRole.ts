@@ -9,9 +9,7 @@ export const getUserRole = async (userId: string): Promise<UserRole> => {
     return parseUserRole(user?.publicMetadata?.role);
 };
 
-// Roles are mutually exclusive, so each guard demands its exact role rather
-// than a privilege level: requireTutor rejects an admin, requireAdmin rejects
-// a tutor. Neither role is a superset of the other.
+// Exact match, not a privilege level: requireTutor rejects an admin.
 const requireRole = async (
     userId: string,
     role: UserRole,
@@ -28,14 +26,8 @@ export const requireTutor = (userId: string): Promise<Response | null> =>
 export const requireAdmin = (userId: string): Promise<Response | null> =>
     requireRole(userId, "admin");
 
-/**
- * The caller's role, when it is one that can hold a tutor-student link, or a
- * 403 Response otherwise. Admin is rejected: roles are mutually exclusive and
- * admin confers no product privileges (lib/roles.ts), so an admin can hold no
- * links. Unlike requireTutor/requireAdmin this returns the role itself rather
- * than discarding it — the invite generate/redeem flow needs to know which
- * side the caller is on, not just whether they're allowed through.
- */
+// Returns the role rather than discarding it — the invite flow needs to know
+// which side the caller is on. Admin holds no links, so it is rejected.
 export const requireLinkRole = async (
     userId: string,
 ): Promise<LinkRole | Response> => {
