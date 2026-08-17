@@ -1,6 +1,6 @@
 import { PEN_COLOURS } from "@/lib/colours";
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
+import { motion, useIsPresent } from "motion/react";
 import { RefObject, useState } from "react";
 
 interface ColourSelectorProps {
@@ -31,6 +31,7 @@ const ColourSelector = ({
 }: ColourSelectorProps) => {
     const displayColours = colours ?? PEN_COLOURS;
     const [selected, setSelected] = useState(currentColourRef.current);
+    const isPresent = useIsPresent();
 
     const count = displayColours.length;
     const lastRad = ((count - 1) * STEP_DEG * Math.PI) / 180;
@@ -54,7 +55,12 @@ const ColourSelector = ({
                 return (
                     <motion.div
                         key={code}
-                        className="absolute pointer-events-auto"
+                        className={cn(
+                            "absolute",
+                            isPresent
+                                ? "pointer-events-auto"
+                                : "pointer-events-none",
+                        )}
                         style={{
                             left: FIRST_CARD_X,
                             top: TOP_PAD,

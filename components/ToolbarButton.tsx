@@ -57,8 +57,7 @@ const ToolbarButton = ({
         [],
     );
 
-    // Hover opens the palette whether or not the tool is active.
-    const handleMouseEnter = () => {
+    const handleButtonEnter = () => {
         clearClose();
         if (!isColourTool) return;
         clearHover();
@@ -68,7 +67,7 @@ const ToolbarButton = ({
         );
     };
 
-    const handleMouseLeave = () => {
+    const handleAreaLeave = () => {
         clearHover();
         clearClose();
         closeTimer.current = setTimeout(
@@ -101,8 +100,8 @@ const ToolbarButton = ({
     return (
         <div
             className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={clearClose}
+            onMouseLeave={handleAreaLeave}
         >
             <button
                 className={cn(
@@ -112,6 +111,8 @@ const ToolbarButton = ({
                         : "bg-transparent hover:bg-white/5",
                 )}
                 onClick={handleClick}
+                onMouseEnter={handleButtonEnter}
+                onMouseLeave={clearHover}
             >
                 <div className="relative w-6 h-6">
                     <Image src={icon} alt={label} fill />
