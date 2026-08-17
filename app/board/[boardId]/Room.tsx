@@ -43,7 +43,7 @@ export function Room({
         >
             <RoomProvider
                 id={boardId}
-                initialPresence={{ cursor: null }}
+                initialPresence={{ cursor: null, selection: null }}
                 initialStorage={{
                     canvasStrokes: new LiveList([]),
                     pastedImages: new LiveList([]),

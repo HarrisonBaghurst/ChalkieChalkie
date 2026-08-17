@@ -10,13 +10,15 @@ import {
 } from "react";
 import { Point } from "@/types/strokeTypes";
 import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
-import { useMyPresence } from "@liveblocks/react";
+import { useUpdateMyPresence } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
 import { useKeybinds } from "@/hooks/useKeybinds";
+import { useRemoteSelections } from "@/hooks/useRemoteSelections";
+import { useSelectionPresence } from "@/hooks/useSelectionPresence";
 import CursorLayer from "./CursorLayer";
 import ParticipantRoster from "./ParticipantRoster";
 import { handleMouseDown } from "@/lib/handlers/mouseDown";
@@ -74,6 +76,8 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         selectorDragStart: null,
         selectorDelta: { x: 0, y: 0 },
         selectorImageOrigins: new Map(),
+        lockedStrokeIds: new Set(),
+        lockedImageIds: new Set(),
     });
 
     // Mirrored as state so cursor styling and the toolbar highlight re-render.
@@ -114,7 +118,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         [eraseStrokes, addStroke, updateImageMeta, moveStrokes],
     );
 
-    const [_, updateMyPresence] = useMyPresence();
+    const updateMyPresence = useUpdateMyPresence();
 
     const handlePresenceUpdate = (e: React.MouseEvent) => {
         const { x: sx, y: sy } = getMousePos(e);
@@ -172,7 +176,16 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         state.selectorImageOrigins.clear();
     };
 
-    useCanvasRenderLoop({ canvasRef, canvasStateRef, strokes });
+    const remoteSelectionsRef = useRemoteSelections(canvasStateRef);
+
+    useSelectionPresence({ canvasStateRef, strokes, pastedImagesMeta });
+
+    useCanvasRenderLoop({
+        canvasRef,
+        canvasStateRef,
+        strokes,
+        remoteSelectionsRef,
+    });
 
     usePastedImagesSync({ canvasStateRef, pastedImagesMeta });
 

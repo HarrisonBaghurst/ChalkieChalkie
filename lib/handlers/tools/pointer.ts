@@ -32,6 +32,11 @@ const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
     sw: "nesw-resize",
 };
 
+// Excluded from hit-testing rather than merely refused, so a locked image on
+// top doesn't turn into a dead zone over whatever sits beneath it.
+const selectableImages = (state: CanvasState) =>
+    state.pastedImages.filter((img) => !state.lockedImageIds.has(img.id));
+
 const grabHitRect = (rect: Rect): Rect => ({
     x: rect.x - DRAG_HIT_PADDING,
     y: rect.y - DRAG_HIT_PADDING,
@@ -73,7 +78,7 @@ export const pointerCursor = (state: CanvasState): string => {
         return "grab";
     }
 
-    const img = getImageAtPoint(state.pastedImages, point);
+    const img = getImageAtPoint(selectableImages(state), point);
     if (img) {
         const handle = getResizeHandleAtPoint(img, point);
         return handle ? RESIZE_CURSORS[handle] : "grab";
@@ -109,7 +114,7 @@ const onDown = ({ e, state }: ToolContext) => {
     }
 
     // 2. press on an image — select it, and move or resize it in the same drag
-    const img = getImageAtPoint(state.pastedImages, worldPoint);
+    const img = getImageAtPoint(selectableImages(state), worldPoint);
     if (img) {
         clearMarquee(state);
         state.selectedImageId = img.id;
@@ -297,9 +302,13 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
 
         if (normalised.width > MIN_DRAG || normalised.height > MIN_DRAG) {
             state.selectedStrokeIds = (strokes ?? [])
-                .filter((s) => strokeIntersectsRect(s, normalised))
+                .filter(
+                    (s) =>
+                        !state.lockedStrokeIds.has(s.id) &&
+                        strokeIntersectsRect(s, normalised),
+                )
                 .map((s) => s.id);
-            state.selectedImageIds = state.pastedImages
+            state.selectedImageIds = selectableImages(state)
                 .filter((img) => imageIntersectsRect(img, normalised))
                 .map((img) => img.id);
         } else {

@@ -9,11 +9,15 @@ import {
     unionRects,
 } from "@/lib/genometry";
 import { SELECTION_COLOURS } from "@/lib/colours";
+import { RemoteSelection } from "@/types/presenceTypes";
 import { RefObject } from "react";
 
 const HANDLE_SIZE = 8;
 const DASH = [6, 4];
 const NO_OFFSET: Point = { x: 0, y: 0 };
+
+const REMOTE_SELECTION_LINE_WIDTH = 2;
+const REMOTE_SELECTION_RADIUS = 8;
 
 // Chrome is traced in world space, so every screen-constant width divides by
 // zoom — otherwise a 1px border is a hairline zoomed out and a slab zoomed in.
@@ -28,6 +32,26 @@ const drawSelectionBox = (
     ctx.lineWidth = 1 / zoom;
     if (dashed) ctx.setLineDash(DASH.map((d) => d / zoom));
     ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.restore();
+};
+
+const drawRemoteSelection = (
+    ctx: CanvasRenderingContext2D,
+    { colour, bounds }: RemoteSelection,
+    zoom: number,
+) => {
+    ctx.save();
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = REMOTE_SELECTION_LINE_WIDTH / zoom;
+    ctx.beginPath();
+    ctx.roundRect(
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        REMOTE_SELECTION_RADIUS / zoom,
+    );
+    ctx.stroke();
     ctx.restore();
 };
 
@@ -91,6 +115,7 @@ type DrawToCanvasParameters = {
     selectedStrokeIds?: string[];
     selectedImageIds?: string[];
     selectorDelta?: Point;
+    remoteSelections?: RemoteSelection[];
     highlightCanvasRef?: RefObject<HTMLCanvasElement | null>;
 };
 
@@ -106,6 +131,7 @@ const drawToCanvas = ({
     selectedStrokeIds,
     selectedImageIds,
     selectorDelta,
+    remoteSelections,
     highlightCanvasRef,
 }: DrawToCanvasParameters) => {
     const canvas = canvasRef.current;
@@ -238,6 +264,11 @@ const drawToCanvas = ({
 
     if (marqueeRect) {
         drawSelectionBox(ctx, normaliseRect(marqueeRect), zoom, true);
+    }
+
+    // Last, so someone else's claim is never hidden under local chrome.
+    for (const selection of remoteSelections ?? []) {
+        drawRemoteSelection(ctx, selection, zoom);
     }
 };
 

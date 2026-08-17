@@ -1,12 +1,14 @@
 import { LiveList } from "@liveblocks/client";
 import { Stroke } from "./types/strokeTypes";
 import { PastedImageMeta } from "./types/imageTypes";
+import { SelectionPresence } from "./types/presenceTypes";
 
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 declare global {
     interface Liveblocks {
         Presence: {
             cursor: { x: number; y: number } | null;
+            selection: SelectionPresence | null;
         };
 
         Storage: {

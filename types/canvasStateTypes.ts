@@ -36,6 +36,8 @@ export interface CanvasState {
     selectorDragStart: Point | null;
     selectorDelta: Point;
     selectorImageOrigins: Map<string, Point>;
+    lockedStrokeIds: Set<string>;
+    lockedImageIds: Set<string>;
 }
 
 // Handed to tools so they can commit on mouse-up.

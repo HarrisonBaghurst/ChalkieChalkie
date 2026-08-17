@@ -1,6 +1,7 @@
 import drawToCanvas from "@/lib/canvasDrawing";
 import { pointerCursor } from "@/lib/handlers/tools/pointer";
 import { CanvasState } from "@/types/canvasStateTypes";
+import { RemoteSelection } from "@/types/presenceTypes";
 import { Stroke } from "@/types/strokeTypes";
 import { toolCursorMap } from "@/types/toolTypes";
 import { RefObject, useEffect, useRef } from "react";
@@ -13,12 +14,14 @@ interface useCanvasRenderLoopProps {
     canvasRef: RefObject<HTMLCanvasElement | null>;
     canvasStateRef: RefObject<CanvasState>;
     strokes: readonly Stroke[] | null;
+    remoteSelectionsRef: RefObject<RemoteSelection[]>;
 }
 
 export const useCanvasRenderLoop = ({
     canvasRef,
     canvasStateRef,
     strokes,
+    remoteSelectionsRef,
 }: useCanvasRenderLoopProps) => {
     const highlightCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -50,6 +53,7 @@ export const useCanvasRenderLoop = ({
                 selectedStrokeIds: state.selectedStrokeIds,
                 selectedImageIds: state.selectedImageIds,
                 selectorDelta: state.selectorDelta,
+                remoteSelections: remoteSelectionsRef.current,
                 highlightCanvasRef,
             });
 

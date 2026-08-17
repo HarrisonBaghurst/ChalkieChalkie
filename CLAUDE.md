@@ -104,12 +104,27 @@ Storage: {
   pastedImages: LiveList<PastedImageMeta> // Pasted images with position/size
 }
 Presence: {
-  cursor: { x: number; y: number } | null  // Live cursor position per user
+  cursor: { x: number; y: number } | null       // Live cursor position per user
+  selection: SelectionPresence | null           // { strokeIds, imageIds, bounds } — committed geometry, see below
 }
 UserMeta: { id, info: { firstName, lastName, imageUrl, email } } // set server-side at auth
 ```
 
 All mutations (add/delete/move strokes, add/move/resize images) go through hooks in `hooks/useLiveWorkspace.tsx`. Never mutate Liveblocks storage directly from components.
+
+Presence types must be **type aliases, not interfaces** (`types/presenceTypes.ts`) — Liveblocks' JSON constraint needs the implicit index signature only aliases carry, and an interface fails with a string-literal "not a valid JSON object" type error rather than anything readable.
+
+### Selection Sharing & Locking
+
+`Presence.selection` doubles as the display of a remote selection and the lock on it. Presence dies with the connection, so a dropped client can never strand items as unselectable.
+
+- **Published** by `hooks/useSelectionPresence.tsx`, which polls the canvas state ref each frame and diffs a signature. Selection is mutated from three places — `pointer.ts`, `onToolChanged` in `Workspace.tsx`, and the Delete branch of `useKeybinds.tsx` — so one watcher on the shared ref beats a `ToolCallbacks` entry every mutation site has to remember to call.
+- **Published bounds come off storage** (`strokes`, `pastedImagesMeta`), never off `selectorDelta` or the locally mutated `state.pastedImages`. A drag reaches storage only on mouse-up, so a box that tracked the live gesture would slide away from the strokes it frames and they would snap after it. Frozen at the committed geometry, box and content jump together on commit. The poll is per-frame rather than throttled for the same reason: the bounds change then enters the same socket flush as the storage write that caused it.
+- **Consumed** by `hooks/useRemoteSelections.tsx`: fills `CanvasState.lockedStrokeIds` / `lockedImageIds` so tools reach locks through the `ToolContext` they already take, and returns a ref of `{ colour, bounds }` for the render loop (a ref, so a presence tick doesn't restart the rAF loop).
+- **Enforced** in `lib/handlers/tools/pointer.ts`: locked images are filtered *out of the hit-test list*, not merely refused, so a locked image on top doesn't become a dead zone over what sits beneath it. The marquee resolution filters locked ids the same way.
+- **Drawn** by `drawRemoteSelection` in `lib/canvasDrawing.ts`, last, in the owner's `getUserColour` — tune `REMOTE_SELECTION_LINE_WIDTH` / `REMOTE_SELECTION_RADIUS` there.
+- A selecting user's **cursor is replaced by their name pill**, pinned to the box in `CursorLayer.tsx`. The pill deliberately has no CSS transition, unlike the cursor: the box it labels is canvas-drawn without one.
+- Simultaneous marquees over the same strokes can both win — the lock is optimistic, not authoritative. Accepted: it is brief, and storage writes are last-write-wins regardless.
 
 ### Drawing Pipeline
 
@@ -201,6 +216,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 - `imageTypes.ts` — `PastedImageMeta` (position/size), `PastedImage` (meta + loaded element), `ResizeHandle`
 - `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "selector" | "highlighter"` + per-tool cursor map
 - `canvasStateTypes.ts` — `CanvasState`, `Viewport`, `ToolContext`, `ToolCallbacks`, `ToolStrategy`
+- `presenceTypes.ts` — `SelectionPresence` (the Presence payload), `RemoteSelection` (what the renderer draws)
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`
 - `linkTypes.ts` — `LinkRole`, `TutorLinkRow`/`LinkInviteRow` (raw Supabase shapes), `LinkInvite`/`LinkSummary` (client-facing shapes)
 - `policyTypes.ts` — `PolicyDocument`/`PolicySection`/`PolicyBlock` for the legal pages, including the supported inline markup
