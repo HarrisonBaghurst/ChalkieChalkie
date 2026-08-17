@@ -123,7 +123,7 @@ const ParticipantRoster = () => {
                                     online ? "" : "opacity-40"
                                 }`}
                             >
-                                <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
+                                <div className="relative w-8 h-8 radius-tag overflow-hidden shrink-0">
                                     {m.imageUrl ? (
                                         <Image
                                             src={m.imageUrl}
@@ -142,7 +142,7 @@ const ParticipantRoster = () => {
                                     </div>
                                 </div>
                                 <div
-                                    className="ml-auto w-2.5 h-2.5 rounded-full shrink-0"
+                                    className="ml-auto w-2.5 h-2.5 radius-tag shrink-0"
                                     style={{
                                         backgroundColor: online
                                             ? getUserColour(m.id)
