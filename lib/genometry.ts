@@ -6,10 +6,7 @@ function pointToSegmentDistanceSq(p: Point, a: Point, b: Point): number {
     const abx = b.x - a.x;
     const aby = b.y - a.y;
     const lenSq = abx * abx + aby * aby;
-    let t =
-        lenSq === 0
-            ? 0
-            : ((p.x - a.x) * abx + (p.y - a.y) * aby) / lenSq;
+    let t = lenSq === 0 ? 0 : ((p.x - a.x) * abx + (p.y - a.y) * aby) / lenSq;
     t = Math.max(0, Math.min(1, t));
     const dx = p.x - (a.x + t * abx);
     const dy = p.y - (a.y + t * aby);
@@ -40,6 +37,9 @@ export function StrokeIntersectPoints(
 }
 
 export type Rect = { x: number; y: number; width: number; height: number };
+
+export const PEN_LINE_WIDTH = 3;
+export const HIGHLIGHT_LINE_WIDTH = 48;
 
 export function normaliseRect(r: Rect): Rect {
     return {
@@ -108,6 +108,87 @@ export function strokeIntersectsRect(stroke: Stroke, rect: Rect): boolean {
         }
     }
     return false;
+}
+export function strokeBounds(stroke: Stroke, offset?: Point): Rect | null {
+    const pts = stroke.points;
+    if (pts.length === 0) return null;
+
+    let minX = pts[0].x;
+    let maxX = pts[0].x;
+    let minY = pts[0].y;
+    let maxY = pts[0].y;
+
+    for (const p of pts) {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+    }
+
+    const pad = (stroke.highlight ? HIGHLIGHT_LINE_WIDTH : PEN_LINE_WIDTH) / 2;
+    const dx = offset?.x ?? 0;
+    const dy = offset?.y ?? 0;
+
+    return {
+        x: minX - pad + dx,
+        y: minY - pad + dy,
+        width: maxX - minX + pad * 2,
+        height: maxY - minY + pad * 2,
+    };
+}
+
+export function unionRects(rects: Rect[]): Rect | null {
+    if (rects.length === 0) return null;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    for (const r of rects) {
+        minX = Math.min(minX, r.x);
+        maxX = Math.max(maxX, r.x + r.width);
+        minY = Math.min(minY, r.y);
+        maxY = Math.max(maxY, r.y + r.height);
+    }
+
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
+export function selectedItemBounds(
+    strokes: readonly Stroke[],
+    images: readonly {
+        id: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }[],
+    selectedStrokeIds: string[],
+    selectedImageIds: string[],
+    strokeOffset?: Point,
+): Rect[] {
+    const bounds: Rect[] = [];
+    const strokeIds = new Set(selectedStrokeIds);
+    const imageIds = new Set(selectedImageIds);
+
+    for (const stroke of strokes) {
+        if (!strokeIds.has(stroke.id)) continue;
+        const box = strokeBounds(stroke, strokeOffset);
+        if (box) bounds.push(box);
+    }
+
+    for (const img of images) {
+        if (!imageIds.has(img.id)) continue;
+        bounds.push({
+            x: img.x,
+            y: img.y,
+            width: img.width,
+            height: img.height,
+        });
+    }
+
+    return bounds;
 }
 
 export function imageIntersectsRect(

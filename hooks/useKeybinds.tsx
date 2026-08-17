@@ -60,7 +60,7 @@ export const useKeybinds = ({
                 }
 
                 if (hadSelectorSelection) {
-                    state.selectorRect = null;
+                    state.selectionBounds = null;
                 }
 
                 const id = state.selectedImageId;

@@ -25,8 +25,6 @@ export const PEN_COLOURS: { colour: string; code: string }[] = [
 // literal mirrors of --foreground-second.
 export const SELECTION_COLOURS = {
     border: "rgba(205, 203, 203, 0.55)",
-    fill: "rgba(205, 203, 203, 0.1)",
-    stroke: "rgba(205, 203, 203, 0.28)",
 } as const;
 
 export const HIGHLIGHT_COLOURS: { colour: string; code: string }[] = [

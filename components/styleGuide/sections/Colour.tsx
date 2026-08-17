@@ -174,7 +174,7 @@ const Colour = () => (
 
         <Block
             title="Canvas selection chrome"
-            description="SELECTION_COLOURS in lib/colours.ts — what the pointer tool draws over whatever is selected. Deliberately achromatic and semitransparent: a selection marks what has been picked up, so it must never read as a colour the user drew. All three are rgba mirrors of --foreground-second, which canvas paint can't reference as a token."
+            description="SELECTION_COLOURS in lib/colours.ts — what the pointer tool draws around whatever is selected. Deliberately achromatic and semitransparent: a selection marks what has been picked up, so it must never read as a colour the user drew. An rgba mirror of --foreground-second, which canvas paint can't reference as a token."
         >
             <div className="flex flex-col gap-3">
                 <Grid cols={3}>
@@ -182,16 +182,14 @@ const Colour = () => (
                         name="border"
                         code={SELECTION_COLOURS.border}
                     />
-                    <HexSwatch name="fill" code={SELECTION_COLOURS.fill} />
-                    <HexSwatch name="stroke" code={SELECTION_COLOURS.stroke} />
                 </Grid>
                 <Note>
-                    <Code>border</Code> outlines the drag marquee and every
-                    selected image; <Code>fill</Code> washes the area inside
-                    both. Strokes have no area, so <Code>stroke</Code> is traced
-                    over them wider than the stroke itself to leave a halo. The
-                    marquee outline is solid — a dashed border reads as a
-                    drawing on a whiteboard.
+                    Selection is outline-only — nothing is filled or washed,
+                    since a tint over a stroke changes the colour the user drew.
+                    Solid outlines box each selected item; dashed ones mark the
+                    bounds of a multi-item selection and the marquee being
+                    dragged out. Widths and dash lengths divide by zoom, because
+                    the chrome is traced in world space alongside the ink.
                 </Note>
             </div>
         </Block>

@@ -1,6 +1,8 @@
 import drawToCanvas from "@/lib/canvasDrawing";
+import { pointerCursor } from "@/lib/handlers/tools/pointer";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { Stroke } from "@/types/strokeTypes";
+import { toolCursorMap } from "@/types/toolTypes";
 import { RefObject, useEffect, useRef } from "react";
 
 const DOTTED_PAPER_BASE = 40;
@@ -44,12 +46,21 @@ export const useCanvasRenderLoop = ({
                 panOffset: offset,
                 zoom,
                 selectedImageId: state.selectedImageId,
-                selectorRect: state.selectorRect,
+                marqueeRect: state.marqueeRect,
                 selectedStrokeIds: state.selectedStrokeIds,
                 selectedImageIds: state.selectedImageIds,
                 selectorDelta: state.selectorDelta,
                 highlightCanvasRef,
             });
+
+            // Set here rather than as a React style prop: the pointer cursor
+            // answers to hover position, which would otherwise re-render the
+            // whole board on every crossing of a selection edge.
+            const cursor =
+                state.tool === "pointer"
+                    ? pointerCursor(state)
+                    : toolCursorMap[state.tool];
+            if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
 
             if (canvasRef.current) {
                 const size = DOTTED_PAPER_BASE * zoom;

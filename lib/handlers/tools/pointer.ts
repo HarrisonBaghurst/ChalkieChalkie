@@ -1,12 +1,19 @@
-import { CanvasState, ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
+import {
+    CanvasState,
+    ToolContext,
+    ToolStrategy,
+} from "@/types/canvasStateTypes";
 import { getWorldPoint } from "../helpers";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
+import { ResizeHandleKey } from "@/types/imageTypes";
 import {
     imageIntersectsRect,
     normaliseRect,
     pointInRect,
     Rect,
+    selectedItemBounds,
     strokeIntersectsRect,
+    unionRects,
 } from "@/lib/genometry";
 
 // A plain click is a zero-length drag, so click-to-select an image and
@@ -18,11 +25,26 @@ const MIN_DRAG = 4;
 // slack so the selection border itself can be grabbed
 const DRAG_HIT_PADDING = 4;
 
+const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
+    nw: "nwse-resize",
+    se: "nwse-resize",
+    ne: "nesw-resize",
+    sw: "nesw-resize",
+};
+
+const grabHitRect = (rect: Rect): Rect => ({
+    x: rect.x - DRAG_HIT_PADDING,
+    y: rect.y - DRAG_HIT_PADDING,
+    width: rect.width + DRAG_HIT_PADDING * 2,
+    height: rect.height + DRAG_HIT_PADDING * 2,
+});
+
 const clearMarquee = (state: CanvasState) => {
     state.selectedStrokeIds = [];
     state.selectedImageIds = [];
-    state.selectorRect = null;
-    state.selectorRectOrigin = null;
+    state.marqueeRect = null;
+    state.selectionBounds = null;
+    state.selectionBoundsOrigin = null;
     state.selectorStart = null;
     state.selectorDragStart = null;
     state.selectorDelta = { x: 0, y: 0 };
@@ -33,6 +55,33 @@ const isTransformingImage = (state: CanvasState) =>
     state.selectedImageId !== null &&
     (state.activeResizeHandle !== null || state.imageDragOffset !== null);
 
+export const pointerCursor = (state: CanvasState): string => {
+    if (state.activeResizeHandle)
+        return RESIZE_CURSORS[state.activeResizeHandle];
+    if (state.selectorDragStart || state.imageDragOffset) return "grabbing";
+    if (state.selectorStart) return "default";
+
+    const point = state.cursorPosition;
+    const hasSelection =
+        state.selectedStrokeIds.length > 0 || state.selectedImageIds.length > 0;
+
+    if (
+        hasSelection &&
+        state.selectionBounds &&
+        pointInRect(point, grabHitRect(state.selectionBounds))
+    ) {
+        return "grab";
+    }
+
+    const img = getImageAtPoint(state.pastedImages, point);
+    if (img) {
+        const handle = getResizeHandleAtPoint(img, point);
+        return handle ? RESIZE_CURSORS[handle] : "grab";
+    }
+
+    return "default";
+};
+
 const onDown = ({ e, state }: ToolContext) => {
     const worldPoint = getWorldPoint(e, state.viewport);
 
@@ -40,18 +89,11 @@ const onDown = ({ e, state }: ToolContext) => {
     const hasSelection =
         state.selectedStrokeIds.length > 0 || state.selectedImageIds.length > 0;
 
-    if (hasSelection && state.selectorRect) {
-        const hitRect: Rect = {
-            x: state.selectorRect.x - DRAG_HIT_PADDING,
-            y: state.selectorRect.y - DRAG_HIT_PADDING,
-            width: state.selectorRect.width + DRAG_HIT_PADDING * 2,
-            height: state.selectorRect.height + DRAG_HIT_PADDING * 2,
-        };
-
-        if (pointInRect(worldPoint, hitRect)) {
+    if (hasSelection && state.selectionBounds) {
+        if (pointInRect(worldPoint, grabHitRect(state.selectionBounds))) {
             state.selectorDragStart = worldPoint;
             state.selectorDelta = { x: 0, y: 0 };
-            state.selectorRectOrigin = { ...state.selectorRect };
+            state.selectionBoundsOrigin = { ...state.selectionBounds };
 
             state.selectorImageOrigins.clear();
             for (const img of state.pastedImages) {
@@ -89,7 +131,7 @@ const onDown = ({ e, state }: ToolContext) => {
     state.selectedImageId = null;
     clearMarquee(state);
     state.selectorStart = worldPoint;
-    state.selectorRect = {
+    state.marqueeRect = {
         x: worldPoint.x,
         y: worldPoint.y,
         width: 0,
@@ -170,11 +212,11 @@ const onMove = ({ e, state }: ToolContext) => {
         const dy = worldPoint.y - state.selectorDragStart.y;
         state.selectorDelta = { x: dx, y: dy };
 
-        if (state.selectorRectOrigin) {
-            state.selectorRect = {
-                ...state.selectorRectOrigin,
-                x: state.selectorRectOrigin.x + dx,
-                y: state.selectorRectOrigin.y + dy,
+        if (state.selectionBoundsOrigin) {
+            state.selectionBounds = {
+                ...state.selectionBoundsOrigin,
+                x: state.selectionBoundsOrigin.x + dx,
+                y: state.selectionBoundsOrigin.y + dy,
             };
         }
 
@@ -190,7 +232,7 @@ const onMove = ({ e, state }: ToolContext) => {
 
     // 3. sizing the marquee
     if (state.selectorStart) {
-        state.selectorRect = {
+        state.marqueeRect = {
             x: state.selectorStart.x,
             y: state.selectorStart.y,
             width: worldPoint.x - state.selectorStart.x,
@@ -250,8 +292,8 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
     }
 
     // 3. resolve what the marquee swept up
-    if (state.selectorRect) {
-        const normalised = normaliseRect(state.selectorRect);
+    if (state.marqueeRect) {
+        const normalised = normaliseRect(state.marqueeRect);
 
         if (normalised.width > MIN_DRAG || normalised.height > MIN_DRAG) {
             state.selectedStrokeIds = (strokes ?? [])
@@ -260,17 +302,19 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
             state.selectedImageIds = state.pastedImages
                 .filter((img) => imageIntersectsRect(img, normalised))
                 .map((img) => img.id);
-            // The rect doubles as the drag hit area, so drop it when empty.
-            const hasSelection =
-                state.selectedStrokeIds.length > 0 ||
-                state.selectedImageIds.length > 0;
-            state.selectorRect = hasSelection ? normalised : null;
         } else {
             state.selectedStrokeIds = [];
             state.selectedImageIds = [];
-            state.selectorRect = null;
         }
-
+        state.selectionBounds = unionRects(
+            selectedItemBounds(
+                strokes ?? [],
+                state.pastedImages,
+                state.selectedStrokeIds,
+                state.selectedImageIds,
+            ),
+        );
+        state.marqueeRect = null;
         state.selectorStart = null;
     }
 };

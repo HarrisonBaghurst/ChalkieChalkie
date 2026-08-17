@@ -22,18 +22,14 @@ export interface CanvasState {
     currentColour: string;
     highlightColour: string;
     tool: Tools;
-
-    // images — selectedImageId is the lone click-selected one, the only
-    // selection that can be resized
     cursorPosition: Point;
     selectedImageId: string | null;
     imageDragOffset: Point | null;
     activeResizeHandle: ResizeHandle;
     pastedImages: PastedImage[];
-
-    // marquee selection
-    selectorRect: Rect | null;
-    selectorRectOrigin: Rect | null;
+    marqueeRect: Rect | null;
+    selectionBounds: Rect | null;
+    selectionBoundsOrigin: Rect | null;
     selectorStart: Point | null;
     selectedStrokeIds: string[];
     selectedImageIds: string[];

@@ -11,7 +11,7 @@ import {
 import { Point } from "@/types/strokeTypes";
 import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
 import { useMyPresence } from "@liveblocks/react";
-import { toolCursorMap, Tools } from "@/types/toolTypes";
+import { Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
@@ -65,8 +65,9 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         imageDragOffset: null,
         activeResizeHandle: null,
         pastedImages: [],
-        selectorRect: null,
-        selectorRectOrigin: null,
+        marqueeRect: null,
+        selectionBounds: null,
+        selectionBoundsOrigin: null,
         selectorStart: null,
         selectedStrokeIds: [],
         selectedImageIds: [],
@@ -160,8 +161,9 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         state.tool = tool;
         state.selectedImageId = null;
         state.activeResizeHandle = null;
-        state.selectorRect = null;
-        state.selectorRectOrigin = null;
+        state.marqueeRect = null;
+        state.selectionBounds = null;
+        state.selectionBoundsOrigin = null;
         state.selectorStart = null;
         state.selectedStrokeIds = [];
         state.selectedImageIds = [];
@@ -235,7 +237,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         ref={canvasRef}
                         style={{
                             pointerEvents: isLoaded ? "auto" : "none",
-                            cursor: toolCursorMap[currentTool],
                         }}
                         className="w-screen h-screen dotted-paper overflow-hidden"
                         onMouseDown={(e) => {
