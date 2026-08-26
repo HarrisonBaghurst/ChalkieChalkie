@@ -36,6 +36,7 @@ Create `.env.local` with:
 - `VERCEL_TOKEN` — Vercel access token used by the nightly promotion cron; `VERCEL_TEAM_ID` as well if the project ever moves off a personal account. `VERCEL_PROJECT_ID` comes free from Vercel's system environment variables.
 - `ENVIRONMENT` — set to `testing` to render the dashboard from `data/testWorkspaces.json` instead of live API data
 - `DEBUG` — set to `true` to show the Tailwind breakpoint badge (`components/DebugBreakpoint.tsx`) in the bottom-left of every page. Server-only on purpose, so the flag never reaches the client bundle
+- `ALLOWED_DEV_ORIGINS` — the LAN address (e.g. `192.168.1.227`) `next dev` should accept cross-origin requests from, so the dev server is reachable from a phone or another machine on the network. Read in `next.config.ts`; **one origin only** — the value is passed straight through as a single array entry, so a comma-separated list would be treated as one bogus host
 
 ## Design System
 

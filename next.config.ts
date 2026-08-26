@@ -9,12 +9,7 @@ const nextConfig: NextConfig = {
             },
         ],
     },
-    allowedDevOrigins: [
-        "192.168.1.227",
-        "10.192.208.153",
-        "192.168.1.187",
-        "10.89.133.153",
-    ],
+    allowedDevOrigins: [process.env.ALLOWED_DEV_ORIGINS as string],
 };
 
 export default nextConfig;
