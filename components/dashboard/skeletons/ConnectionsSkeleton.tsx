@@ -43,16 +43,16 @@ const ConnectionsSkeleton = ({ heading }: ConnectionsSkeletonProps) => {
         <>
             <div className="flex items-center justify-between">
                 <p className="text-heading font-inter-bold">{heading}</p>
-                {/* The real button is 2xl-only — below that the action lives
+                {/* The real button is lg-only — below that the action lives
                     on the TabBar's floating button. */}
-                <Skeleton className="hidden h-9 w-36 radius-control 2xl:block" />
+                <Skeleton className="hidden h-9 w-36 radius-control lg:block" />
             </div>
 
-            <div className="2xl:hidden">
+            <div className="lg:hidden">
                 <MobileListSkeleton rows={PLACEHOLDER_ROWS} />
             </div>
 
-            <div className="hidden w-full radius-surface border border-foreground-third/15 bg-card-background 2xl:block">
+            <div className="hidden w-full radius-surface border border-foreground-third/15 bg-card-background lg:block">
                 <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
                     <thead>
                         <tr>

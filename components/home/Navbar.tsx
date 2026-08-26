@@ -45,8 +45,8 @@ const Navbar = () => {
                         <p>Chalkie Chalkie</p>
                     </div>
                     {/* The dashboard nav pill that used to sit here is gone:
-                        DashboardShell only renders this Navbar below 2xl, and
-                        below 2xl the bottom TabBar carries the same two
+                        DashboardShell only renders this Navbar below lg, and
+                        below lg the bottom TabBar carries the same two
                         destinations with role-aware labels. */}
                 </div>
             </SignedIn>

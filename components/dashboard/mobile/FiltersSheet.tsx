@@ -26,7 +26,7 @@ type FiltersSheetProps = {
 };
 
 // The popover and clear button plus the search field overflow a phone's width,
-// so below 2xl they collapse into this one control.
+// so below lg they collapse into this one control.
 const FiltersSheet = ({
     collaborators,
     selectedIds,

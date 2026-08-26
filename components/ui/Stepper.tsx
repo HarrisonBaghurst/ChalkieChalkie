@@ -25,7 +25,7 @@ type StepperProps = {
 //
 // Under sm the numbered row collapses to a labelled progress bar: five labels
 // need roughly 600px, which is what the dialogs holding this give it from sm
-// up but never below. The seam is sm rather than the dashboard's 2xl because
+// up but never below. The seam is sm rather than the dashboard's lg because
 // this is purely about how much width the labels need — a 1000px viewport has
 // plenty.
 const Stepper = ({

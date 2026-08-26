@@ -15,35 +15,35 @@ const PLACEHOLDER_ROWS = 5;
 // Mirrors Next.tsx.
 const NextSkeleton = () => {
     return (
-        <div className="relative w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
-            <div className="absolute top-5 right-5 hidden 2xl:block">
+        <div className="relative w-full lg:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
+            <div className="absolute top-5 right-5 hidden lg:block">
                 <Skeleton className="w-5 h-5" />
             </div>
-            <div className="flex flex-col gap-6 2xl:pr-8">
+            <div className="flex flex-col gap-6 lg:pr-8">
                 <p className="text-caption font-inter-regular gradient-text">
                     COMING UP NEXT
                 </p>
                 {/* Same grid as NextContent — avatar beside the time only on a
-                    phone, sharing its column with every block from 2xl. */}
+                    phone, sharing its column with every block from lg. */}
                 <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
                     <Skeleton className="w-12 h-12 radius-tag" />
                     <div className="flex flex-col gap-2">
                         <Skeleton className="h-7 w-48 max-w-full" />
                         <Skeleton className="h-4 w-32 max-w-full" />
                     </div>
-                    <div className="col-span-2 flex flex-col gap-1 2xl:col-span-1 2xl:col-start-2">
+                    <div className="col-span-2 flex flex-col gap-1 lg:col-span-1 lg:col-start-2">
                         <p className="text-caption text-foreground-third">
                             Description
                         </p>
                         <Skeleton className="h-4 w-full" />
                     </div>
-                    <div className="col-span-2 flex flex-wrap gap-2 2xl:col-span-1 2xl:col-start-2">
+                    <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1 lg:col-start-2">
                         <Skeleton className="h-6 w-20 radius-tag" />
                         <Skeleton className="h-6 w-28 radius-tag" />
                     </div>
                 </div>
             </div>
-            <p className="text-caption text-foreground-third 2xl:hidden">
+            <p className="text-caption text-foreground-third lg:hidden">
                 Open Chalkie Chalkie on a computer to join this workspace.
             </p>
         </div>
@@ -55,8 +55,8 @@ const ControlsSkeleton = () => {
     const tabs = ["Upcoming", "Previous", "All"];
 
     return (
-        <div className="flex flex-col gap-3 2xl:flex-row 2xl:flex-wrap 2xl:items-center 2xl:justify-between 2xl:gap-4">
-            <div className="flex w-full items-center gap-1 control-surface p-1 2xl:w-fit">
+        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
+            <div className="flex w-full items-center gap-1 control-surface p-1 lg:w-fit">
                 {tabs.map((label, i) => (
                     <div
                         key={label}
@@ -71,11 +71,11 @@ const ControlsSkeleton = () => {
                     </div>
                 ))}
             </div>
-            <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
-                <div className="w-full control-surface bg-card-background-hover py-2 px-3 text-small text-foreground-third 2xl:w-56">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div className="w-full control-surface bg-card-background-hover py-2 px-3 text-small text-foreground-third lg:w-56">
                     Search sessions...
                 </div>
-                <div className="control-surface flex w-full items-center justify-between gap-2 py-2 px-3 text-small text-foreground-second 2xl:hidden">
+                <div className="control-surface flex w-full items-center justify-between gap-2 py-2 px-3 text-small text-foreground-second lg:hidden">
                     <span className="flex items-center gap-2">
                         <SlidersHorizontalIcon className="size-4 text-foreground-third" />
                         Filters
@@ -84,7 +84,7 @@ const ControlsSkeleton = () => {
                         None
                     </span>
                 </div>
-                <div className="hidden 2xl:flex 2xl:items-center 2xl:gap-3">
+                <div className="hidden lg:flex lg:items-center lg:gap-3">
                     <div className="control-surface py-2 px-3 flex items-center justify-between text-small gap-2 text-foreground-third">
                         <span>Members</span>
                         <Image
@@ -151,10 +151,10 @@ const DashboardSkeleton = () => {
 
             <div className="w-full flex flex-col gap-4 h-fit">
                 <ControlsSkeleton />
-                <div className="2xl:hidden">
+                <div className="lg:hidden">
                     <MobileListSkeleton rows={PLACEHOLDER_ROWS} showStatus />
                 </div>
-                <div className="hidden 2xl:block">
+                <div className="hidden lg:block">
                     <TableSkeleton />
                 </div>
             </div>

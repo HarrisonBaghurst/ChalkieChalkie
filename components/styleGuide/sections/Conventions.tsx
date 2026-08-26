@@ -34,10 +34,10 @@ const Conventions = () => (
                 </Rule>
                 <Rule title="Dashboard">
                     <Code>DashboardShell</Code> owns the chrome, mobile-first
-                    with a single seam at <Code>2xl</Code>. Below it:{" "}
+                    with a single seam at <Code>lg</Code>. Below it:{" "}
                     <Code>Navbar</Code> on top, the bottom <Code>TabBar</Code>{" "}
                     and its floating action button beneath, and a content column
-                    running edge-to-edge. At <Code>2xl</Code> the sidebar
+                    running edge-to-edge. At <Code>lg</Code> the sidebar
                     returns and the column becomes the inset panel (
                     <Code>m-2</Code>, <Code>rounded-xl</Code>,{" "}
                     <Code>p-[2.5dvw]</Code>) floating on the card surface. Page
@@ -45,11 +45,11 @@ const Conventions = () => (
                 </Rule>
                 <Rule title="Mobile dashboard">
                     Both tables swap for a compact row list below{" "}
-                    <Code>2xl</Code>, each row opening a <Code>Sheet</Code> that
+                    <Code>lg</Code>, each row opening a <Code>Sheet</Code> that
                     holds the detail and actions hover can&apos;t reach. Swap by
-                    CSS (<Code>2xl:hidden</Code> / <Code>hidden 2xl:block</Code>
+                    CSS (<Code>lg:hidden</Code> / <Code>hidden lg:block</Code>
                     ), not a media-query hook — no hydration mismatch, no
-                    first-paint flash. Nothing below <Code>2xl</Code> links to{" "}
+                    first-paint flash. Nothing below <Code>lg</Code> links to{" "}
                     <Code>/board</Code>: the canvas is desktop-only for now, and
                     that is enforced by omitting the links, not by a route
                     guard.

@@ -218,7 +218,7 @@ const WorkspaceModal = ({
             <DialogContent
                 showCloseButton={false}
                 mobileFullScreen
-                className="2xl:h-[55dvh]"
+                className="lg:h-[80dvh]"
                 // Portaled to the body, but synthetic events bubble along the
                 // React tree, so a click here would reach the row's onClick.
                 onClick={(e) => e.stopPropagation()}
@@ -232,7 +232,7 @@ const WorkspaceModal = ({
                             ? "Create workspace"
                             : "Edit workspace"}
                     </DialogTitle>
-                    <div className="flex items-center gap-2 2xl:gap-4">
+                    <div className="flex items-center gap-2 lg:gap-4">
                         {mode.kind === "edit" &&
                             (confirmingDelete ? (
                                 <div className="flex items-center gap-1 text-caption">

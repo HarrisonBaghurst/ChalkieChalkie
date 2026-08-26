@@ -73,18 +73,18 @@ const WorkspaceLists = ({
         <div className="w-full flex flex-col gap-4 h-fit">
             {/* Free-floating control row, disconnected from the list below
                 (mirrors the reference layout). One column on a phone — tabs,
-                then a full-width search, then the filters sheet; at 2xl it
+                then a full-width search, then the filters sheet; at lg it
                 becomes the original single row, tabs left and controls right. */}
-            <div className="flex flex-col gap-3 2xl:flex-row 2xl:flex-wrap 2xl:items-center 2xl:justify-between 2xl:gap-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
                 <Tabs
                     value={activeTab}
                     onValueChange={(id) => setActiveTab(id as TabId)}
-                    className="w-full 2xl:w-auto"
+                    className="w-full lg:w-auto"
                 >
                     {/* Full width on a phone so the three triggers, which are
                         already flex-1, split the row evenly instead of
                         huddling at the left edge. */}
-                    <TabsList className="w-full 2xl:w-fit">
+                    <TabsList className="w-full lg:w-fit">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id}>
                                 <span className="text-small">{tab.label}</span>
@@ -97,7 +97,7 @@ const WorkspaceLists = ({
                         ))}
                     </TabsList>
                 </Tabs>
-                <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     {/* Sits in the control row beside the tabs and filters, so
                         it takes the filled `.control-surface` chrome rather
                         than the bare-field default. `border-border` restates
@@ -108,12 +108,12 @@ const WorkspaceLists = ({
                         value={filters.search}
                         onChange={(e) => onChangeSearch(e.target.value)}
                         placeholder="Search sessions..."
-                        className="w-full 2xl:w-56 control-surface border-border"
+                        className="w-full lg:w-56 control-surface border-border"
                     />
                     {/* The popover filter and clear button together overflow a
-                        phone's width, so below 2xl they collapse into one
+                        phone's width, so below lg they collapse into one
                         sheet. */}
-                    <div className="2xl:hidden">
+                    <div className="lg:hidden">
                         <FiltersSheet
                             collaborators={collaborators}
                             selectedIds={filters.collaboratorIds}
@@ -122,7 +122,7 @@ const WorkspaceLists = ({
                             onClearFilters={onClearFilters}
                         />
                     </div>
-                    <div className="hidden 2xl:flex 2xl:items-center 2xl:gap-3">
+                    <div className="hidden lg:flex lg:items-center lg:gap-3">
                         <Filters
                             collaborators={collaborators}
                             selectedIds={filters.collaboratorIds}
@@ -149,7 +149,7 @@ const WorkspaceLists = ({
                 media-query hook: no hydration mismatch, no first-paint flash,
                 and the table keeps its join-on-click while the mobile rows
                 simply never carry one. */}
-            <div className="2xl:hidden">
+            <div className="lg:hidden">
                 <WorkspaceList
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}
@@ -158,7 +158,7 @@ const WorkspaceLists = ({
                     onWorkspaceDeleted={onWorkspaceDeleted}
                 />
             </div>
-            <div className="hidden 2xl:block">
+            <div className="hidden lg:block">
                 <WorkspaceTable
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}

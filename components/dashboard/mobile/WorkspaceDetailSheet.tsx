@@ -42,7 +42,7 @@ const Field = ({
 );
 
 // No "Join workspace" action by design: the board is desktop-only, so nothing
-// below 2xl links to it.
+// below lg links to it.
 const WorkspaceDetailSheet = ({
     open,
     workspace,

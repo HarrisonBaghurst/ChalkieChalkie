@@ -23,7 +23,7 @@ type TabBarProps = {
 };
 
 // The floating action button carries the Sidebar's Actions, which are
-// otherwise unreachable below 2xl.
+// otherwise unreachable below lg.
 const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarProps) => {
     const pathname = usePathname();
     const { isLoaded } = useUser();

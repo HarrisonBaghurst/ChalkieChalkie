@@ -413,7 +413,7 @@ const Components = () => {
                     <Code>SheetBody</Code>. For a dialog that should fill a
                     phone&apos;s screen instead of centring, pass{" "}
                     <Code>mobileFullScreen</Code> to <Code>DialogContent</Code>:
-                    full-bleed below <Code>2xl</Code>, centred panel above it.
+                    full-bleed below <Code>lg</Code>, centred panel above it.
                 </Note>
             </Block>
 

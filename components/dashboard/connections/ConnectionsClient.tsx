@@ -144,12 +144,12 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
                                     : "The tutors you're linked to."}
                             </p>
                         </div>
-                        {/* Below 2xl this same action is the TabBar's floating
+                        {/* Below lg this same action is the TabBar's floating
                             button, so showing it here too would offer it
                             twice. */}
                         <Button
                             onClick={() => setDialogOpen(true)}
-                            className="hidden 2xl:inline-flex"
+                            className="hidden lg:inline-flex"
                         >
                             Link a {linkRole === "tutor" ? "student" : "tutor"}
                         </Button>
@@ -157,14 +157,14 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
 
                     {/* Swapped by CSS rather than a media-query hook, same as
                         the dashboard's list — see WorkspaceLists. */}
-                    <div className="2xl:hidden">
+                    <div className="lg:hidden">
                         <ConnectionsList
                             links={links}
                             role={linkRole}
                             onRemove={handleRemove}
                         />
                     </div>
-                    <div className="hidden 2xl:block">
+                    <div className="hidden lg:block">
                         <ConnectionsTable
                             links={links}
                             role={linkRole}

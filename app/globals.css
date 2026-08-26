@@ -485,10 +485,10 @@
     body:has(.dashboard-root) {
         background: var(--card-background);
     }
-    /* Below 2xl the content column runs edge-to-edge, so none of that frame
+    /* Below lg the content column runs edge-to-edge, so none of that frame
        colour is on screen — overscrolling into it would flash a surface the
        page never shows. Match the column instead. */
-    @media (width < 96rem) {
+    @media (width < 64rem) {
         body:has(.dashboard-root) {
             background: var(--background);
         }

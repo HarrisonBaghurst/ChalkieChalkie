@@ -20,7 +20,7 @@ const Footer = () => {
                         Chalkie Chalkie
                     </p>
                 </div>
-                <div className="grid grid-cols-2 gap-y-12 2xl:flex 2xl:gap-[8dvw]">
+                <div className="grid grid-cols-2 gap-y-12 lg:flex lg:gap-[8dvw]">
                     <div className="flex flex-col gap-5">
                         <p className="text-subheading">Product</p>
                         <div className="flex flex-col gap-1">
@@ -71,7 +71,6 @@ const Footer = () => {
                             >
                                 GitHub
                             </a>
-                            {/* TODO: add Instagram link back once the account is set up */}
                         </div>
                     </div>
                 </div>

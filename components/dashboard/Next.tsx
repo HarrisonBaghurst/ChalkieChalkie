@@ -48,14 +48,14 @@ const NextContent = ({
     counterparty: userInfo | null;
     days: number;
 }) => (
-    <div className="flex flex-col gap-6 2xl:pr-8">
+    <div className="flex flex-col gap-6 lg:pr-8">
         <p className="text-caption font-inter-regular gradient-text">
             COMING UP NEXT
         </p>
         {/* A grid rather than nested flex, because the two layouts differ in
             shape and not just direction: on a phone the avatar sits beside the
             time only, with the description and tags running the full width
-            beneath it; from 2xl every text block shares the avatar's second
+            beneath it; from lg every text block shares the avatar's second
             column. Rows are auto-placed, so dropping the description closes
             its row instead of leaving a doubled gap behind. */}
         <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
@@ -76,7 +76,7 @@ const NextContent = ({
                 </p>
             </div>
             {workspace.description && (
-                <div className="col-span-2 flex flex-col gap-1 2xl:col-span-1 2xl:col-start-2">
+                <div className="col-span-2 flex flex-col gap-1 lg:col-span-1 lg:col-start-2">
                     <p className="text-caption text-foreground-third">
                         Description
                     </p>
@@ -85,7 +85,7 @@ const NextContent = ({
                     </p>
                 </div>
             )}
-            <div className="col-span-2 flex flex-wrap gap-2 2xl:col-span-1 2xl:col-start-2">
+            <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1 lg:col-start-2">
                 <Badge>
                     <TagIcon src="/icons/clock.svg" />
                     60 mins
@@ -104,7 +104,7 @@ const NextContent = ({
 // No `display` utility: each wrapper sets its own, and a baked-in `flex` would
 // fight the `hidden` it needs at the other breakpoint.
 const CARD_CLASS =
-    "w-full 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+    "w-full lg:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
 const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
     const counterparty = workspace
@@ -117,7 +117,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     if (!workspace) {
         return (
-            <div className="w-full 2xl:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
+            <div className="w-full lg:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
                 <p className="text-caption text-foreground-second font-inter-regular">
                     Coming up next
                 </p>
@@ -128,11 +128,11 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     return (
         <>
-            {/* Below 2xl the card is inert: the board is desktop-only for now,
+            {/* Below lg the card is inert: the board is desktop-only for now,
                 so nothing here links to it. Rendered as a separate element
                 rather than a disabled button so there is no tap target and no
                 open-in-new affordance to mislead. */}
-            <div className={cn(CARD_CLASS, "flex 2xl:hidden")}>
+            <div className={cn(CARD_CLASS, "flex lg:hidden")}>
                 <NextContent
                     workspace={workspace}
                     counterparty={counterparty}
@@ -150,7 +150,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                         onClick={() => router.push(`/board/${workspace.id}`)}
                         className={cn(
                             CARD_CLASS,
-                            "group relative hidden text-left cursor-pointer 2xl:flex",
+                            "group relative hidden text-left cursor-pointer lg:flex",
                         )}
                     >
                         <div className="absolute top-5 right-5">

@@ -150,7 +150,7 @@ components/
     └─ FullscreenLoader   ← shown until Liveblocks storage resolves
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
-      └─ DashboardShell   ← Sidebar (2xl+) / Navbar + TabBar swap, and the content column
+      └─ DashboardShell   ← Sidebar (lg+) / Navbar + TabBar swap, and the content column
            ├─ Sidebar.tsx      ← identity, nav, role-gated Actions section (Create Workspace for
            │                     tutors; Add New Student/Tutor for both), mounts LinkCodeDialog
            ├─ Next.tsx         ← the next upcoming lesson
@@ -158,7 +158,7 @@ components/
            ├─ WorkspaceLists   ← upcoming/past tabs
            │    └─ WorkspaceTable + WorkspaceTableRow (+ RowActionsMenu, PeopleStack)
            ├─ WorkspaceModal   ← create/edit, steps in workspaceModalSteps/
-           ├─ mobile/          ← the sub-2xl surface: TabBar (bottom nav + floating action
+           ├─ mobile/          ← the sub-lg surface: TabBar (bottom nav + floating action
            │                     button, carrying Sidebar's Actions), WorkspaceList/WorkspaceRow
            │                     + WorkspaceDetailSheet, ConnectionsList/ConnectionRow,
            │                     FiltersSheet
@@ -173,12 +173,12 @@ Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybind
 
 ### Responsive Model (dashboard)
 
-The dashboard is **mobile-first with a single seam at `2xl`**. Below it, the phone layout; at `2xl` and above, the desktop layout described throughout this file. There is deliberately no tablet tier yet — a 1280px laptop currently gets the phone layout.
+The dashboard is **mobile-first with a single seam at `lg`**. Below it, the phone layout; at `lg` and above, the desktop layout described throughout this file. There is deliberately no tablet tier yet — a portrait tablet currently gets the phone layout.
 
-- Breakpoint swaps are **CSS-only** (`2xl:hidden` / `hidden 2xl:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets the desktop table keep behaviour (join-on-click) that the mobile rows simply don't have.
-- **Nothing below `2xl` links to `/board`.** The canvas is desktop-only for now and this is enforced by omitting every link — the `Next` card is inert, rows open a detail sheet, and "Join workspace" is absent from the mobile actions. There is no route guard; opening a board URL directly still works.
+- Breakpoint swaps are **CSS-only** (`lg:hidden` / `hidden lg:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets the desktop table keep behaviour (join-on-click) that the mobile rows simply don't have.
+- **Nothing below `lg` links to `/board`.** The canvas is desktop-only for now and this is enforced by omitting every link — the `Next` card is inert, rows open a detail sheet, and "Join workspace" is absent from the mobile actions. There is no route guard; opening a board URL directly still works.
 - Each table has a mobile counterpart in `components/dashboard/mobile/`: a compact row list whose rows open a `Sheet` holding the detail and actions that depend on hover at desktop.
-- The `Sidebar`'s Actions are unreachable below `2xl`, so `TabBar` carries them on a floating action button, picking one action from the current page and role.
+- The `Sidebar`'s Actions are unreachable below `lg`, so `TabBar` carries them on a floating action button, picking one action from the current page and role.
 - Bottom-flush chrome uses the `.pb-safe` utility (see `app/globals.css`), which needs `viewportFit: "cover"` from `app/layout.tsx`.
 
 ### Access Control & Roles
