@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { clerkAppearance } from "@/lib/clerkAppearance";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import DebugBreakpoint from "@/components/DebugBreakpoint";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
                         <div className="relative">
                             {children}
                             <Toaster position="bottom-center" richColors />
+                            <DebugBreakpoint />
                         </div>
                     </TooltipProvider>
                 </body>

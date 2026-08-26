@@ -68,7 +68,10 @@ const Conventions = () => (
                     purpose: overlays nest by DOM order at equal z-index, so a
                     popover opened inside a dialog lands above it. Raising one
                     overlay above the rest breaks that. Avoid inventing new
-                    z-index values.
+                    z-index values. The one thing above both is{" "}
+                    <Code>DebugBreakpoint</Code> at <Code>z-[100]</Code>, which
+                    is dev-only and <Code>pointer-events-none</Code>, so it
+                    never joins the nesting order it sits over.
                 </Rule>
                 <Rule title="Safe area">
                     Anything flush with the bottom edge on a phone — the tab
@@ -78,6 +81,15 @@ const Conventions = () => (
                     sets. Set the base padding through that variable rather than
                     a <Code>pb-*</Code> utility; two padding-bottom declarations
                     on one element resolve by stylesheet order.
+                </Rule>
+                <Rule title="Breakpoint badge">
+                    Set <Code>DEBUG=true</Code> in <Code>.env.local</Code> and{" "}
+                    <Code>DebugBreakpoint</Code> pins the active Tailwind tier
+                    and its threshold to the bottom-left of every page. It reads
+                    the tier from CSS — one span per tier, shown and hidden by
+                    the same utilities everything else uses — so it reports what
+                    the stylesheet actually resolved, not what a resize listener
+                    thinks. Unset or <Code>false</Code> renders nothing.
                 </Rule>
             </div>
         </Block>
