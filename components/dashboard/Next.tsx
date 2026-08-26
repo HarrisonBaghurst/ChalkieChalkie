@@ -52,12 +52,6 @@ const NextContent = ({
         <p className="text-caption font-inter-regular gradient-text">
             COMING UP NEXT
         </p>
-        {/* A grid rather than nested flex, because the two layouts differ in
-            shape and not just direction: on a phone the avatar sits beside the
-            time only, with the description and tags running the full width
-            beneath it; from lg every text block shares the avatar's second
-            column. Rows are auto-placed, so dropping the description closes
-            its row instead of leaving a doubled gap behind. */}
         <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
             <Avatar className="size-12 rounded-md after:rounded-md">
                 <AvatarImage
@@ -104,7 +98,7 @@ const NextContent = ({
 // No `display` utility: each wrapper sets its own, and a baked-in `flex` would
 // fight the `hidden` it needs at the other breakpoint.
 const CARD_CLASS =
-    "w-full lg:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+    "w-full lg:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
 const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
     const counterparty = workspace
@@ -117,7 +111,7 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     if (!workspace) {
         return (
-            <div className="w-full lg:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
+            <div className="w-full lg:w-1/2 2xl:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
                 <p className="text-caption text-foreground-second font-inter-regular">
                     Coming up next
                 </p>
