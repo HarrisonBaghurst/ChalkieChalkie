@@ -1,11 +1,7 @@
 "use client";
 
 import { userInfo } from "@/types/userTypes";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+import TapTooltip from "@/components/TapTooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PeopleStackProps = {
@@ -27,26 +23,8 @@ const PeopleStack = ({ people, host }: PeopleStackProps) => {
     const firstName = fullName(first);
 
     return (
-        <Tooltip>
-            <TooltipTrigger className="flex items-center gap-2">
-                <Avatar className="rounded-md after:rounded-md">
-                    <AvatarImage
-                        src={first.imageUrl}
-                        alt={firstName}
-                        className="rounded-md"
-                    />
-                    <AvatarFallback className="rounded-md bg-foreground-third">
-                        {first.firstName.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
-
-                {rest.length > 0 && (
-                    <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">
-                        +{rest.length}
-                    </div>
-                )}
-            </TooltipTrigger>
-            <TooltipContent>
+        <TapTooltip
+            content={
                 <div className="flex flex-col gap-1">
                     <span className="text-caption text-background/50">
                         Participants ({participants.length})
@@ -63,8 +41,30 @@ const PeopleStack = ({ people, host }: PeopleStackProps) => {
                         </div>
                     ))}
                 </div>
-            </TooltipContent>
-        </Tooltip>
+            }
+        >
+            <button
+                type="button"
+                className="flex items-center gap-2"
+            >
+                <Avatar className="rounded-md after:rounded-md">
+                    <AvatarImage
+                        src={first.imageUrl}
+                        alt={firstName}
+                        className="rounded-md"
+                    />
+                    <AvatarFallback className="rounded-md bg-foreground-third">
+                        {first.firstName.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+
+                {rest.length > 0 && (
+                    <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">
+                        +{rest.length}
+                    </div>
+                )}
+            </button>
+        </TapTooltip>
     );
 };
 

@@ -66,6 +66,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import Spinner from "@/components/ui/Spinner";
 import Stepper from "@/components/ui/Stepper";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
+import TapTooltip from "@/components/TapTooltip";
 import InviteCountdown from "@/components/dashboard/connections/InviteCountdown";
 import { Block, Caption, Code, Note, Section } from "../primitives";
 
@@ -371,6 +372,10 @@ const Components = () => {
                         <TooltipContent>Inverted, caption-sized</TooltipContent>
                     </Tooltip>
 
+                    <TapTooltip content="Opens on hover or on tap">
+                        <Button variant="secondary">Hover or tap</Button>
+                    </TapTooltip>
+
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="outline">Open sheet</Button>
@@ -405,6 +410,16 @@ const Components = () => {
                         Fire a toast
                     </Button>
                 </div>
+                <Note tone="rule">
+                    <Code>Tooltip</Code> opens on hover and focus only, so its
+                    content is unreachable on a touch screen. When the tooltip
+                    is the only way to read something —{" "}
+                    <Code>PeopleStack</Code>, a truncated table cell — use{" "}
+                    <Code>TapTooltip</Code> instead: same look, but a tap opens
+                    it and a tap away closes it. Decorative labels naming an
+                    action the trigger already performs can stay on{" "}
+                    <Code>Tooltip</Code>.
+                </Note>
                 <Note tone="rule">
                     <Code>Sheet</Code> is Dialog anchored to an edge —{" "}
                     <Code>side=&quot;bottom&quot;</Code> by default, which is

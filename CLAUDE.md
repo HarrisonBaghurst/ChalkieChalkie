@@ -175,8 +175,10 @@ Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybind
 
 The dashboard is **mobile-first with a single seam at `lg`**. Below it, the phone layout; at `lg` and above, the desktop layout described throughout this file. There is deliberately no tablet tier yet — a portrait tablet currently gets the phone layout.
 
-- Breakpoint swaps are **CSS-only** (`lg:hidden` / `hidden lg:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets the desktop table keep behaviour (join-on-click) that the mobile rows simply don't have.
+- Breakpoint swaps are **CSS-only** (`lg:hidden` / `hidden lg:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets each tree keep behaviour the other doesn't have.
 - **Nothing below `lg` links to `/board`.** The canvas is desktop-only for now and this is enforced by omitting every link — the `Next` card is inert, rows open a detail sheet, and "Join workspace" is absent from the mobile actions. There is no route guard; opening a board URL directly still works.
+- **A landscape tablet clears `lg`, so the desktop tree must not assume a mouse.** Anything readable only on hover needs a tap path: `components/TapTooltip.tsx` keeps hover on a fine pointer and adds tap-to-open on a coarse one, decided per interaction from `pointerType` rather than a media query. Plain `Tooltip` is still fine for a label naming an action its trigger already performs.
+- **The desktop workspace row does not open the board on click.** Joining goes through the row's `⋯` menu or the `Next` card, so a stray tap on a tablet can't drop someone into a lesson.
 - Each table has a mobile counterpart in `components/dashboard/mobile/`: a compact row list whose rows open a `Sheet` holding the detail and actions that depend on hover at desktop.
 - The `Sidebar`'s Actions are unreachable below `lg`, so `TabBar` carries them on a floating action button, picking one action from the current page and role.
 - Bottom-flush chrome uses the `.pb-safe` utility (see `app/globals.css`), which needs `viewportFit: "cover"` from `app/layout.tsx`.

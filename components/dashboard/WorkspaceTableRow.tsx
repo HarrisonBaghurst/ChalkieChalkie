@@ -9,11 +9,7 @@ import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import PeopleStack from "./PeopleStack";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
 import RowActionsMenu from "./RowActionsMenu";
 import WorkspaceModal from "./WorkspaceModal";
@@ -74,10 +70,7 @@ const WorkspaceTableRow = ({
     const join = () => router.push(`/board/${workspace.id}`);
 
     return (
-        <tr
-            onClick={join}
-            className="group cursor-pointer"
-        >
+        <tr className="group">
             <td className={cellClass}>
                 <PeopleStack people={people} host={usersMap[workspace.host]} />
             </td>
@@ -103,36 +96,34 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 {workspace.description ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="block truncate text-left text-foreground-second">
-                                {workspace.description}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
+                    <TapTooltip
+                        content={
                             <div className="w-64 whitespace-normal">
                                 {workspace.description}
                             </div>
-                        </TooltipContent>
-                    </Tooltip>
+                        }
+                    >
+                        <span className="block truncate text-left text-foreground-second">
+                            {workspace.description}
+                        </span>
+                    </TapTooltip>
                 ) : (
                     <span className="text-foreground-third">—</span>
                 )}
             </td>
             <td className={cellClass}>
                 {workspace.feedback ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="block truncate text-left text-foreground-second">
-                                {workspace.feedback}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
+                    <TapTooltip
+                        content={
                             <div className="w-64 whitespace-normal">
                                 {workspace.feedback}
                             </div>
-                        </TooltipContent>
-                    </Tooltip>
+                        }
+                    >
+                        <span className="block truncate text-left text-foreground-second">
+                            {workspace.feedback}
+                        </span>
+                    </TapTooltip>
                 ) : (
                     <span className="text-foreground-third">—</span>
                 )}

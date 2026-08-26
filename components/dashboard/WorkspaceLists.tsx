@@ -146,9 +146,8 @@ const WorkspaceLists = ({
             </div>
 
             {/* Two renderings of the same rows, swapped by CSS rather than a
-                media-query hook: no hydration mismatch, no first-paint flash,
-                and the table keeps its join-on-click while the mobile rows
-                simply never carry one. */}
+                media-query hook: no hydration mismatch and no first-paint
+                flash. */}
             <div className="lg:hidden">
                 <WorkspaceList
                     rows={rowsByTab[activeTab]}
