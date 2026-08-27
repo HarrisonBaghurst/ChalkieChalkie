@@ -1,6 +1,7 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import {
+    fetchLiveProductionDeployment,
     findLatestStagedDeployment,
     promoteDeployment,
 } from "@/lib/vercelDeployments";
@@ -21,12 +22,23 @@ export async function GET(request: Request) {
     if (blocked) return blocked;
 
     try {
-        const deployment = await findLatestStagedDeployment();
+        const [deployment, live] = await Promise.all([
+            findLatestStagedDeployment(),
+            fetchLiveProductionDeployment(),
+        ]);
 
         if (!deployment) {
             return Response.json({
                 promoted: null,
                 skipped: "no-staged-deployment",
+            });
+        }
+
+        if (live && deployment.createdAt <= live.createdAt) {
+            return Response.json({
+                promoted: null,
+                skipped: "no-newer-deployment",
+                live: live.id,
             });
         }
 

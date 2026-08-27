@@ -85,6 +85,35 @@ export async function findLatestStagedDeployment(): Promise<VercelDeployment | n
     );
 }
 
+export async function fetchLiveProductionDeployment(): Promise<{
+    id: string;
+    createdAt: number;
+} | null> {
+    const config = vercelConfig();
+
+    const res = await vercelFetch(
+        `/v9/projects/${config.projectId}`,
+        {},
+        { method: "GET" },
+        config,
+    );
+
+    if (!res.ok) {
+        throw new Error(
+            `Vercel get-project failed (${res.status}): ${await res.text()}`,
+        );
+    }
+
+    const project = (await res.json()) as {
+        targets?: { production?: { id?: string; createdAt?: number } | null };
+    };
+
+    const live = project.targets?.production;
+    if (!live?.id || typeof live.createdAt !== "number") return null;
+
+    return { id: live.id, createdAt: live.createdAt };
+}
+
 export async function promoteDeployment(deploymentId: string): Promise<void> {
     const config = vercelConfig();
 

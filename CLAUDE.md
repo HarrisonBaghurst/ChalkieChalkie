@@ -224,7 +224,9 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 
 - Scheduled `0 0 * * *` in `vercel.json`. Vercel cron expressions are UTC-only and DST-blind, and Hobby-plan crons only fire to within the hour, so the real window is roughly 00:00–02:00 UK local depending on the season. That imprecision is accepted deliberately — it is all outside tutoring hours, and pinning it tighter costs a second cron entry and a DST guard for no practical gain.
 - Crons invoke the **currently live** deployment, i.e. the one *before* whatever is about to be promoted. Changes to `promote-latest` itself only take effect the night after they go live, and the first deploy containing the route has to be promoted by hand once to bootstrap it.
-- Vercel API access lives in `lib/vercelDeployments.ts`. Promotion is an alias swap, not a rebuild, and a deployment can only be promoted once — hence the `readySubstate === "STAGED"` filter. To ship something urgently, promote by hand in the dashboard; the cron will find nothing staged and no-op.
+- Vercel API access lives in `lib/vercelDeployments.ts`. Promotion is an alias swap, not a rebuild.
+- **`readySubstate === "STAGED"` is not "waiting to go live" — it is permanent for every push that was never promoted.** Push three times in a day and that night's run promotes the newest, leaving two candidates that never expire; a later night with nothing new then promotes one of *those*, walking production backwards a commit per night. So the newest staged build is only promotable if it is **newer than the live one**, read from `targets.production` on `/v9/projects/{id}` (`fetchLiveProductionDeployment`). Never gate on the substate alone.
+- To ship something urgently, promote by hand in the dashboard; the cron then finds nothing newer than live and no-ops.
 
 ### Rate Limiting
 
