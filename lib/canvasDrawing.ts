@@ -12,15 +12,13 @@ import { SELECTION_COLOURS } from "@/lib/colours";
 import { RemoteSelection } from "@/types/presenceTypes";
 import { RefObject } from "react";
 
-const HANDLE_SIZE = 8;
+const HANDLE_SIZE = 10;
 const DASH = [6, 4];
 const NO_OFFSET: Point = { x: 0, y: 0 };
 
 const REMOTE_SELECTION_LINE_WIDTH = 2;
 const REMOTE_SELECTION_RADIUS = 8;
 
-// Chrome is traced in world space, so every screen-constant width divides by
-// zoom — otherwise a 1px border is a hairline zoomed out and a slab zoomed in.
 const drawSelectionBox = (
     ctx: CanvasRenderingContext2D,
     rect: Rect,
@@ -55,10 +53,10 @@ const drawRemoteSelection = (
     ctx.restore();
 };
 
-// World-sized, matching the hit boxes in imageUtils.
 const drawResizeHandles = (
     ctx: CanvasRenderingContext2D,
     image: PastedImage,
+    zoom: number,
 ) => {
     const corners = [
         { x: image.x, y: image.y },
@@ -67,15 +65,12 @@ const drawResizeHandles = (
         { x: image.x + image.width, y: image.y + image.height },
     ];
 
+    const size = HANDLE_SIZE / zoom;
+
     ctx.save();
     ctx.fillStyle = SELECTION_COLOURS.border;
     corners.forEach((corner) => {
-        ctx.fillRect(
-            corner.x - HANDLE_SIZE / 2,
-            corner.y - HANDLE_SIZE / 2,
-            HANDLE_SIZE,
-            HANDLE_SIZE,
-        );
+        ctx.fillRect(corner.x - size / 2, corner.y - size / 2, size, size);
     });
     ctx.restore();
 };
@@ -149,8 +144,6 @@ const drawToCanvas = ({
     ) {
         canvas.width = clientWidth * devicePixelRatio;
         canvas.height = clientHeight * devicePixelRatio;
-        canvas.style.width = `${clientWidth}px`;
-        canvas.style.height = `${clientHeight}px`;
     }
 
     // clear in identity space first so we wipe every device pixel
@@ -259,7 +252,7 @@ const drawToCanvas = ({
     );
     if (clickedImage) {
         drawSelectionBox(ctx, clickedImage, zoom, false);
-        drawResizeHandles(ctx, clickedImage);
+        drawResizeHandles(ctx, clickedImage, zoom);
     }
 
     if (marqueeRect) {

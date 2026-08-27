@@ -1,16 +1,16 @@
 import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
-import { getMousePos } from "../helpers";
+import { toCanvasPoint } from "../helpers";
 
 const onDown = ({ e, state }: ToolContext) => {
     state.panOrigin = {
-        startScreen: getMousePos(e),
+        startScreen: toCanvasPoint(e, state),
         startOffset: { ...state.viewport.offset },
     };
 };
 
 const onMove = ({ e, state }: ToolContext) => {
     if (!state.panOrigin) return;
-    const { x, y } = getMousePos(e);
+    const { x, y } = toCanvasPoint(e, state);
     state.viewport.offset = {
         x: state.panOrigin.startOffset.x + (x - state.panOrigin.startScreen.x),
         y: state.panOrigin.startOffset.y + (y - state.panOrigin.startScreen.y),

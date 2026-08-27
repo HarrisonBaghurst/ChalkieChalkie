@@ -1,19 +1,22 @@
 import { PastedImage, ResizeHandle, ResizeHandleKey } from "@/types/imageTypes";
 import { Point } from "@/types/strokeTypes";
 
-const HANDLE_SIZE = 20;
+const HANDLE_SIZE = 28;
 
 export const getImageAtPoint = (
     images: PastedImage[],
     point: Point,
+    zoom: number,
 ): PastedImage | null => {
+    const slop = HANDLE_SIZE / zoom;
+
     for (let i = images.length - 1; i >= 0; i--) {
         const img = images[i];
         if (
-            point.x >= img.x - HANDLE_SIZE &&
-            point.x <= img.x + img.width + HANDLE_SIZE &&
-            point.y >= img.y - HANDLE_SIZE &&
-            point.y <= img.y + img.height + HANDLE_SIZE
+            point.x >= img.x - slop &&
+            point.x <= img.x + img.width + slop &&
+            point.y >= img.y - slop &&
+            point.y <= img.y + img.height + slop
         ) {
             return img;
         }
@@ -24,6 +27,7 @@ export const getImageAtPoint = (
 export const getResizeHandleAtPoint = (
     img: PastedImage,
     point: Point,
+    zoom: number,
 ): ResizeHandle => {
     const handles = {
         nw: { x: img.x, y: img.y },
@@ -32,19 +36,16 @@ export const getResizeHandleAtPoint = (
         se: { x: img.x + img.width, y: img.y + img.height },
     };
 
+    const half = HANDLE_SIZE / zoom / 2;
+
     for (const key in handles) {
         const handle = handles[key as ResizeHandleKey];
 
-        const left = handle.x - HANDLE_SIZE / 2;
-        const right = handle.x + HANDLE_SIZE / 2;
-        const top = handle.y - HANDLE_SIZE / 2;
-        const bottom = handle.y + HANDLE_SIZE / 2;
-
         if (
-            point.x >= left &&
-            point.x <= right &&
-            point.y >= top &&
-            point.y <= bottom
+            point.x >= handle.x - half &&
+            point.x <= handle.x + half &&
+            point.y >= handle.y - half &&
+            point.y <= handle.y + half
         ) {
             return key as ResizeHandle;
         }

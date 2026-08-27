@@ -121,7 +121,7 @@ Presence types must be **type aliases, not interfaces** (`types/presenceTypes.ts
 `Presence.selection` doubles as the display of a remote selection and the lock on it. Presence dies with the connection, so a dropped client can never strand items as unselectable.
 
 - **Published** by `hooks/useSelectionPresence.tsx`, which polls the canvas state ref each frame and diffs a signature. Selection is mutated from three places — `pointer.ts`, `onToolChanged` in `Workspace.tsx`, and the Delete branch of `useKeybinds.tsx` — so one watcher on the shared ref beats a `ToolCallbacks` entry every mutation site has to remember to call.
-- **Published bounds come off storage** (`strokes`, `pastedImagesMeta`), never off `selectorDelta` or the locally mutated `state.pastedImages`. A drag reaches storage only on mouse-up, so a box that tracked the live gesture would slide away from the strokes it frames and they would snap after it. Frozen at the committed geometry, box and content jump together on commit. The poll is per-frame rather than throttled for the same reason: the bounds change then enters the same socket flush as the storage write that caused it.
+- **Published bounds come off storage** (`strokes`, `pastedImagesMeta`), never off `selectorDelta` or the locally mutated `state.pastedImages`. A drag reaches storage only on pointer-up, so a box that tracked the live gesture would slide away from the strokes it frames and they would snap after it. Frozen at the committed geometry, box and content jump together on commit. The poll is per-frame rather than throttled for the same reason: the bounds change then enters the same socket flush as the storage write that caused it.
 - **Consumed** by `hooks/useRemoteSelections.tsx`: fills `CanvasState.lockedStrokeIds` / `lockedImageIds` so tools reach locks through the `ToolContext` they already take, and returns a ref of `{ colour, bounds }` for the render loop (a ref, so a presence tick doesn't restart the rAF loop).
 - **Enforced** in `lib/handlers/tools/pointer.ts`: locked images are filtered *out of the hit-test list*, not merely refused, so a locked image on top doesn't become a dead zone over what sits beneath it. The marquee resolution filters locked ids the same way.
 - **Drawn** by `drawRemoteSelection` in `lib/canvasDrawing.ts`, last, in the owner's `getUserColour` — tune `REMOTE_SELECTION_LINE_WIDTH` / `REMOTE_SELECTION_RADIUS` there.
@@ -130,11 +130,29 @@ Presence types must be **type aliases, not interfaces** (`types/presenceTypes.ts
 
 ### Drawing Pipeline
 
-1. Mouse events on the `<canvas>` in `components/Workspace.tsx` go through `lib/handlers/mouseDown.ts` / `mouseMove.ts` / `mouseUp.ts`, which dispatch to per-tool strategies in `lib/handlers/tools/` (`pen`, `eraser`, `pointer`, `selector`, `highlighter`) registered in `lib/handlers/toolStrategies.ts`. Pan is intentionally not a strategy: it is bound to the right mouse button regardless of active tool (`tools/pan.ts`).
-2. All mutable interaction state (viewport/camera, in-progress stroke, selection, images) lives in a single `CanvasState` object held in one ref — see `types/canvasStateTypes.ts`. Tools receive a `ToolContext` with that state plus `ToolCallbacks` (Liveblocks mutations) and commit on mouse-up.
+1. `hooks/useCanvasInput.tsx` owns every input on the `<canvas>` in `components/Workspace.tsx` and dispatches to per-tool strategies in `lib/handlers/tools/` (`pen`, `eraser`, `pointer`, `highlighter`) registered in `lib/handlers/toolStrategies.ts`. Pan is intentionally not a strategy: it is bound to the right mouse button regardless of active tool (`tools/pan.ts`).
+2. All mutable interaction state (viewport/camera, in-progress stroke, selection, images) lives in a single `CanvasState` object held in one ref — see `types/canvasStateTypes.ts`. Tools receive a `ToolContext` with that state plus `ToolCallbacks` (Liveblocks mutations) and commit on pointer-up.
 3. `hooks/useCanvasRenderLoop.tsx` runs a `requestAnimationFrame` loop calling primitives in `lib/canvasDrawing.ts` to render all strokes and images.
-4. Stroke points are simplified via `lib/strokeOptimisation.ts` before being stored. Hit-testing (eraser, selector) uses `lib/genometry.ts`, which tests segments rather than points because simplification discards intermediate points.
+4. Stroke points are simplified via `lib/strokeOptimisation.ts` before being stored. Hit-testing (eraser, pointer) uses `lib/genometry.ts`, which tests segments rather than points because simplification discards intermediate points.
 5. Pasted images (`hooks/useImagePaste.tsx`) are uploaded to Supabase storage via `api/workspaces/[workspaceId]/images`, which returns a signed URL stored in Liveblocks meta. Only PNG and JPEG are accepted, on both the paste handler and the route. Images too bright for the dark canvas are inverted **before upload** — the pixels are inverted in place and re-encoded, so what is stored is what every client renders. Do not reintroduce a render-time inversion flag: it made appearance depend on `ctx.filter`, which is silently a no-op on engines that lack it.
+
+### Touch, Stylus and Gestures
+
+The canvas is driven by **Pointer Events only**. Never reintroduce a mouse or touch handler on it — Safari synthesises mouse events from pen input only after deciding the gesture is not a scroll, and suppresses the whole sequence when a contact begins soon after the last one ended. That is the cadence of handwriting, so an Apple Pencil silently lost whole letters while a slow straight line worked fine.
+
+- **`touch-action: none` on the canvas is load-bearing**, not cosmetic. Without it Safari withholds pointer events while it evaluates the gesture, then fires `pointercancel` mid-stroke.
+- **The `touchstart`/`touchmove` `preventDefault` listeners are not redundant with `touch-action`, and deleting them breaks the Apple Pencil.** iOS derives its pointer events from touch events, and `preventDefault()` on a `PointerEvent` never reaches the touch gesture underneath. Without them Safari resolves a quick Pencil drag as a *text selection*, raises its Copy/Look Up callout, and hands the stroke back as a `pointercancel` — which reads as "fast handwriting drops random letters". They must stay `{ passive: false }`. `gesturestart`/`gesturechange` are suppressed alongside for Safari's own pinch.
+- **`select-none` sits on the whole board tree, not just the canvas**, because iOS anchors that callout to any selectable text near the gesture. The header's title `<input>` stays editable regardless — `user-select: none` on an ancestor does not disable form fields.
+- **`pointercancel` commits the stroke rather than discarding it.** A cancel is the browser taking the gesture away, not the user changing their mind; that case is caught at pointer-down instead. Half a letter beats a letter that vanishes.
+- **Pen-priority palm rejection.** Once a `pen` pointer is seen, touch contacts never draw again for the life of the page, and a single finger becomes inert — panning is strictly two-finger. Before the first pen contact there is nothing to reject a palm by, so a pen landing mid-touch-stroke discards that stroke; that covers the one case `penSeen` cannot.
+- **A second contact discards the gesture in flight** and becomes a pinch. `abortPointerGesture` in `tools/pointer.ts` puts back what was moved — nothing has reached storage yet, which is why a local revert is the whole job. `imageTransformOrigin` exists solely so a single-image drag or resize can be reverted this way.
+- **The pinch pins the world point under the opening two-finger midpoint** to the live midpoint. That yields pan and zoom in one expression with no rotation term, and keeps panning alive once zoom clamps. Zoom limits and anchoring are shared with the wheel through `lib/viewport.ts` — put any new zoom entry point there rather than duplicating the clamp.
+- **Pointer moves are replayed through `getCoalescedEvents()`.** A Pencil reports far faster than the display refreshes and the dropped samples are exactly the curve of a letter, so pen, highlighter and pointer moves are deliberately unthrottled. Only the eraser is gated, because it filters every stroke and mutates storage per move.
+- **`setPointerCapture` on the drawing pointer** is what lets a stroke that ends off the edge of the screen still commit.
+- **`crypto.randomUUID` is secure-context-only** and absent over a plain-HTTP LAN address, which is how the board gets tested from an iPad. Use `newId()` from `lib/id.ts` on the client; the server may call `randomUUID` directly.
+- **Hit targets are screen pixels divided by zoom**, not world constants — a world-space handle shrank to a hairline zoomed out. See `DRAG_HIT_PADDING` / `MIN_DRAG` in `tools/pointer.ts`, `HANDLE_SIZE` in `lib/imageUtils.ts` (the hit box, sized for a fingertip) and in `lib/canvasDrawing.ts` (the smaller drawn box).
+- **Never write `style.width`/`style.height` on the canvas.** It overrides the sizing classes and pins `clientWidth` to a literal, after which the element never resizes — on an iPad, rotation stops working. `lib/canvasDrawing.ts` sets the backing store only; CSS owns the box.
+- `app/board/[boardId]/page.tsx` carries its own `viewport` export with `maximumScale: 1` so a pinch that misses the canvas cannot scale the page. It is board-only on purpose — browser zoom stays available everywhere else.
 
 ### Component Structure
 
@@ -147,6 +165,8 @@ components/
     ├─ Toolbar.tsx        ← left toolbar (tools, colour fans via ToolbarButton/ColourSelector)
     ├─ ParticipantRoster  ← who's in the room (from Presence/others)
     ├─ CursorLayer.tsx    ← renders other users' cursors from Presence
+    ├─ SelectionActions   ← delete button pinned under the selection box; the
+    │                       only route to delete without a keyboard
     └─ FullscreenLoader   ← shown until Liveblocks storage resolves
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
@@ -218,7 +238,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 
 - `strokeTypes.ts` — `Point`, `Stroke { id, points[], colour, highlight? }`
 - `imageTypes.ts` — `PastedImageMeta` (position/size), `PastedImage` (meta + loaded element), `ResizeHandle`
-- `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "selector" | "highlighter"` + per-tool cursor map
+- `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "highlighter"` + per-tool cursor map. There is no `selector`: the marquee lives inside `pointer`
 - `canvasStateTypes.ts` — `CanvasState`, `Viewport`, `ToolContext`, `ToolCallbacks`, `ToolStrategy`
 - `presenceTypes.ts` — `SelectionPresence` (the Presence payload), `RemoteSelection` (what the renderer draws)
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`
@@ -227,7 +247,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps and the shared anchor rule), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
 
 ### Path Alias
 

@@ -1,20 +1,20 @@
 import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
-import { getWorldPoint } from "../helpers";
+import { toWorldPoint } from "../helpers";
 import { simplifyRDP } from "@/lib/strokeOptimisation";
+import { newId } from "@/lib/id";
 
 const onDown = ({ e, state }: ToolContext) => {
     state.isDrawing = true;
-    const worldPoint = getWorldPoint(e, state.viewport);
     state.currentStroke = {
-        id: crypto.randomUUID(),
-        points: [worldPoint],
+        id: newId(),
+        points: [toWorldPoint(e, state)],
         colour: state.currentColour,
     };
 };
 
 const onMove = ({ e, state }: ToolContext) => {
     if (!state.isDrawing || !state.currentStroke) return;
-    const worldPoint = getWorldPoint(e, state.viewport);
+    const worldPoint = toWorldPoint(e, state);
 
     if (e.shiftKey && state.currentStroke.points.length > 0) {
         const origin = state.currentStroke.points[0];
@@ -32,9 +32,8 @@ const onUp = ({ e, state, callbacks }: ToolContext) => {
             ? state.currentStroke.points
             : simplifyRDP(state.currentStroke.points, 1);
         callbacks.onStrokeFinished({
-            id: crypto.randomUUID(),
+            ...state.currentStroke,
             points: simplified,
-            colour: state.currentStroke.colour,
         });
         state.currentStroke = null;
     }

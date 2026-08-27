@@ -26,7 +26,7 @@ const Toolbar = ({
 
     return (
         <>
-            <div className="fixed left-4 top-1/2 -translate-y-1/2 bg-card-background radius-surface border border-foreground-third/15 flex flex-col gap-2">
+            <div className="fixed left-4 top-1/2 -translate-y-1/2 select-none bg-card-background radius-surface border border-foreground-third/15 flex flex-col gap-2">
                 <div className="flex flex-col gap-2 p-2">
                     <ToolbarButton
                         icon={"/icons/mouse-pointer-2.svg"}

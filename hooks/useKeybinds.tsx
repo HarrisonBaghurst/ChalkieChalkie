@@ -1,4 +1,5 @@
 import { CanvasState } from "@/types/canvasStateTypes";
+import { deleteSelection } from "@/lib/deleteSelection";
 import { RefObject, useEffect } from "react";
 
 interface UseKeybindsProps {
@@ -30,47 +31,17 @@ export const useKeybinds = ({
             }
 
             const state = canvasStateRef.current;
-            if (event.ctrlKey && event.key === "z") {
+            const accel = event.ctrlKey || event.metaKey;
+
+            if (accel && event.key.toLowerCase() === "z") {
                 event.preventDefault();
-                undo();
-            } else if (event.ctrlKey && event.key === "y") {
+                if (event.shiftKey) redo();
+                else undo();
+            } else if (accel && event.key === "y") {
                 event.preventDefault();
                 redo();
             } else if (event.key === "Delete" || event.key === "Backspace") {
-                const hadSelectorSelection =
-                    state.selectedStrokeIds.length > 0 ||
-                    state.selectedImageIds.length > 0;
-
-                if (state.selectedStrokeIds.length > 0) {
-                    eraseStrokes([...state.selectedStrokeIds]);
-                    state.selectedStrokeIds = [];
-                }
-
-                // Meta only — the blob is left for the cleanup cron so Ctrl+Z
-                // can restore the image.
-                const selectorImageIds = [...state.selectedImageIds];
-                if (selectorImageIds.length > 0) {
-                    for (const id of selectorImageIds) {
-                        removeImageMeta(id);
-                    }
-                    state.pastedImages = state.pastedImages.filter(
-                        (img) => !selectorImageIds.includes(img.id),
-                    );
-                    state.selectedImageIds = [];
-                }
-
-                if (hadSelectorSelection) {
-                    state.selectionBounds = null;
-                }
-
-                const id = state.selectedImageId;
-                if (id && !selectorImageIds.includes(id)) {
-                    removeImageMeta(id);
-                    state.pastedImages = state.pastedImages.filter(
-                        (img) => img.id != id,
-                    );
-                    state.selectedImageId = null;
-                }
+                deleteSelection({ state, eraseStrokes, removeImageMeta });
             }
         };
 

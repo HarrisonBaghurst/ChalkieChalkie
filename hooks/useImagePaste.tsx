@@ -2,6 +2,7 @@ import { PastedImageMeta } from "@/types/imageTypes";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect } from "react";
 import { toast } from "sonner";
+import { newId } from "@/lib/id";
 
 interface UseImagePasteProps {
     workspaceId: string;
@@ -177,7 +178,7 @@ export const useImagePaste = ({
                     break;
                 }
 
-                const imageId = crypto.randomUUID();
+                const imageId = newId();
                 const { x, y } = canvasStateRef.current.cursorPosition;
                 const sourceUrl = URL.createObjectURL(file);
 

@@ -1,19 +1,11 @@
 "use client";
 
-import {
-    RefObject,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import { Point } from "@/types/strokeTypes";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
-import { useUpdateMyPresence } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
+import { useCanvasInput } from "@/hooks/useCanvasInput";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
 import { useKeybinds } from "@/hooks/useKeybinds";
@@ -21,17 +13,10 @@ import { useRemoteSelections } from "@/hooks/useRemoteSelections";
 import { useSelectionPresence } from "@/hooks/useSelectionPresence";
 import CursorLayer from "./CursorLayer";
 import ParticipantRoster from "./ParticipantRoster";
-import { handleMouseDown } from "@/lib/handlers/mouseDown";
-import { handleMouseMove } from "@/lib/handlers/mouseMove";
-import { handleMouseUp } from "@/lib/handlers/mouseUp";
-import { getMousePos } from "@/lib/handlers/helpers";
+import SelectionActions from "./SelectionActions";
 import FullscreenLoader from "./FullscreenLoader";
 import BoardHeader from "./BoardHeader";
 import Toolbar from "./Toolbar";
-
-const ZOOM_MIN = 0.25;
-const ZOOM_MAX = 4.0;
-const ZOOM_RATIO = 1.1;
 
 const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -56,7 +41,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     const canvasStateRef = useRef<CanvasState>({
         viewport: { offset: { x: 0, y: 0 }, zoom: 1 },
         panOrigin: null,
-        lastMouseScreen: null,
+        canvasRect: { left: 0, top: 0, width: 0, height: 0 },
         currentStroke: null,
         isDrawing: false,
         currentColour: PEN_COLOURS[0].code,
@@ -66,6 +51,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         selectedImageId: null,
         imageDragOffset: null,
         activeResizeHandle: null,
+        imageTransformOrigin: null,
         pastedImages: [],
         marqueeRect: null,
         selectionBounds: null,
@@ -118,53 +104,13 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         [eraseStrokes, addStroke, updateImageMeta, moveStrokes],
     );
 
-    const updateMyPresence = useUpdateMyPresence();
-
-    const handlePresenceUpdate = (e: React.MouseEvent) => {
-        const { x: sx, y: sy } = getMousePos(e);
-        const { offset, zoom } = canvasStateRef.current.viewport;
-        const x = Math.round((sx - offset.x) / zoom);
-        const y = Math.round((sy - offset.y) / zoom);
-        canvasStateRef.current.cursorPosition = { x, y };
-        updateMyPresence({ cursor: { x, y } });
-    };
-
-    const canvasCenter = (): Point => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
-        const rect = canvas.getBoundingClientRect();
-        return { x: rect.width / 2, y: rect.height / 2 };
-    };
-
-    const applyZoom = (rawZoom: number, anchor: Point) => {
-        const vp = canvasStateRef.current.viewport;
-        const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, rawZoom));
-        const old = vp.zoom;
-        if (newZoom === old) return;
-        const ratio = newZoom / old;
-        vp.offset = {
-            x: anchor.x - ratio * (anchor.x - vp.offset.x),
-            y: anchor.y - ratio * (anchor.y - vp.offset.y),
-        };
-        vp.zoom = newZoom;
-    };
-
-    const zoomIn = useCallback(() => {
-        const anchor = canvasStateRef.current.lastMouseScreen ?? canvasCenter();
-        applyZoom(canvasStateRef.current.viewport.zoom * ZOOM_RATIO, anchor);
-    }, []);
-
-    const zoomOut = useCallback(() => {
-        const anchor = canvasStateRef.current.lastMouseScreen ?? canvasCenter();
-        applyZoom(canvasStateRef.current.viewport.zoom / ZOOM_RATIO, anchor);
-    }, []);
-
     const onToolChanged = (tool: Tools) => {
         setCurrentTool(tool);
         const state = canvasStateRef.current;
         state.tool = tool;
         state.selectedImageId = null;
         state.activeResizeHandle = null;
+        state.imageTransformOrigin = null;
         state.marqueeRect = null;
         state.selectionBounds = null;
         state.selectionBoundsOrigin = null;
@@ -177,6 +123,14 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     };
 
     const remoteSelectionsRef = useRemoteSelections(canvasStateRef);
+
+    useCanvasInput({
+        canvasRef,
+        canvasStateRef,
+        strokes,
+        callbacks,
+        enabled: isLoaded,
+    });
 
     useSelectionPresence({ canvasStateRef, strokes, pastedImagesMeta });
 
@@ -200,33 +154,6 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     });
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const preventContextMenu = (e: MouseEvent) => e.preventDefault();
-        canvas.addEventListener("contextmenu", preventContextMenu);
-        return () =>
-            canvas.removeEventListener("contextmenu", preventContextMenu);
-    }, [isLoaded]);
-
-    // Native listener so preventDefault works — React's onWheel is passive.
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const onWheel = (e: WheelEvent) => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const anchor = {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            };
-            const factor = e.deltaY < 0 ? ZOOM_RATIO : 1 / ZOOM_RATIO;
-            applyZoom(canvasStateRef.current.viewport.zoom * factor, anchor);
-        };
-        canvas.addEventListener("wheel", onWheel, { passive: false });
-        return () => canvas.removeEventListener("wheel", onWheel);
-    }, [isLoaded]);
-
-    useEffect(() => {
         document.body.style.overflow = "hidden";
         return () => {
             document.body.style.overflow = "";
@@ -236,8 +163,14 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
     return (
         <>
             {isLoaded ? (
-                <div className="w-dvw h-dvh overflow-hidden">
+                <div className="w-dvw h-dvh overflow-hidden select-none [-webkit-touch-callout:none]">
                     <CursorLayer canvasStateRef={canvasStateRef} />
+                    <SelectionActions
+                        canvasStateRef={canvasStateRef}
+                        strokes={strokes}
+                        eraseStrokes={eraseStrokes}
+                        removeImageMeta={removeImageMeta}
+                    />
                     <BoardHeader />
                     <ParticipantRoster />
                     <Toolbar
@@ -248,44 +181,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                     />
                     <canvas
                         ref={canvasRef}
-                        style={{
-                            pointerEvents: isLoaded ? "auto" : "none",
-                        }}
-                        className="w-screen h-screen dotted-paper overflow-hidden"
-                        onMouseDown={(e) => {
-                            // The canvas preventDefault suppresses the implicit
-                            // blur, so commit inline edits by hand.
-                            if (
-                                document.activeElement instanceof HTMLElement
-                            ) {
-                                document.activeElement.blur();
-                            }
-                            handleMouseDown({
-                                e,
-                                canvasStateRef,
-                                strokes,
-                                callbacks,
-                            });
-                        }}
-                        onMouseMove={(e) => {
-                            handleMouseMove({
-                                e,
-                                canvasStateRef,
-                                strokes,
-                                callbacks,
-                            });
-                            handlePresenceUpdate(e);
-                            canvasStateRef.current.lastMouseScreen =
-                                getMousePos(e);
-                        }}
-                        onMouseUp={(e) =>
-                            handleMouseUp({
-                                e,
-                                canvasStateRef,
-                                strokes,
-                                callbacks,
-                            })
-                        }
+                        className="w-full h-full dotted-paper overflow-hidden touch-none select-none overscroll-none [-webkit-touch-callout:none]"
                     />
                 </div>
             ) : (

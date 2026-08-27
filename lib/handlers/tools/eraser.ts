@@ -1,13 +1,13 @@
 import { StrokeIntersectPoints } from "@/lib/genometry";
 import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
-import { getWorldPoint } from "../helpers";
+import { toWorldPoint } from "../helpers";
 
 const ERASER_RADIUS = 10;
 
 const onMove = ({ e, state, strokes, callbacks }: ToolContext) => {
     if (!strokes) return;
 
-    const worldPoint = getWorldPoint(e, state.viewport);
+    const worldPoint = toWorldPoint(e, state);
 
     const hitStrokeIds = strokes
         .filter((stroke) =>

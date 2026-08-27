@@ -3,7 +3,7 @@ import {
     ToolContext,
     ToolStrategy,
 } from "@/types/canvasStateTypes";
-import { getWorldPoint } from "../helpers";
+import { toWorldPoint } from "../helpers";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
 import { ResizeHandleKey } from "@/types/imageTypes";
 import {
@@ -20,10 +20,12 @@ import {
 // drag-to-marquee are the same gesture, separated only by distance.
 
 const MIN_IMAGE_SIZE = 20;
+// Both in screen pixels, divided by zoom where used — world-space constants
+// shrank to nothing zoomed out — and sized for a fingertip's wobble.
 // shorter than this counts as a click, i.e. deselect
-const MIN_DRAG = 4;
+const MIN_DRAG = 6;
 // slack so the selection border itself can be grabbed
-const DRAG_HIT_PADDING = 4;
+const DRAG_HIT_PADDING = 10;
 
 const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
     nw: "nwse-resize",
@@ -37,12 +39,15 @@ const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
 const selectableImages = (state: CanvasState) =>
     state.pastedImages.filter((img) => !state.lockedImageIds.has(img.id));
 
-const grabHitRect = (rect: Rect): Rect => ({
-    x: rect.x - DRAG_HIT_PADDING,
-    y: rect.y - DRAG_HIT_PADDING,
-    width: rect.width + DRAG_HIT_PADDING * 2,
-    height: rect.height + DRAG_HIT_PADDING * 2,
-});
+const grabHitRect = (rect: Rect, zoom: number): Rect => {
+    const pad = DRAG_HIT_PADDING / zoom;
+    return {
+        x: rect.x - pad,
+        y: rect.y - pad,
+        width: rect.width + pad * 2,
+        height: rect.height + pad * 2,
+    };
+};
 
 const clearMarquee = (state: CanvasState) => {
     state.selectedStrokeIds = [];
@@ -67,35 +72,71 @@ export const pointerCursor = (state: CanvasState): string => {
     if (state.selectorStart) return "default";
 
     const point = state.cursorPosition;
+    const { zoom } = state.viewport;
     const hasSelection =
         state.selectedStrokeIds.length > 0 || state.selectedImageIds.length > 0;
 
     if (
         hasSelection &&
         state.selectionBounds &&
-        pointInRect(point, grabHitRect(state.selectionBounds))
+        pointInRect(point, grabHitRect(state.selectionBounds, zoom))
     ) {
         return "grab";
     }
 
-    const img = getImageAtPoint(selectableImages(state), point);
+    const img = getImageAtPoint(selectableImages(state), point, zoom);
     if (img) {
-        const handle = getResizeHandleAtPoint(img, point);
+        const handle = getResizeHandleAtPoint(img, point, zoom);
         return handle ? RESIZE_CURSORS[handle] : "grab";
     }
 
     return "default";
 };
 
+// A gesture cut short by a second finger landing, or by the browser taking the
+// pointer away. Everything must go back to where it was: nothing here has been
+// committed to storage yet, so reverting locally is the whole job.
+export const abortPointerGesture = (state: CanvasState) => {
+    if (state.imageTransformOrigin && state.selectedImageId) {
+        const img = state.pastedImages.find(
+            (i) => i.id === state.selectedImageId,
+        );
+        if (img) Object.assign(img, state.imageTransformOrigin);
+    }
+
+    if (state.selectorDragStart) {
+        for (const img of state.pastedImages) {
+            const origin = state.selectorImageOrigins.get(img.id);
+            if (origin) {
+                img.x = origin.x;
+                img.y = origin.y;
+            }
+        }
+        if (state.selectionBoundsOrigin) {
+            state.selectionBounds = { ...state.selectionBoundsOrigin };
+        }
+    }
+
+    state.imageTransformOrigin = null;
+    state.imageDragOffset = null;
+    state.activeResizeHandle = null;
+    state.selectorDragStart = null;
+    state.selectorDelta = { x: 0, y: 0 };
+    state.selectorImageOrigins.clear();
+    state.marqueeRect = null;
+    state.selectorStart = null;
+};
+
 const onDown = ({ e, state }: ToolContext) => {
-    const worldPoint = getWorldPoint(e, state.viewport);
+    const worldPoint = toWorldPoint(e, state);
+    const { zoom } = state.viewport;
 
     // 1. grab an existing marquee selection by its box
     const hasSelection =
         state.selectedStrokeIds.length > 0 || state.selectedImageIds.length > 0;
 
     if (hasSelection && state.selectionBounds) {
-        if (pointInRect(worldPoint, grabHitRect(state.selectionBounds))) {
+        if (pointInRect(worldPoint, grabHitRect(state.selectionBounds, zoom))) {
             state.selectorDragStart = worldPoint;
             state.selectorDelta = { x: 0, y: 0 };
             state.selectionBoundsOrigin = { ...state.selectionBounds };
@@ -114,12 +155,18 @@ const onDown = ({ e, state }: ToolContext) => {
     }
 
     // 2. press on an image — select it, and move or resize it in the same drag
-    const img = getImageAtPoint(selectableImages(state), worldPoint);
+    const img = getImageAtPoint(selectableImages(state), worldPoint, zoom);
     if (img) {
         clearMarquee(state);
         state.selectedImageId = img.id;
+        state.imageTransformOrigin = {
+            x: img.x,
+            y: img.y,
+            width: img.width,
+            height: img.height,
+        };
 
-        const handle = getResizeHandleAtPoint(img, worldPoint);
+        const handle = getResizeHandleAtPoint(img, worldPoint, zoom);
         if (handle) {
             state.activeResizeHandle = handle;
             return;
@@ -134,6 +181,7 @@ const onDown = ({ e, state }: ToolContext) => {
 
     // 3. press on empty board — start a marquee
     state.selectedImageId = null;
+    state.imageTransformOrigin = null;
     clearMarquee(state);
     state.selectorStart = worldPoint;
     state.marqueeRect = {
@@ -145,7 +193,7 @@ const onDown = ({ e, state }: ToolContext) => {
 };
 
 const onMove = ({ e, state }: ToolContext) => {
-    const worldPoint = getWorldPoint(e, state.viewport);
+    const worldPoint = toWorldPoint(e, state);
 
     // 1. moving or resizing the single image the press landed on
     if (isTransformingImage(state)) {
@@ -247,7 +295,7 @@ const onMove = ({ e, state }: ToolContext) => {
 };
 
 const onUp = ({ state, strokes, callbacks }: ToolContext) => {
-    // 1. commit a single image's move or resize — handleMouseUp clears the
+    // 1. commit a single image's move or resize — useCanvasInput clears the
     // gesture state only after this runs, so it still reads here.
     if (isTransformingImage(state)) {
         const id = state.selectedImageId!;
@@ -299,8 +347,9 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
     // 3. resolve what the marquee swept up
     if (state.marqueeRect) {
         const normalised = normaliseRect(state.marqueeRect);
+        const minDrag = MIN_DRAG / state.viewport.zoom;
 
-        if (normalised.width > MIN_DRAG || normalised.height > MIN_DRAG) {
+        if (normalised.width > minDrag || normalised.height > minDrag) {
             state.selectedStrokeIds = (strokes ?? [])
                 .filter(
                     (s) =>
