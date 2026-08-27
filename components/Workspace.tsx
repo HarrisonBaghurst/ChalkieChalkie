@@ -4,12 +4,14 @@ import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
 import { Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
-import { Rect } from "@/lib/genometry";
+import { Rect, selectedItemBounds, unionRects } from "@/lib/genometry";
+import { PDF_MIME_TYPE } from "@/lib/imageLimits";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasInput } from "@/hooks/useCanvasInput";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
-import { useInsertImage } from "@/hooks/useInsertImage";
+import { InsertPlacement, useInsertImage } from "@/hooks/useInsertImage";
+import { useInsertPdf } from "@/hooks/useInsertPdf";
 import { useKeybinds } from "@/hooks/useKeybinds";
 import { useRemoteSelections } from "@/hooks/useRemoteSelections";
 import { useSelectionPresence } from "@/hooks/useSelectionPresence";
@@ -135,12 +137,36 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         state.imageTransformOrigin = rect;
     };
 
+    // A document goes through the marquee selection model, not the single-image
+    // one: selectedImageId holds one id, and the point of selecting a PDF is to
+    // drag all of its pages together.
+    const onPagesInserted = (imageIds: string[]) => {
+        onToolChanged("pointer");
+        const state = canvasStateRef.current;
+        state.selectedImageIds = imageIds;
+        state.selectionBounds = unionRects(
+            selectedItemBounds(strokes ?? [], state.pastedImages, [], imageIds),
+        );
+    };
+
     const insertImage = useInsertImage({
         workspaceId,
         canvasStateRef,
         addImageMeta,
         onInserted: onImageInserted,
     });
+
+    const insertPdf = useInsertPdf({
+        workspaceId,
+        canvasStateRef,
+        addImageMeta,
+        onInserted: onPagesInserted,
+    });
+
+    const insertFile = (file: File, placement: InsertPlacement) =>
+        file.type === PDF_MIME_TYPE
+            ? insertPdf(file, placement)
+            : insertImage(file, placement);
 
     const remoteSelectionsRef = useRemoteSelections(canvasStateRef);
 
@@ -163,7 +189,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
 
     usePastedImagesSync({ canvasStateRef, pastedImagesMeta });
 
-    useImagePaste({ insertImage });
+    useImagePaste({ insertFile });
 
     useKeybinds({
         canvasStateRef,
@@ -198,7 +224,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         currentColourRef={currentColourRef}
                         highlightColourRef={highlightColourRef}
                         onToolChanged={onToolChanged}
-                        onInsertImage={(file) => insertImage(file, "viewport")}
+                        onInsertFile={(file) => insertFile(file, "viewport")}
                     />
                     <canvas
                         ref={canvasRef}

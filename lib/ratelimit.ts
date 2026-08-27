@@ -11,31 +11,32 @@ type LimiterConfig = {
 };
 
 export const RATE_LIMITS = {
-    "liveblocks-auth:user":   { keyBy: "userId", limit: 30,  window: "1 m" },
-    "liveblocks-auth:ip":     { keyBy: "ip",     limit: 100, window: "1 m" },
-    "contact":                { keyBy: "ip",     limit: 3,   window: "1 h" },
-    "cron":                   { keyBy: "ip",     limit: 5,   window: "1 m" },
-    "workspace:get":          { keyBy: "userId", limit: 60,  window: "1 m" },
-    "workspace:patch":        { keyBy: "userId", limit: 20,  window: "1 m" },
-    "workspace:create":       { keyBy: "userId", limit: 3,   window: "1 m" },
-    "workspace:delete":       { keyBy: "userId", limit: 10,  window: "1 m" },
-    "workspace-image:upload": { keyBy: "userId", limit: 20,  window: "1 m" },
-    "workspace-image:delete": { keyBy: "userId", limit: 30,  window: "1 m" },
-    "users:friends":          { keyBy: "userId", limit: 30,  window: "1 m" },
-    "users:workspaces":       { keyBy: "userId", limit: 60,  window: "1 m" },
-    "users:batch":            { keyBy: "userId", limit: 30,  window: "1 m" },
-    "links:list":             { keyBy: "userId", limit: 30,  window: "1 m"  },
-    "links:invite:get":       { keyBy: "userId", limit: 30,  window: "1 m"  },
-    "links:generate":         { keyBy: "userId", limit: 5,   window: "10 m" },
-    "links:revoke":           { keyBy: "userId", limit: 10,  window: "10 m" },
-    "links:redeem":           { keyBy: "userId", limit: 5,   window: "10 m" },
-    "links:redeem:ip":        { keyBy: "ip",     limit: 20,  window: "1 h"  },
-    "links:delete":           { keyBy: "userId", limit: 10,  window: "1 m"  },
+    "liveblocks-auth:user": { keyBy: "userId", limit: 30, window: "1 m" },
+    "liveblocks-auth:ip": { keyBy: "ip", limit: 100, window: "1 m" },
+    contact: { keyBy: "ip", limit: 3, window: "1 h" },
+    cron: { keyBy: "ip", limit: 5, window: "1 m" },
+    "workspace:get": { keyBy: "userId", limit: 60, window: "1 m" },
+    "workspace:patch": { keyBy: "userId", limit: 20, window: "1 m" },
+    "workspace:create": { keyBy: "userId", limit: 3, window: "1 m" },
+    "workspace:delete": { keyBy: "userId", limit: 10, window: "1 m" },
+    "workspace-image:upload": { keyBy: "userId", limit: 20, window: "1 m" },
+    "workspace-image:delete": { keyBy: "userId", limit: 30, window: "1 m" },
+    "workspace-pdf:upload": { keyBy: "userId", limit: 150, window: "10 m" },
+    "users:friends": { keyBy: "userId", limit: 30, window: "1 m" },
+    "users:workspaces": { keyBy: "userId", limit: 60, window: "1 m" },
+    "users:batch": { keyBy: "userId", limit: 30, window: "1 m" },
+    "links:list": { keyBy: "userId", limit: 30, window: "1 m" },
+    "links:invite:get": { keyBy: "userId", limit: 30, window: "1 m" },
+    "links:generate": { keyBy: "userId", limit: 5, window: "10 m" },
+    "links:revoke": { keyBy: "userId", limit: 10, window: "10 m" },
+    "links:redeem": { keyBy: "userId", limit: 5, window: "10 m" },
+    "links:redeem:ip": { keyBy: "ip", limit: 20, window: "1 h" },
+    "links:delete": { keyBy: "userId", limit: 10, window: "1 m" },
 } as const satisfies Record<string, LimiterConfig>;
 
 export type RateLimitKey = keyof typeof RATE_LIMITS;
 
-const redis = new Redis({
+export const redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL!,
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
@@ -65,36 +66,33 @@ function getIp(req: Request): string {
     return "unknown";
 }
 
-// Returns null when allowed, a 429 Response when blocked.
 export async function enforceRateLimit(
     req: Request,
     key: RateLimitKey,
     userId?: string | null,
+    cost = 1,
 ): Promise<Response | null> {
     const cfg = RATE_LIMITS[key];
-    const identifier =
-        cfg.keyBy === "userId" ? (userId ?? "anon") : getIp(req);
+    const identifier = cfg.keyBy === "userId" ? (userId ?? "anon") : getIp(req);
 
     try {
-        const { success, limit, remaining, reset } =
-            await getLimiter(key).limit(identifier);
+        const { success, limit, remaining, reset } = await getLimiter(
+            key,
+        ).limit(identifier, { rate: cost });
 
         if (success) return null;
 
         const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-        return new Response(
-            JSON.stringify({ error: "Rate limit exceeded" }),
-            {
-                status: 429,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Retry-After": String(retryAfter),
-                    "X-RateLimit-Limit": String(limit),
-                    "X-RateLimit-Remaining": String(remaining),
-                    "X-RateLimit-Reset": String(reset),
-                },
+        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+            status: 429,
+            headers: {
+                "Content-Type": "application/json",
+                "Retry-After": String(retryAfter),
+                "X-RateLimit-Limit": String(limit),
+                "X-RateLimit-Remaining": String(remaining),
+                "X-RateLimit-Reset": String(reset),
             },
-        );
+        });
     } catch (err) {
         // Upstash unreachable: fail open, but surface the outage in error_logs.
         await reportError(`ratelimit:upstash:${key}`, err);

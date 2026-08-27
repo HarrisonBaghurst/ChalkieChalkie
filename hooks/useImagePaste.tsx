@@ -1,6 +1,7 @@
 import { PastedImageMeta } from "@/types/imageTypes";
 import { CanvasState } from "@/types/canvasStateTypes";
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
+import { ACCEPTED_INPUT_TYPES } from "@/lib/imageLimits";
 import { InsertPlacement } from "./useInsertImage";
 
 interface UsePastedImagesSyncProps {
@@ -12,13 +13,15 @@ export const usePastedImagesSync = ({
     canvasStateRef,
     pastedImagesMeta,
 }: UsePastedImagesSyncProps) => {
+    const loadingIds = useRef(new Set<string>());
+    const liveIds = useRef(new Set<string>());
+
     useEffect(() => {
         if (!pastedImagesMeta) return;
 
         const state = canvasStateRef.current;
-        const existingIds = new Set(
-            state.pastedImages.map((img) => img.id),
-        );
+        const existingIds = new Set(state.pastedImages.map((img) => img.id));
+        liveIds.current = new Set(pastedImagesMeta.map((m) => m.id));
 
         pastedImagesMeta.forEach((meta) => {
             if (existingIds.has(meta.id)) {
@@ -31,34 +34,40 @@ export const usePastedImagesSync = ({
                     local.width = meta.width;
                     local.height = meta.height;
                 }
-            } else {
-                const img = new Image();
-                img.onload = () => {
-                    state.pastedImages.push({
-                        id: meta.id,
-                        element: img,
-                        x: meta.x,
-                        y: meta.y,
-                        width: meta.width,
-                        height: meta.height,
-                        url: meta.url,
-                    });
-                };
-                img.src = meta.url;
+                return;
             }
+
+            if (loadingIds.current.has(meta.id)) return;
+            loadingIds.current.add(meta.id);
+
+            const img = new Image();
+            img.onload = () => {
+                loadingIds.current.delete(meta.id);
+                if (!liveIds.current.has(meta.id)) return;
+                state.pastedImages.push({
+                    id: meta.id,
+                    element: img,
+                    x: meta.x,
+                    y: meta.y,
+                    width: meta.width,
+                    height: meta.height,
+                    url: meta.url,
+                });
+            };
+            img.onerror = () => loadingIds.current.delete(meta.id);
+            img.src = meta.url;
         });
 
-        const metaIds = new Set(pastedImagesMeta.map((m) => m.id));
-        state.pastedImages = state.pastedImages.filter((img) => {
-            return metaIds.has(img.id);
-        });
+        state.pastedImages = state.pastedImages.filter((img) =>
+            liveIds.current.has(img.id),
+        );
     }, [pastedImagesMeta]);
 };
 
 export const useImagePaste = ({
-    insertImage,
+    insertFile,
 }: {
-    insertImage: (file: File, placement: InsertPlacement) => void;
+    insertFile: (file: File, placement: InsertPlacement) => void;
 }) => {
     useEffect(() => {
         const handlePaste = (e: ClipboardEvent) => {
@@ -66,20 +75,18 @@ export const useImagePaste = ({
             if (!items) return;
 
             for (const item of items) {
-                if (!item.type.startsWith("image/")) continue;
+                if (!ACCEPTED_INPUT_TYPES.has(item.type)) continue;
 
                 const file = item.getAsFile();
                 if (!file) continue;
 
-                // Before insertImage, which yields on its first await — by
-                // which point the default paste has already run.
                 e.preventDefault();
-                insertImage(file, "cursor");
+                insertFile(file, "cursor");
                 break;
             }
         };
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }, [insertImage]);
+    }, [insertFile]);
 };

@@ -5,6 +5,11 @@ import { PastedImageMeta } from "@/types/imageTypes";
 import { Rect } from "@/lib/genometry";
 import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/imageLimits";
 import { loadImage, prepareImageFile } from "@/lib/imagePrepare";
+import {
+    adoptPermanentUrl,
+    rollbackImage,
+    uploadWorkspaceImage,
+} from "@/lib/imageUpload";
 import { fitToViewport, viewportCentre } from "@/lib/viewport";
 import { newId } from "@/lib/id";
 
@@ -53,35 +58,25 @@ export const useInsertImage = ({
                 return;
             }
 
-            // Always re-encoded: downscaled to fit the byte budget and, if too
-            // bright for the dark canvas, inverted — baked into the bytes
-            // rather than carried as a render-time flag.
-            let uploadFile = file;
-            let displayImage = sourceImage;
-            let displayUrl = sourceUrl;
+            const uploadFile = await prepareImageFile(sourceImage, file.name);
+            URL.revokeObjectURL(sourceUrl);
 
-            const prepared = await prepareImageFile(sourceImage, file);
-            if (prepared) {
-                const preparedUrl = URL.createObjectURL(prepared);
-                try {
-                    displayImage = await loadImage(preparedUrl);
-                    uploadFile = prepared;
-                    displayUrl = preparedUrl;
-                    URL.revokeObjectURL(sourceUrl);
-                } catch {
-                    URL.revokeObjectURL(preparedUrl);
-                }
-            }
-
-            // Only reachable when prepareImageFile could not re-encode at all;
-            // caught here so it fails as itself, not as a generic upload error.
-            if (uploadFile.size > MAX_UPLOAD_BYTES) {
-                URL.revokeObjectURL(displayUrl);
+            if (!uploadFile) {
                 toast.error("Image too large.", {
                     description: `Images must be under ${
                         MAX_UPLOAD_BYTES / (1024 * 1024)
-                    } MB.`,
+                    } MB once resized.`,
                 });
+                return;
+            }
+
+            const displayUrl = URL.createObjectURL(uploadFile);
+            let displayImage: HTMLImageElement;
+            try {
+                displayImage = await loadImage(displayUrl);
+            } catch {
+                URL.revokeObjectURL(displayUrl);
+                toast.error("Could not read the image.");
                 return;
             }
 
@@ -119,39 +114,18 @@ export const useInsertImage = ({
 
             const { workspaceId: roomId } = depsRef.current;
             try {
-                const formData = new FormData();
-                formData.append("file", uploadFile);
-                formData.append("imageId", imageId);
-                formData.append("workspaceId", roomId);
-
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${roomId}/images`,
-                    { method: "POST", body: formData },
+                const permanentUrl = await uploadWorkspaceImage(
+                    roomId,
+                    imageId,
+                    uploadFile,
                 );
 
-                if (!res.ok) {
-                    // The route's { error } body says which gate rejected it;
-                    // a bare status leaves that guesswork.
-                    const detail = await res.text().catch(() => "");
-                    throw new Error(
-                        `Image upload failed: ${res.status} ${detail}`,
-                    );
-                }
-
-                const { url: permanentUrl } = await res.json();
-
-                const local = canvasStateRef.current.pastedImages.find(
-                    (i) => i.id === imageId,
+                adoptPermanentUrl(
+                    canvasStateRef,
+                    imageId,
+                    permanentUrl,
+                    displayUrl,
                 );
-                if (local) {
-                    const newImg = new Image();
-                    newImg.onload = () => {
-                        local.element = newImg;
-                        local.url = permanentUrl;
-                        URL.revokeObjectURL(displayUrl);
-                    };
-                    newImg.src = permanentUrl;
-                }
 
                 depsRef.current.addImageMeta({
                     id: imageId,
@@ -166,15 +140,7 @@ export const useInsertImage = ({
                 toast.error("Failed to upload image.", {
                     description: "Please reload page and try again.",
                 });
-                const failed = canvasStateRef.current;
-                failed.pastedImages = failed.pastedImages.filter(
-                    (i) => i.id !== imageId,
-                );
-                if (failed.selectedImageId === imageId) {
-                    failed.selectedImageId = null;
-                    failed.imageTransformOrigin = null;
-                }
-                URL.revokeObjectURL(displayUrl);
+                rollbackImage(canvasStateRef, imageId, displayUrl);
             }
         },
         [canvasStateRef],

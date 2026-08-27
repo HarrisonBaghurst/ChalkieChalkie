@@ -3,14 +3,17 @@
 import { ChangeEvent, RefObject, useRef } from "react";
 import { useHistory } from "@liveblocks/react";
 import { Tools } from "@/types/toolTypes";
+import { ACCEPTED_INPUT_TYPES } from "@/lib/imageLimits";
 import ToolbarButton from "./ToolbarButton";
+
+const ACCEPT_ATTRIBUTE = [...ACCEPTED_INPUT_TYPES].join(",");
 
 type ToolbarProps = {
     currentTool: Tools;
     currentColourRef: RefObject<string>;
     highlightColourRef: RefObject<string>;
     onToolChanged: (tool: Tools) => void;
-    onInsertImage: (file: File) => void;
+    onInsertFile: (file: File) => void;
 };
 
 const Toolbar = ({
@@ -18,7 +21,7 @@ const Toolbar = ({
     currentColourRef,
     highlightColourRef,
     onToolChanged,
-    onInsertImage,
+    onInsertFile,
 }: ToolbarProps) => {
     const { undo, redo } = useHistory();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -41,7 +44,7 @@ const Toolbar = ({
         const file = e.target.files?.[0];
         // A focused input makes useKeybinds bail on every shortcut.
         e.target.blur();
-        if (file) onInsertImage(file);
+        if (file) onInsertFile(file);
     };
 
     return (
@@ -92,7 +95,7 @@ const Toolbar = ({
                 <div className="flex flex-col gap-2 p-2">
                     <ToolbarButton
                         icon="/icons/image-plus.svg"
-                        label="add image"
+                        label="add image or PDF"
                         onAction={openFilePicker}
                     />
                 </div>
@@ -103,7 +106,7 @@ const Toolbar = ({
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg"
+                accept={ACCEPT_ATTRIBUTE}
                 className="hidden"
                 onChange={handleFileChosen}
             />

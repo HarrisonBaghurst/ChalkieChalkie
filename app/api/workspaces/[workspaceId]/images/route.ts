@@ -1,5 +1,6 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/imageLimits";
+import { consumePdfLease } from "@/lib/pdfLease";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -7,6 +8,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ID_MAX_LENGTH = 64;
+// A header, not a form field, so the limiter below still decides before the
+// body is parsed rather than after.
+const LEASE_HEADER = "x-pdf-lease";
 // TODO: rooms active past 14 days outlive this URL and show broken images.
 // Store the storage path in the meta and sign it client-side instead.
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
@@ -29,15 +33,30 @@ export async function POST(
         return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
     }
 
-    const blocked = await enforceRateLimit(req, "workspace-image:upload", userId);
-    if (blocked) return blocked;
-
     const { workspaceId: urlWorkspaceId } = await params;
     if (!isSafeId(urlWorkspaceId)) {
         return NextResponse.json(
             { error: "Invalid workspaceId" },
             { status: 400 },
         );
+    }
+
+    // A PDF paid for all its pages up front, so a page holding a live lease
+    // spends that instead of a token. Anything else — absent, malformed,
+    // forged, exhausted — falls through to the per-image limiter, which is
+    // exactly the behaviour a lone pasted image already gets.
+    const leaseId = req.headers.get(LEASE_HEADER);
+    const prepaid =
+        isSafeId(leaseId) &&
+        (await consumePdfLease(userId, urlWorkspaceId, leaseId));
+
+    if (!prepaid) {
+        const blocked = await enforceRateLimit(
+            req,
+            "workspace-image:upload",
+            userId,
+        );
+        if (blocked) return blocked;
     }
 
     let formData: FormData;

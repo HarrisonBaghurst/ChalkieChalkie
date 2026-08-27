@@ -1,6 +1,11 @@
-// Shared by the client insert path and the images route, so the two can never
-// drift into rejecting different files. The Supabase workspace-images bucket
-// enforces the same byte cap independently — raise one and the other rejects
-// the difference as an opaque 500, not the route's 413.
-export const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg"]);
+export const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg"]);
 export const MAX_UPLOAD_BYTES = 1024 * 1024;
+
+export const PDF_MIME_TYPE = "application/pdf";
+
+export const ACCEPTED_INPUT_TYPES = new Set([
+    ...ALLOWED_IMAGE_TYPES,
+    PDF_MIME_TYPE,
+]);
+
+export const MAX_PDF_PAGES = 50;
