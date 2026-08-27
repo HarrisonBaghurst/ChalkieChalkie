@@ -1,9 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import CollaboratorCard from "./CollaboratorCard";
-import { cn } from "@/lib/utils";
 import { userInfo } from "@/types/userTypes";
-
-type Zone = "collaborators" | "friends";
 
 type CollaboratorsPickerProps = {
     collaborators: userInfo[];
@@ -11,25 +8,17 @@ type CollaboratorsPickerProps = {
     onChange: (collaborators: userInfo[]) => void;
 };
 
-// border-ring is a utility-layer colour, so it outranks the border shorthand
-// .control-surface sets in the component layer.
-const zoneClasses = (isActiveTarget: boolean) =>
-    cn(
-        "control-surface bg-card-background-hover flex min-h-75 flex-col p-2",
-        isActiveTarget && "border-ring ring-3 ring-ring/50",
-    );
+const zoneClasses =
+    "control-surface bg-card-background-hover flex min-h-75 flex-col p-2";
+
+const rowClasses =
+    "flex w-full items-center radius-control border border-transparent cursor-pointer text-left transition-colors outline-none hover:bg-foreground-third/10 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 const CollaboratorsPicker = ({
     collaborators,
     friends,
     onChange,
 }: CollaboratorsPickerProps) => {
-    const [draggedUser, setDraggedUser] = useState<{
-        user: userInfo;
-        from: Zone;
-    } | null>(null);
-    const [dragOverTarget, setDragOverTarget] = useState<Zone | null>(null);
-
     const availableFriends = useMemo(
         () =>
             friends.filter(
@@ -38,34 +27,14 @@ const CollaboratorsPicker = ({
         [friends, collaborators],
     );
 
-    const handleDragStart = (user: userInfo, from: Zone) => {
-        setDraggedUser({ user, from });
-    };
+    const addCollaborator = (user: userInfo) =>
+        onChange([...collaborators, user]);
 
-    const handleDrop = (target: Zone) => {
-        if (!draggedUser || draggedUser.from === target) return;
+    const removeCollaborator = (user: userInfo) =>
+        onChange(collaborators.filter((c) => c.email !== user.email));
 
-        if (target === "collaborators") {
-            onChange([...collaborators, draggedUser.user]);
-        } else {
-            onChange(
-                collaborators.filter(
-                    (c) => c.email !== draggedUser.user.email,
-                ),
-            );
-        }
-
-        setDraggedUser(null);
-        setDragOverTarget(null);
-    };
-
-    // A drop zone is a region, not a labelable control, so the caption is
+    // A column is a region, not a labelable control, so the caption is
     // associated with role="group" + aria-labelledby instead of htmlFor.
-    const isTarget = (zone: Zone) =>
-        dragOverTarget === zone &&
-        draggedUser !== null &&
-        draggedUser.from !== zone;
-
     return (
         <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-2">
@@ -78,46 +47,42 @@ const CollaboratorsPicker = ({
                 <div
                     role="group"
                     aria-labelledby="collaborators-label"
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        setDragOverTarget("collaborators");
-                    }}
-                    onDragLeave={() => setDragOverTarget(null)}
-                    onDrop={() => handleDrop("collaborators")}
-                    className={zoneClasses(isTarget("collaborators"))}
+                    className={zoneClasses}
                 >
                     {collaborators.map((collaborator, i) => {
+                        const name = `${collaborator.firstName} ${collaborator.lastName}`;
+                        const card = (
+                            <CollaboratorCard
+                                image={collaborator.imageUrl}
+                                firstName={collaborator.firstName}
+                                lastName={collaborator.lastName}
+                                email={collaborator.email}
+                            />
+                        );
+
                         const isOwner = i === 0;
+                        if (isOwner) {
+                            return (
+                                <div
+                                    key={collaborator.email}
+                                    className="radius-control opacity-50 cursor-not-allowed"
+                                    title="Owner cannot be removed"
+                                >
+                                    {card}
+                                </div>
+                            );
+                        }
+
                         return (
-                            <div
+                            <button
                                 key={collaborator.email}
-                                draggable={!isOwner}
-                                onDragStart={() =>
-                                    !isOwner &&
-                                    handleDragStart(
-                                        collaborator,
-                                        "collaborators",
-                                    )
-                                }
-                                className={cn(
-                                    "radius-control transition-opacity duration-100",
-                                    isOwner
-                                        ? "opacity-50 cursor-not-allowed"
-                                        : "cursor-grab active:cursor-grabbing active:opacity-50",
-                                )}
-                                title={
-                                    isOwner
-                                        ? "Owner cannot be removed"
-                                        : "Drag to remove"
-                                }
+                                type="button"
+                                onClick={() => removeCollaborator(collaborator)}
+                                aria-label={`Remove ${name} from this workspace`}
+                                className={rowClasses}
                             >
-                                <CollaboratorCard
-                                    image={collaborator.imageUrl}
-                                    firstName={collaborator.firstName}
-                                    lastName={collaborator.lastName}
-                                    email={collaborator.email}
-                                />
-                            </div>
+                                {card}
+                            </button>
                         );
                     })}
                 </div>
@@ -133,13 +98,7 @@ const CollaboratorsPicker = ({
                 <div
                     role="group"
                     aria-labelledby="friends-label"
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        setDragOverTarget("friends");
-                    }}
-                    onDragLeave={() => setDragOverTarget(null)}
-                    onDrop={() => handleDrop("friends")}
-                    className={zoneClasses(isTarget("friends"))}
+                    className={zoneClasses}
                 >
                     {availableFriends.length === 0 && (
                         <div className="flex-1 flex items-center justify-center p-4 text-center text-small text-foreground-third">
@@ -154,14 +113,12 @@ const CollaboratorsPicker = ({
                         </div>
                     )}
                     {availableFriends.map((friend) => (
-                        <div
+                        <button
                             key={friend.email}
-                            draggable
-                            onDragStart={() =>
-                                handleDragStart(friend, "friends")
-                            }
-                            className="cursor-grab active:cursor-grabbing active:opacity-50 radius-control transition-opacity duration-100"
-                            title="Drag to add as collaborator"
+                            type="button"
+                            onClick={() => addCollaborator(friend)}
+                            aria-label={`Add ${friend.firstName} ${friend.lastName} to this workspace`}
+                            className={rowClasses}
                         >
                             <CollaboratorCard
                                 image={friend.imageUrl}
@@ -169,7 +126,7 @@ const CollaboratorsPicker = ({
                                 lastName={friend.lastName}
                                 email={friend.email}
                             />
-                        </div>
+                        </button>
                     ))}
                 </div>
             </div>
