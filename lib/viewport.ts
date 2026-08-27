@@ -4,6 +4,9 @@ import { Viewport } from "@/types/canvasStateTypes";
 export const ZOOM_MIN = 0.25;
 export const ZOOM_MAX = 4.0;
 export const ZOOM_RATIO = 1.1;
+const INSERT_FIT_RATIO = 0.6;
+
+type Size = { width: number; height: number };
 
 export const clampZoom = (zoom: number): number =>
     Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom));
@@ -24,4 +27,32 @@ export const zoomAt = (
         y: anchor.y - ratio * (anchor.y - viewport.offset.y),
     };
     viewport.zoom = newZoom;
+};
+
+export const viewportCentre = (viewport: Viewport, rect: Size): Point => ({
+    x: (rect.width / 2 - viewport.offset.x) / viewport.zoom,
+    y: (rect.height / 2 - viewport.offset.y) / viewport.zoom,
+});
+
+// Capped at 1 so a small screenshot keeps its own size rather than being blown
+// up to fill the board.
+export const fitToViewport = (
+    natural: Size,
+    viewport: Viewport,
+    rect: Size,
+): Size => {
+    const maxWidth = (rect.width / viewport.zoom) * INSERT_FIT_RATIO;
+    const maxHeight = (rect.height / viewport.zoom) * INSERT_FIT_RATIO;
+    // Before the ResizeObserver's first callback the rect is still zero.
+    if (maxWidth <= 0 || maxHeight <= 0) return natural;
+
+    const scale = Math.min(
+        1,
+        maxWidth / natural.width,
+        maxHeight / natural.height,
+    );
+    return {
+        width: natural.width * scale,
+        height: natural.height * scale,
+    };
 };

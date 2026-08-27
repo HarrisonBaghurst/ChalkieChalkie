@@ -1,4 +1,5 @@
 import { errorResponse } from "@/lib/errorResponse";
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/imageLimits";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -6,9 +7,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 const ID_MAX_LENGTH = 64;
-const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
-// Keep in sync with ALLOWED_PASTE_TYPES in hooks/useImagePaste.tsx.
-const ALLOWED_MIME_TYPES = new Set(["image/png", "image/jpeg"]);
 // TODO: rooms active past 14 days outlive this URL and show broken images.
 // Store the storage path in the meta and sign it client-side instead.
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
@@ -82,14 +80,14 @@ export async function POST(
         );
     }
 
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
         return NextResponse.json(
             { error: "Unsupported file type" },
             { status: 415 },
         );
     }
 
-    if (file.size > MAX_FILE_BYTES) {
+    if (file.size > MAX_UPLOAD_BYTES) {
         return NextResponse.json(
             { error: "File too large" },
             { status: 413 },

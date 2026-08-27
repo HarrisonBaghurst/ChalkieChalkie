@@ -1,113 +1,17 @@
 import { PastedImageMeta } from "@/types/imageTypes";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect } from "react";
-import { toast } from "sonner";
-import { newId } from "@/lib/id";
+import { InsertPlacement } from "./useInsertImage";
 
-interface UseImagePasteProps {
-    workspaceId: string;
+interface UsePastedImagesSyncProps {
     canvasStateRef: RefObject<CanvasState>;
     pastedImagesMeta: readonly PastedImageMeta[] | null;
-    addImageMeta: (meta: PastedImageMeta) => void;
-}
-
-// Keep in sync with ALLOWED_MIME_TYPES in the images route.
-const ALLOWED_PASTE_TYPES = new Set(["image/png", "image/jpeg"]);
-const LUMINANCE_SAMPLE_SIZE = 50;
-const LUMINANCE_THRESHOLD = 128;
-const JPEG_QUALITY = 0.92;
-
-function loadImage(url: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error("Image failed to load"));
-        img.src = url;
-    });
-}
-
-function shouldInvert(img: HTMLImageElement): boolean {
-    const canvas = document.createElement("canvas");
-    canvas.width = LUMINANCE_SAMPLE_SIZE;
-    canvas.height = LUMINANCE_SAMPLE_SIZE;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return false;
-
-    ctx.drawImage(img, 0, 0, LUMINANCE_SAMPLE_SIZE, LUMINANCE_SAMPLE_SIZE);
-    let data: ImageData;
-    try {
-        data = ctx.getImageData(
-            0,
-            0,
-            LUMINANCE_SAMPLE_SIZE,
-            LUMINANCE_SAMPLE_SIZE,
-        );
-    } catch {
-        return false;
-    }
-
-    let total = 0;
-    const pixels = data.data;
-    const pixelCount = pixels.length / 4;
-
-    for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-        total += 0.299 * r + 0.587 * g + 0.114 * b;
-    }
-
-    return total / pixelCount > LUMINANCE_THRESHOLD;
-}
-
-// Bakes the inversion into the pixels so the uploaded bytes are what everyone
-// renders. Null means the caller should upload the original untouched.
-async function invertImageFile(
-    img: HTMLImageElement,
-    file: File,
-): Promise<File | null> {
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    ctx.drawImage(img, 0, 0);
-
-    // Per-pixel, not ctx.filter: an unsupported filter value fails silently.
-    let data: ImageData;
-    try {
-        data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    } catch {
-        return null;
-    }
-
-    const pixels = data.data;
-    for (let i = 0; i < pixels.length; i += 4) {
-        pixels[i] = 255 - pixels[i];
-        pixels[i + 1] = 255 - pixels[i + 1];
-        pixels[i + 2] = 255 - pixels[i + 2];
-    }
-    ctx.putImageData(data, 0, 0);
-
-    // Source type keeps the size down — a photo forced to PNG can blow past
-    // the route's 5 MB limit.
-    const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob(
-            resolve,
-            file.type,
-            file.type === "image/jpeg" ? JPEG_QUALITY : undefined,
-        );
-    });
-    if (!blob) return null;
-
-    return new File([blob], file.name || "pasted-image", { type: file.type });
 }
 
 export const usePastedImagesSync = ({
     canvasStateRef,
     pastedImagesMeta,
-}: Pick<UseImagePasteProps, "canvasStateRef" | "pastedImagesMeta">) => {
+}: UsePastedImagesSyncProps) => {
     useEffect(() => {
         if (!pastedImagesMeta) return;
 
@@ -152,12 +56,12 @@ export const usePastedImagesSync = ({
 };
 
 export const useImagePaste = ({
-    workspaceId,
-    canvasStateRef,
-    addImageMeta,
-}: Omit<UseImagePasteProps, "pastedImagesMeta">) => {
+    insertImage,
+}: {
+    insertImage: (file: File, placement: InsertPlacement) => void;
+}) => {
     useEffect(() => {
-        const handlePaste = async (e: ClipboardEvent) => {
+        const handlePaste = (e: ClipboardEvent) => {
             const items = e.clipboardData?.items;
             if (!items) return;
 
@@ -167,126 +71,15 @@ export const useImagePaste = ({
                 const file = item.getAsFile();
                 if (!file) continue;
 
-                // Before the first await: once the handler yields, the default
-                // paste has already run.
+                // Before insertImage, which yields on its first await — by
+                // which point the default paste has already run.
                 e.preventDefault();
-
-                if (!ALLOWED_PASTE_TYPES.has(file.type)) {
-                    toast.error("Unsupported image type.", {
-                        description: "Only PNG and JPEG images can be pasted.",
-                    });
-                    break;
-                }
-
-                const imageId = newId();
-                const { x, y } = canvasStateRef.current.cursorPosition;
-                const sourceUrl = URL.createObjectURL(file);
-
-                let sourceImage: HTMLImageElement;
-                try {
-                    sourceImage = await loadImage(sourceUrl);
-                } catch {
-                    URL.revokeObjectURL(sourceUrl);
-                    toast.error("Could not read the pasted image.");
-                    break;
-                }
-
-                // Bright images are inverted for the dark canvas, baked into
-                // the bytes rather than carried as a render-time flag.
-                let uploadFile = file;
-                let displayImage = sourceImage;
-                let displayUrl = sourceUrl;
-
-                if (shouldInvert(sourceImage)) {
-                    const invertedFile = await invertImageFile(
-                        sourceImage,
-                        file,
-                    );
-                    if (invertedFile) {
-                        const invertedUrl = URL.createObjectURL(invertedFile);
-                        try {
-                            displayImage = await loadImage(invertedUrl);
-                            uploadFile = invertedFile;
-                            displayUrl = invertedUrl;
-                            URL.revokeObjectURL(sourceUrl);
-                        } catch {
-                            URL.revokeObjectURL(invertedUrl);
-                        }
-                    }
-                }
-
-                const { naturalWidth: width, naturalHeight: height } =
-                    displayImage;
-
-                canvasStateRef.current.pastedImages.push({
-                    id: imageId,
-                    element: displayImage,
-                    x,
-                    y,
-                    width,
-                    height,
-                    url: displayUrl,
-                });
-
-                (async () => {
-                    try {
-                        const formData = new FormData();
-                        formData.append("file", uploadFile);
-                        formData.append("imageId", imageId);
-                        formData.append("workspaceId", workspaceId);
-
-                        const res = await fetch(
-                            `${process.env.NEXT_PUBLIC_APP_URL}/api/workspaces/${workspaceId}/images`,
-                            { method: "POST", body: formData },
-                        );
-
-                        if (!res.ok) {
-                            throw new Error(
-                                `Image upload failed: ${res.status}`,
-                            );
-                        }
-
-                        const { url: permanentUrl } = await res.json();
-
-                        const local = canvasStateRef.current.pastedImages.find(
-                            (i) => i.id === imageId,
-                        );
-                        if (local) {
-                            const newImg = new Image();
-                            newImg.onload = () => {
-                                local.element = newImg;
-                                local.url = permanentUrl;
-                                URL.revokeObjectURL(displayUrl);
-                            };
-                            newImg.src = permanentUrl;
-                        }
-
-                        addImageMeta({
-                            id: imageId,
-                            url: permanentUrl,
-                            x,
-                            y,
-                            width,
-                            height,
-                        });
-                    } catch (err) {
-                        console.error("Failed to upload image:", err);
-                        toast.error("Failed to upload image.", {
-                            description: "Please reload page and try again.",
-                        });
-                        canvasStateRef.current.pastedImages =
-                            canvasStateRef.current.pastedImages.filter(
-                                (i) => i.id !== imageId,
-                            );
-                        URL.revokeObjectURL(displayUrl);
-                    }
-                })();
-
+                insertImage(file, "cursor");
                 break;
             }
         };
 
         window.addEventListener("paste", handlePaste);
         return () => window.removeEventListener("paste", handlePaste);
-    }, []);
+    }, [insertImage]);
 };

@@ -4,10 +4,12 @@ import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { HIGHLIGHT_COLOURS, PEN_COLOURS } from "@/lib/colours";
 import { Tools } from "@/types/toolTypes";
 import { CanvasState, ToolCallbacks } from "@/types/canvasStateTypes";
+import { Rect } from "@/lib/genometry";
 import { useLiveWorkspace } from "@/hooks/useLiveWorkspace";
 import { useCanvasInput } from "@/hooks/useCanvasInput";
 import { useCanvasRenderLoop } from "@/hooks/useCanvasRenderLoop";
 import { useImagePaste, usePastedImagesSync } from "@/hooks/useImagePaste";
+import { useInsertImage } from "@/hooks/useInsertImage";
 import { useKeybinds } from "@/hooks/useKeybinds";
 import { useRemoteSelections } from "@/hooks/useRemoteSelections";
 import { useSelectionPresence } from "@/hooks/useSelectionPresence";
@@ -122,6 +124,24 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         state.selectorImageOrigins.clear();
     };
 
+    // Selecting the new image leaves its resize handles and the delete button
+    // live, so a tablet needs no second gesture to place it.
+    const onImageInserted = (imageId: string, rect: Rect) => {
+        // Before the assignments below, not after: onToolChanged clears
+        // selectedImageId and imageTransformOrigin.
+        onToolChanged("pointer");
+        const state = canvasStateRef.current;
+        state.selectedImageId = imageId;
+        state.imageTransformOrigin = rect;
+    };
+
+    const insertImage = useInsertImage({
+        workspaceId,
+        canvasStateRef,
+        addImageMeta,
+        onInserted: onImageInserted,
+    });
+
     const remoteSelectionsRef = useRemoteSelections(canvasStateRef);
 
     useCanvasInput({
@@ -143,7 +163,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
 
     usePastedImagesSync({ canvasStateRef, pastedImagesMeta });
 
-    useImagePaste({ workspaceId, canvasStateRef, addImageMeta });
+    useImagePaste({ insertImage });
 
     useKeybinds({
         canvasStateRef,
@@ -178,6 +198,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
                         currentColourRef={currentColourRef}
                         highlightColourRef={highlightColourRef}
                         onToolChanged={onToolChanged}
+                        onInsertImage={(file) => insertImage(file, "viewport")}
                     />
                     <canvas
                         ref={canvasRef}
