@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
+import { resolveDashboardAction } from "@/lib/dashboardActions";
 import { userInfo, UserRole, Workspace } from "@/types/userTypes";
 import { LinkSummary } from "@/types/linkTypes";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,17 @@ type TabBarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
     onLinked?: (link: LinkSummary) => void;
-    // Server-resolved; without it the client role reads "student" until Clerk
-    // hydrates and the tab label flashes.
     role?: UserRole;
 };
 
 // The floating action button carries the Sidebar's Actions, which are
 // otherwise unreachable below lg.
-const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarProps) => {
+const TabBar = ({
+    friends = [],
+    onCreated,
+    onLinked,
+    role: serverRole,
+}: TabBarProps) => {
     const pathname = usePathname();
     const { isLoaded } = useUser();
     const clientRole = useUserRole();
@@ -35,7 +39,6 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
     const roleKnown = !!serverRole || isLoaded;
     const isTutor = roleKnown && role === "tutor";
     const isStudent = roleKnown && role === "student";
-    const onConnections = pathname === "/dashboard/connections";
 
     const tabs = [
         {
@@ -54,32 +57,25 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
         },
     ];
 
-    // Gated on the callback that lands the result: a floating button with
-    // nowhere to put its output is hidden, not disabled.
-    const action = onConnections
-        ? isTutor && onLinked
-            ? { label: "Link a student", icon: "/icons/user-round-plus-dark.svg", run: () => setLinkOpen(true) }
-            : isStudent && onLinked
-              ? { label: "Link a tutor", icon: "/icons/user-round-plus-dark.svg", run: () => setLinkOpen(true) }
-              : null
-        : isTutor && onCreated
-          ? { label: "Create workspace", icon: "/icons/file-plus-corner-dark.svg", run: () => setCreateOpen(true) }
-          : isStudent && onLinked
-            ? { label: "Add new tutor", icon: "/icons/user-round-plus-dark.svg", run: () => setLinkOpen(true) }
-            : null;
+    const action = roleKnown ? resolveDashboardAction(pathname, role) : null;
+    const actionReady =
+        action?.id === "create-workspace" ? !!onCreated : !!onLinked;
 
     return (
         <div className="fixed inset-x-0 bottom-0 z-40">
-            {action && (
-                // Anchored to the bar's top edge, reusing its safe-area padding.
+            {action && actionReady && (
                 <div className="absolute bottom-full right-4 mb-4">
                     <Button
                         aria-label={action.label}
-                        onClick={action.run}
+                        onClick={() =>
+                            action.id === "create-workspace"
+                                ? setCreateOpen(true)
+                                : setLinkOpen(true)
+                        }
                         className="size-14 rounded-full shadow-lg shadow-background/60"
                     >
                         <Image
-                            src={action.icon}
+                            src={action.iconDark}
                             alt=""
                             width={22}
                             height={22}
@@ -92,10 +88,6 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
                     const active = pathname === tab.href;
                     const content = (
                         <>
-                            {/* Filled indicator behind the icon only. The
-                                Sidebar fills the whole active row, which at
-                                half the screen's width would dominate the
-                                bar. */}
                             <span
                                 className={cn(
                                     "flex h-8 w-16 items-center justify-center radius-tag transition-colors",
@@ -151,20 +143,24 @@ const TabBar = ({ friends = [], onCreated, onLinked, role: serverRole }: TabBarP
                     );
                 })}
             </nav>
-            <WorkspaceModal
-                open={createOpen}
-                mode={{ kind: "create" }}
-                friends={friends}
-                onClose={() => setCreateOpen(false)}
-                onSubmitted={onCreated ?? (() => {})}
-                onDeleted={() => {}}
-            />
-            <LinkCodeDialog
-                open={linkOpen}
-                role={role === "student" ? "student" : "tutor"}
-                onClose={() => setLinkOpen(false)}
-                onLinked={onLinked ?? (() => {})}
-            />
+            {action?.id === "create-workspace" && (
+                <WorkspaceModal
+                    open={createOpen}
+                    mode={{ kind: "create" }}
+                    friends={friends}
+                    onClose={() => setCreateOpen(false)}
+                    onSubmitted={onCreated ?? (() => {})}
+                    onDeleted={() => {}}
+                />
+            )}
+            {action?.id === "add-link" && (
+                <LinkCodeDialog
+                    open={linkOpen}
+                    role={role === "student" ? "student" : "tutor"}
+                    onClose={() => setLinkOpen(false)}
+                    onLinked={onLinked ?? (() => {})}
+                />
+            )}
         </div>
     );
 };

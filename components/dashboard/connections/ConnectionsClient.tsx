@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LinkRole, LinkSummary } from "@/types/linkTypes";
 import { UserRole } from "@/types/userTypes";
@@ -13,7 +12,6 @@ import TabBar from "../mobile/TabBar";
 import ConnectionsList from "../mobile/ConnectionsList";
 import ConnectionsSkeleton from "../skeletons/ConnectionsSkeleton";
 import ConnectionsTable from "./ConnectionsTable";
-import LinkCodeDialog from "./LinkCodeDialog";
 
 type ConnectionsClientProps = {
     // Server-resolved, so the heading doesn't flash before Clerk hydrates.
@@ -29,7 +27,6 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
 
     const [links, setLinks] = useState<LinkSummary[]>([]);
     const [loading, setLoading] = useState(true);
-    const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
         if (!isLoaded || !isSignedIn) return;
@@ -89,7 +86,6 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
         }
     };
 
-    const friends = links.map((l) => l.counterparty);
     const linkRole: LinkRole = role === "tutor" ? "tutor" : "student";
 
     const heading =
@@ -105,54 +101,29 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
 
     return (
         <DashboardShell
-            sidebar={
-                <Sidebar
-                    role={serverRole}
-                    friends={friends}
-                    onLinked={handleLinked}
-                />
-            }
-            bottomBar={
-                <TabBar
-                    role={serverRole}
-                    friends={friends}
-                    onLinked={handleLinked}
-                />
-            }
+            sidebar={<Sidebar role={serverRole} onLinked={handleLinked} />}
+            bottomBar={<TabBar role={serverRole} onLinked={handleLinked} />}
         >
             {loading || !isLoaded ? (
                 <ConnectionsSkeleton heading={heading} />
             ) : isUnsupportedRole ? (
                 <div className="flex flex-col gap-1">
-                    <p className="text-heading font-inter-bold">
-                        Connections
-                    </p>
+                    <p className="text-heading font-inter-bold">Connections</p>
                     <p className="text-foreground-second">
                         Connections are for tutors and students.
                     </p>
                 </div>
             ) : (
                 <>
-                    <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                            <p className="text-heading font-inter-bold">
-                                {heading}
-                            </p>
-                            <p className="text-foreground-second">
-                                {role === "tutor"
-                                    ? "The students you're linked to."
-                                    : "The tutors you're linked to."}
-                            </p>
-                        </div>
-                        {/* Below lg this same action is the TabBar's floating
-                            button, so showing it here too would offer it
-                            twice. */}
-                        <Button
-                            onClick={() => setDialogOpen(true)}
-                            className="hidden lg:inline-flex"
-                        >
-                            Link a {linkRole === "tutor" ? "student" : "tutor"}
-                        </Button>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-heading font-inter-bold">
+                            {heading}
+                        </p>
+                        <p className="text-foreground-second">
+                            {role === "tutor"
+                                ? "The students you're linked to."
+                                : "The tutors you're linked to."}
+                        </p>
                     </div>
 
                     {/* Swapped by CSS rather than a media-query hook, same as
@@ -171,13 +142,6 @@ const ConnectionsClient = ({ role: serverRole }: ConnectionsClientProps) => {
                             onRemove={handleRemove}
                         />
                     </div>
-
-                    <LinkCodeDialog
-                        open={dialogOpen}
-                        role={linkRole}
-                        onClose={() => setDialogOpen(false)}
-                        onLinked={handleLinked}
-                    />
                 </>
             )}
         </DashboardShell>

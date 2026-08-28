@@ -187,15 +187,15 @@ components/
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
       └─ DashboardShell   ← Sidebar (lg+) / Navbar + TabBar swap, and the content column
-           ├─ Sidebar.tsx      ← identity, nav, role-gated Actions section (Create Workspace for
-           │                     tutors; Add New Student/Tutor for both), mounts LinkCodeDialog
+           ├─ Sidebar.tsx      ← identity, Menu, then a one-button Actions section (see Dashboard
+           │                     Actions below); mounts whichever modal that action needs
            ├─ Next.tsx         ← the next upcoming lesson
            ├─ Filters.tsx      ← search + collaborator filters
            ├─ WorkspaceLists   ← upcoming/past tabs
            │    └─ WorkspaceTable + WorkspaceTableRow (+ RowActionsMenu, PeopleStack)
            ├─ WorkspaceModal   ← create/edit, steps in workspaceModalSteps/
-           ├─ mobile/          ← the sub-lg surface: TabBar (bottom nav + floating action
-           │                     button, carrying Sidebar's Actions), WorkspaceList/WorkspaceRow
+           ├─ mobile/          ← the sub-lg surface: TabBar (bottom nav + a floating button
+           │                     carrying the same one action), WorkspaceList/WorkspaceRow
            │                     + WorkspaceDetailSheet, ConnectionsList/ConnectionRow,
            │                     FiltersSheet
            ├─ connections/     ← app/dashboard/connections: ConnectionsClient, ConnectionsTable +
@@ -206,6 +206,20 @@ components/
 ```
 
 Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybinds.tsx`.
+
+### Dashboard Actions
+
+The dashboard offers **at most one action per page**, derived from route × role in `lib/dashboardActions.ts` and rendered by the `Sidebar`'s Actions section at `lg+` and the `TabBar`'s floating button below it.
+
+|  | `/dashboard` | `/dashboard/connections` |
+| --- | --- | --- |
+| tutor | Create workspace | Add a student |
+| student | — | Add a tutor |
+| admin | — | — |
+
+- **One home per tier.** No page renders its own action button; both surfaces read the same helper. The rule used to be written out in each of them, which is how one action came to be called both "Add New Student" and "Link a student".
+- **Absent, not disabled, when the page can't land the result.** Each page passes only the callback its own action needs — `/dashboard` passes `onCreated`, connections passes `onLinked` — and the button (plus its modal) is omitted otherwise. Greying it out instead is what put a dead "Create Workspace" on the connections page.
+- Menu items use `opacity-25` for "not for your role"; an unbuilt destination carries a `Soon` badge instead, and the dimming sits on the icon and label rather than the row so the badge stays legible.
 
 ### Responsive Model (dashboard)
 
@@ -273,7 +287,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `dashboardActions.ts` (the route × role → single action rule shared by `Sidebar` and `TabBar` — see Dashboard Actions above), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
 
 ### Path Alias
 
