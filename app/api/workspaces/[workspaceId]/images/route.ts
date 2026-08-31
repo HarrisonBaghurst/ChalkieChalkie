@@ -1,5 +1,8 @@
 import { errorResponse } from "@/lib/errorResponse";
-import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/imageLimits";
+import {
+    ALLOWED_IMAGE_STORAGE_TYPES,
+    MAX_UPLOAD_BYTES,
+} from "@/lib/imageLimits";
 import { consumePdfLease } from "@/lib/pdfLease";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -74,10 +77,7 @@ export async function POST(
     const bodyWorkspaceId = formData.get("workspaceId");
 
     if (!isSafeId(imageId)) {
-        return NextResponse.json(
-            { error: "Invalid imageId" },
-            { status: 400 },
-        );
+        return NextResponse.json({ error: "Invalid imageId" }, { status: 400 });
     }
 
     // The URL param is authoritative; a form workspaceId may only agree.
@@ -99,7 +99,7 @@ export async function POST(
         );
     }
 
-    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    if (!ALLOWED_IMAGE_STORAGE_TYPES.has(file.type)) {
         return NextResponse.json(
             { error: "Unsupported file type" },
             { status: 415 },
@@ -107,10 +107,7 @@ export async function POST(
     }
 
     if (file.size > MAX_UPLOAD_BYTES) {
-        return NextResponse.json(
-            { error: "File too large" },
-            { status: 413 },
-        );
+        return NextResponse.json({ error: "File too large" }, { status: 413 });
     }
 
     const { data } = await supabaseAdmin
@@ -161,7 +158,11 @@ export async function DELETE(
         return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
     }
 
-    const blocked = await enforceRateLimit(req, "workspace-image:delete", userId);
+    const blocked = await enforceRateLimit(
+        req,
+        "workspace-image:delete",
+        userId,
+    );
     if (blocked) return blocked;
 
     const { workspaceId: urlWorkspaceId } = await params;
@@ -185,10 +186,7 @@ export async function DELETE(
     const { imageId, workspaceId: bodyWorkspaceId } = body;
 
     if (!isSafeId(imageId)) {
-        return NextResponse.json(
-            { error: "Invalid imageId" },
-            { status: 400 },
-        );
+        return NextResponse.json({ error: "Invalid imageId" }, { status: 400 });
     }
 
     if (

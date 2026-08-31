@@ -3,7 +3,10 @@ import { toast } from "sonner";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { PastedImageMeta } from "@/types/imageTypes";
 import { Rect } from "@/lib/genometry";
-import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "@/lib/imageLimits";
+import {
+    ACCEPTED_IMAGE_INPUT_TYPES,
+    MAX_UPLOAD_BYTES,
+} from "@/lib/imageLimits";
 import { loadImage, prepareImageFile } from "@/lib/imagePrepare";
 import {
     adoptPermanentUrl,
@@ -39,9 +42,9 @@ export const useInsertImage = ({
 
     return useCallback(
         async (file: File, placement: InsertPlacement) => {
-            if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+            if (!ACCEPTED_IMAGE_INPUT_TYPES.has(file.type)) {
                 toast.error("Unsupported image type.", {
-                    description: "Only PNG and JPEG images can be added.",
+                    description: "Only PNG, JPEG and WebP images can be added.",
                 });
                 return;
             }
