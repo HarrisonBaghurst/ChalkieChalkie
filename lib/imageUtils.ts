@@ -6,17 +6,14 @@ const HANDLE_SIZE = 28;
 export const getImageAtPoint = (
     images: PastedImage[],
     point: Point,
-    zoom: number,
 ): PastedImage | null => {
-    const slop = HANDLE_SIZE / zoom;
-
     for (let i = images.length - 1; i >= 0; i--) {
         const img = images[i];
         if (
-            point.x >= img.x - slop &&
-            point.x <= img.x + img.width + slop &&
-            point.y >= img.y - slop &&
-            point.y <= img.y + img.height + slop
+            point.x >= img.x &&
+            point.x <= img.x + img.width &&
+            point.y >= img.y &&
+            point.y <= img.y + img.height
         ) {
             return img;
         }

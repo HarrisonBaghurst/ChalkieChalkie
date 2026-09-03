@@ -5,9 +5,10 @@ import {
 } from "@/types/canvasStateTypes";
 import { toWorldPoint } from "../helpers";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
-import { ResizeHandleKey } from "@/types/imageTypes";
+import { PastedImage, ResizeHandle, ResizeHandleKey } from "@/types/imageTypes";
+import { Point } from "@/types/strokeTypes";
 import {
-    imageIntersectsRect,
+    imageWithinRect,
     normaliseRect,
     pointInRect,
     Rect,
@@ -16,15 +17,8 @@ import {
     unionRects,
 } from "@/lib/genometry";
 
-// A plain click is a zero-length drag, so click-to-select an image and
-// drag-to-marquee are the same gesture, separated only by distance.
-
 const MIN_IMAGE_SIZE = 20;
-// Both in screen pixels, divided by zoom where used — world-space constants
-// shrank to nothing zoomed out — and sized for a fingertip's wobble.
-// shorter than this counts as a click, i.e. deselect
 const MIN_DRAG = 6;
-// slack so the selection border itself can be grabbed
 const DRAG_HIT_PADDING = 10;
 
 const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
@@ -34,8 +28,6 @@ const RESIZE_CURSORS: Record<ResizeHandleKey, string> = {
     sw: "nesw-resize",
 };
 
-// Excluded from hit-testing rather than merely refused, so a locked image on
-// top doesn't turn into a dead zone over whatever sits beneath it.
 const selectableImages = (state: CanvasState) =>
     state.pastedImages.filter((img) => !state.lockedImageIds.has(img.id));
 
@@ -47,6 +39,23 @@ const grabHitRect = (rect: Rect, zoom: number): Rect => {
         width: rect.width + pad * 2,
         height: rect.height + pad * 2,
     };
+};
+
+const selectedImage = (state: CanvasState): PastedImage | null =>
+    selectableImages(state).find((img) => img.id === state.selectedImageId) ??
+    null;
+
+const hitSelectedImage = (
+    state: CanvasState,
+    point: Point,
+): { img: PastedImage; handle: ResizeHandle } | null => {
+    const img = selectedImage(state);
+    if (!img) return null;
+
+    const handle = getResizeHandleAtPoint(img, point, state.viewport.zoom);
+    if (handle) return { img, handle };
+
+    return pointInRect(point, img) ? { img, handle: null } : null;
 };
 
 const clearMarquee = (state: CanvasState) => {
@@ -94,18 +103,12 @@ export const pointerCursor = (state: CanvasState): string => {
         return "grab";
     }
 
-    const img = getImageAtPoint(selectableImages(state), point, zoom);
-    if (img) {
-        const handle = getResizeHandleAtPoint(img, point, zoom);
-        return handle ? RESIZE_CURSORS[handle] : "grab";
-    }
+    const hit = hitSelectedImage(state, point);
+    if (hit) return hit.handle ? RESIZE_CURSORS[hit.handle] : "grab";
 
     return "default";
 };
 
-// A gesture cut short by a second finger landing, or by the browser taking the
-// pointer away. Everything must go back to where it was: nothing here has been
-// committed to storage yet, so reverting locally is the whole job.
 export const abortPointerGesture = (state: CanvasState) => {
     if (state.imageTransformOrigin && state.selectedImageId) {
         const img = state.pastedImages.find(
@@ -164,11 +167,10 @@ const onDown = ({ e, state }: ToolContext) => {
         }
     }
 
-    // 2. press on an image — select it, and move or resize it in the same drag
-    const img = getImageAtPoint(selectableImages(state), worldPoint, zoom);
-    if (img) {
-        clearMarquee(state);
-        state.selectedImageId = img.id;
+    // 2. move or resize the image that is already selected
+    const hit = hitSelectedImage(state, worldPoint);
+    if (hit) {
+        const { img, handle } = hit;
         state.imageTransformOrigin = {
             x: img.x,
             y: img.y,
@@ -176,7 +178,6 @@ const onDown = ({ e, state }: ToolContext) => {
             height: img.height,
         };
 
-        const handle = getResizeHandleAtPoint(img, worldPoint, zoom);
         if (handle) {
             state.activeResizeHandle = handle;
             return;
@@ -189,7 +190,9 @@ const onDown = ({ e, state }: ToolContext) => {
         return;
     }
 
-    // 3. press on empty board — start a marquee
+    // 3. anything else starts a marquee, images included — which is the only
+    // way to reach strokes drawn over one. Whether the gesture was really a
+    // click, and so selects the image beneath it instead, is settled in onUp.
     state.selectedImageId = null;
     state.imageTransformOrigin = null;
     clearMarquee(state);
@@ -354,10 +357,14 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
         return;
     }
 
-    // 3. resolve what the marquee swept up
+    // 3. resolve what the marquee swept up, or — if it never travelled far
+    // enough to be a drag — treat the press as a click on whatever is under it
     if (state.marqueeRect) {
         const normalised = normaliseRect(state.marqueeRect);
         const minDrag = MIN_DRAG / state.viewport.zoom;
+
+        state.selectedStrokeIds = [];
+        state.selectedImageIds = [];
 
         if (normalised.width > minDrag || normalised.height > minDrag) {
             state.selectedStrokeIds = (strokes ?? [])
@@ -368,11 +375,14 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
                 )
                 .map((s) => s.id);
             state.selectedImageIds = selectableImages(state)
-                .filter((img) => imageIntersectsRect(img, normalised))
+                .filter((img) => imageWithinRect(img, normalised))
                 .map((img) => img.id);
-        } else {
-            state.selectedStrokeIds = [];
-            state.selectedImageIds = [];
+        } else if (state.selectorStart) {
+            const clicked = getImageAtPoint(
+                selectableImages(state),
+                state.selectorStart,
+            );
+            state.selectedImageId = clicked?.id ?? null;
         }
         state.selectionBounds = unionRects(
             selectedItemBounds(

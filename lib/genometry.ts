@@ -191,15 +191,15 @@ export function selectedItemBounds(
     return bounds;
 }
 
-export function imageIntersectsRect(
+export function imageWithinRect(
     img: { x: number; y: number; width: number; height: number },
     rect: Rect,
 ): boolean {
     const r = normaliseRect(rect);
     return (
-        img.x < r.x + r.width &&
-        img.x + img.width > r.x &&
-        img.y < r.y + r.height &&
-        img.y + img.height > r.y
+        img.x >= r.x &&
+        img.y >= r.y &&
+        img.x + img.width <= r.x + r.width &&
+        img.y + img.height <= r.y + r.height
     );
 }
