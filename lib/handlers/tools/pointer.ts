@@ -65,6 +65,16 @@ const isTransformingImage = (state: CanvasState) =>
     state.selectedImageId !== null &&
     (state.activeResizeHandle !== null || state.imageDragOffset !== null);
 
+export const isImageUnderLocalTransform = (
+    state: CanvasState,
+    id: string,
+): boolean => {
+    if (state.selectedImageId === id && isTransformingImage(state)) return true;
+    return (
+        state.selectorDragStart !== null && state.selectorImageOrigins.has(id)
+    );
+};
+
 export const pointerCursor = (state: CanvasState): string => {
     if (state.activeResizeHandle)
         return RESIZE_CURSORS[state.activeResizeHandle];

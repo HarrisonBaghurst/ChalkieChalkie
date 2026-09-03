@@ -2,6 +2,7 @@ import { PastedImageMeta } from "@/types/imageTypes";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { RefObject, useEffect, useRef } from "react";
 import { ACCEPTED_INPUT_TYPES } from "@/lib/imageLimits";
+import { isImageUnderLocalTransform } from "@/lib/handlers/tools/pointer";
 import { InsertPlacement } from "./useInsertImage";
 
 interface UsePastedImagesSyncProps {
@@ -28,7 +29,7 @@ export const usePastedImagesSync = ({
                 const local = state.pastedImages.find(
                     (img) => img.id === meta.id,
                 );
-                if (local) {
+                if (local && !isImageUnderLocalTransform(state, meta.id)) {
                     local.x = meta.x;
                     local.y = meta.y;
                     local.width = meta.width;
@@ -58,8 +59,10 @@ export const usePastedImagesSync = ({
             img.src = meta.url;
         });
 
-        state.pastedImages = state.pastedImages.filter((img) =>
-            liveIds.current.has(img.id),
+        state.pastedImages = state.pastedImages.filter(
+            (img) =>
+                liveIds.current.has(img.id) ||
+                state.pendingImageIds.has(img.id),
         );
     }, [pastedImagesMeta]);
 };

@@ -8,7 +8,6 @@ export interface Viewport {
     zoom: number;
 }
 
-// All mutable canvas interaction state, held in a single ref.
 export interface CanvasState {
     viewport: Viewport;
     panOrigin: { startScreen: Point; startOffset: Point } | null;
@@ -24,6 +23,7 @@ export interface CanvasState {
     activeResizeHandle: ResizeHandle;
     imageTransformOrigin: Rect | null;
     pastedImages: PastedImage[];
+    pendingImageIds: Set<string>;
     marqueeRect: Rect | null;
     selectionBounds: Rect | null;
     selectionBoundsOrigin: Rect | null;

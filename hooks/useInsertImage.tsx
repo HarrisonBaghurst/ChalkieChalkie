@@ -9,7 +9,7 @@ import {
 } from "@/lib/imageLimits";
 import { loadImage, prepareImageFile } from "@/lib/imagePrepare";
 import {
-    adoptPermanentUrl,
+    commitUploadedImage,
     rollbackImage,
     uploadWorkspaceImage,
 } from "@/lib/imageUpload";
@@ -103,6 +103,7 @@ export const useInsertImage = ({
                 ({ x, y } = state.cursorPosition);
             }
 
+            state.pendingImageIds.add(imageId);
             state.pastedImages.push({
                 id: imageId,
                 element: displayImage,
@@ -123,21 +124,13 @@ export const useInsertImage = ({
                     uploadFile,
                 );
 
-                adoptPermanentUrl(
+                const meta = commitUploadedImage(
                     canvasStateRef,
                     imageId,
                     permanentUrl,
                     displayUrl,
                 );
-
-                depsRef.current.addImageMeta({
-                    id: imageId,
-                    url: permanentUrl,
-                    x,
-                    y,
-                    width,
-                    height,
-                });
+                if (meta) depsRef.current.addImageMeta(meta);
             } catch (err) {
                 console.error("Failed to upload image:", err);
                 toast.error("Failed to upload image.", {

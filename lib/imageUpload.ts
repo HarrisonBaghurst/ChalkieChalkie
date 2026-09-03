@@ -1,5 +1,6 @@
 import { RefObject } from "react";
 import { CanvasState } from "@/types/canvasStateTypes";
+import { PastedImage, PastedImageMeta } from "@/types/imageTypes";
 
 // leaseId is the PDF path's pre-paid quota: the route decrements it instead of
 // charging the per-image limiter once per page. It travels as a header so the
@@ -61,20 +62,11 @@ export async function reservePdfLease(
 
 // The blob URL is only revoked once the signed one has decoded, or the image
 // blinks out between the swap and the load.
-export function adoptPermanentUrl(
-    canvasStateRef: RefObject<CanvasState>,
-    imageId: string,
+function adoptPermanentUrl(
+    local: PastedImage,
     permanentUrl: string,
     blobUrl: string,
 ): void {
-    const local = canvasStateRef.current.pastedImages.find(
-        (i) => i.id === imageId,
-    );
-    if (!local) {
-        URL.revokeObjectURL(blobUrl);
-        return;
-    }
-
     const img = new Image();
     img.onload = () => {
         local.element = img;
@@ -84,12 +76,40 @@ export function adoptPermanentUrl(
     img.src = permanentUrl;
 }
 
+export function commitUploadedImage(
+    canvasStateRef: RefObject<CanvasState>,
+    imageId: string,
+    permanentUrl: string,
+    blobUrl: string,
+): PastedImageMeta | null {
+    const state = canvasStateRef.current;
+    state.pendingImageIds.delete(imageId);
+
+    const local = state.pastedImages.find((i) => i.id === imageId);
+    if (!local) {
+        URL.revokeObjectURL(blobUrl);
+        return null;
+    }
+
+    adoptPermanentUrl(local, permanentUrl, blobUrl);
+
+    return {
+        id: imageId,
+        url: permanentUrl,
+        x: local.x,
+        y: local.y,
+        width: local.width,
+        height: local.height,
+    };
+}
+
 export function rollbackImage(
     canvasStateRef: RefObject<CanvasState>,
     imageId: string,
     blobUrl: string,
 ): void {
     const state = canvasStateRef.current;
+    state.pendingImageIds.delete(imageId);
     state.pastedImages = state.pastedImages.filter((i) => i.id !== imageId);
     if (state.selectedImageId === imageId) {
         state.selectedImageId = null;

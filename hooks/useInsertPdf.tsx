@@ -12,7 +12,7 @@ import {
     prepareImageFile,
 } from "@/lib/imagePrepare";
 import {
-    adoptPermanentUrl,
+    commitUploadedImage,
     reservePdfLease,
     rollbackImage,
     uploadWorkspaceImage,
@@ -224,6 +224,7 @@ export const useInsertPdf = ({
                         blobUrl = URL.createObjectURL(uploadFile);
                         const element = await loadImage(blobUrl);
 
+                        canvasStateRef.current.pendingImageIds.add(id);
                         canvasStateRef.current.pastedImages.push({
                             id,
                             element,
@@ -238,18 +239,16 @@ export const useInsertPdf = ({
                             leaseId,
                         );
 
-                        adoptPermanentUrl(
+                        const meta = commitUploadedImage(
                             canvasStateRef,
                             id,
                             permanentUrl,
                             blobUrl,
                         );
-                        depsRef.current.addImageMeta({
-                            id,
-                            url: permanentUrl,
-                            ...rect,
-                        });
-                        insertedIds.push(id);
+                        if (meta) {
+                            depsRef.current.addImageMeta(meta);
+                            insertedIds.push(id);
+                        }
                     } catch (err) {
                         console.error(
                             `Failed to add PDF page ${pageNumber}:`,
@@ -268,15 +267,14 @@ export const useInsertPdf = ({
 
             doc.destroy();
 
-            if (insertedIds.length === 0) {
-                toast.error("Could not add the PDF.", {
-                    id: toastId,
-                    description: "Please reload the page and try again.",
-                });
-                return;
-            }
-
             if (failedPages.length > 0) {
+                if (insertedIds.length === 0) {
+                    toast.error("Could not add the PDF.", {
+                        id: toastId,
+                        description: "Please reload the page and try again.",
+                    });
+                    return;
+                }
                 toast.warning(
                     `Added ${insertedIds.length} of ${pageCount} pages.`,
                     {
@@ -284,9 +282,14 @@ export const useInsertPdf = ({
                         description: `${failedPages.length} could not be added.`,
                     },
                 );
+            } else if (insertedIds.length === 0) {
+                toast.dismiss(toastId);
+                return;
             } else {
                 toast.success(
-                    `Added ${pageCount} page${pageCount === 1 ? "" : "s"}.`,
+                    `Added ${insertedIds.length} page${
+                        insertedIds.length === 1 ? "" : "s"
+                    }.`,
                     { id: toastId },
                 );
             }

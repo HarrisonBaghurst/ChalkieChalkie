@@ -57,6 +57,7 @@ const Workspace = ({ workspaceId }: { workspaceId: string }) => {
         activeResizeHandle: null,
         imageTransformOrigin: null,
         pastedImages: [],
+        pendingImageIds: new Set(),
         marqueeRect: null,
         selectionBounds: null,
         selectionBoundsOrigin: null,
