@@ -75,6 +75,9 @@ const drawResizeHandles = (
     ctx.restore();
 };
 
+const hasNoExtent = (pts: Point[]) =>
+    pts.every((p) => p.x === pts[0].x && p.y === pts[0].y);
+
 const tracePath = (
     ctx: CanvasRenderingContext2D,
     pts: Point[],
@@ -96,6 +99,30 @@ const tracePath = (
         pts[last].x + dx,
         pts[last].y + dy,
     );
+};
+
+const drawStroke = (
+    ctx: CanvasRenderingContext2D,
+    stroke: Stroke,
+    dx: number,
+    dy: number,
+    lineWidth: number,
+) => {
+    const pts = stroke.points;
+    if (pts.length === 0) return;
+
+    if (hasNoExtent(pts)) {
+        ctx.beginPath();
+        ctx.fillStyle = stroke.colour;
+        ctx.arc(pts[0].x + dx, pts[0].y + dy, lineWidth / 2, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = stroke.colour;
+    tracePath(ctx, pts, dx, dy);
+    ctx.stroke();
 };
 
 type DrawToCanvasParameters = {
@@ -184,12 +211,8 @@ const drawToCanvas = ({
 
     ctx.lineWidth = PEN_LINE_WIDTH;
     for (const stroke of penStrokes) {
-        if (stroke.points.length < 2) continue;
         const { x: dx, y: dy } = strokeOffset(stroke);
-        ctx.beginPath();
-        ctx.strokeStyle = stroke.colour;
-        tracePath(ctx, stroke.points, dx, dy);
-        ctx.stroke();
+        drawStroke(ctx, stroke, dx, dy, PEN_LINE_WIDTH);
     }
 
     // Composited offscreen so overlapping highlights don't compound.
@@ -217,12 +240,8 @@ const drawToCanvas = ({
         hlCtx.lineWidth = HIGHLIGHT_LINE_WIDTH;
 
         for (const stroke of highlightStrokes) {
-            if (stroke.points.length < 2) continue;
             const { x: dx, y: dy } = strokeOffset(stroke);
-            hlCtx.beginPath();
-            hlCtx.strokeStyle = stroke.colour;
-            tracePath(hlCtx, stroke.points, dx, dy);
-            hlCtx.stroke();
+            drawStroke(hlCtx, stroke, dx, dy, HIGHLIGHT_LINE_WIDTH);
         }
 
         ctx.save();
