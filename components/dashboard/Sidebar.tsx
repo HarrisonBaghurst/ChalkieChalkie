@@ -204,9 +204,14 @@ const Sidebar = ({
                     </div>
                     <p className="text-small">Return Home</p>
                 </Link>
-                <p className="text-foreground-third text-caption">
-                    © Chalkie Chalkie 2026
-                </p>
+                <div className="w-full flex justify-between">
+                    <p className="text-foreground-third text-caption">
+                        © Chalkie Chalkie 2026
+                    </p>
+                    <p className="text-foreground-third text-caption">
+                        {process.env.NEXT_PUBLIC_VERSION}
+                    </p>
+                </div>
             </div>
             {action?.id === "create-workspace" && (
                 <WorkspaceModal
