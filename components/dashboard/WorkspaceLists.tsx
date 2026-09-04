@@ -71,25 +71,16 @@ const WorkspaceLists = ({
 
     return (
         <div className="w-full flex flex-col gap-4 h-fit">
-            {/* Free-floating control row, disconnected from the list below
-                (mirrors the reference layout). One column on a phone — tabs,
-                then a full-width search, then the filters sheet; at lg it
-                becomes the original single row, tabs left and controls right. */}
             <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
                 <Tabs
                     value={activeTab}
                     onValueChange={(id) => setActiveTab(id as TabId)}
                     className="w-full lg:w-auto"
                 >
-                    {/* Full width on a phone so the three triggers, which are
-                        already flex-1, split the row evenly instead of
-                        huddling at the left edge. */}
                     <TabsList className="w-full lg:w-fit">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id}>
                                 <span className="text-small">{tab.label}</span>
-                                {/* Count sits one step dimmer than its label,
-                                    in both the active and inactive state. */}
                                 <span className="text-small text-foreground-third [[data-state=active]>&]:text-foreground-second">
                                     {tab.count}
                                 </span>
@@ -98,21 +89,14 @@ const WorkspaceLists = ({
                     </TabsList>
                 </Tabs>
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                    {/* Sits in the control row beside the tabs and filters, so
-                        it takes the filled `.control-surface` chrome rather
-                        than the bare-field default. `border-border` restates
-                        that same hairline as a utility, since Input's own
-                        border colour would otherwise outrank it. */}
                     <Input
                         type="text"
+                        variant="control"
                         value={filters.search}
                         onChange={(e) => onChangeSearch(e.target.value)}
                         placeholder="Search sessions..."
-                        className="w-full lg:w-56 control-surface border-border"
+                        className="w-full lg:w-56"
                     />
-                    {/* The popover filter and clear button together overflow a
-                        phone's width, so below lg they collapse into one
-                        sheet. */}
                     <div className="lg:hidden">
                         <FiltersSheet
                             collaborators={collaborators}
@@ -145,9 +129,6 @@ const WorkspaceLists = ({
                 </div>
             </div>
 
-            {/* Two renderings of the same rows, swapped by CSS rather than a
-                media-query hook: no hydration mismatch and no first-paint
-                flash. */}
             <div className="lg:hidden">
                 <WorkspaceList
                     rows={rowsByTab[activeTab]}

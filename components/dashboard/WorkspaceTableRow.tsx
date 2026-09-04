@@ -26,8 +26,6 @@ type WorkspaceTableRowProps = {
     onDeleted: (workspaceId: string) => void;
 };
 
-// On the cells, not the <tr>: border-separate won't render <tr> borders or
-// clip the last row's corners reliably.
 const cellClass =
     "px-3 py-3 align-middle text-small border-b border-foreground-third/10";
 
@@ -44,7 +42,6 @@ const WorkspaceTableRow = ({
     const role = useUserRole();
     const [modalStep, setModalStep] = useState<number | null>(null);
 
-    // Mirrors the API route guard.
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
 
     const canAddFeedback = canManage && bucket === "previous";
@@ -79,9 +76,17 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 {workspace.title ? (
-                    <span className="font-inter-bold text-foreground">
-                        {workspace.title}
-                    </span>
+                    <TapTooltip
+                        content={
+                            <div className="w-64 whitespace-normal">
+                                {workspace.title}
+                            </div>
+                        }
+                    >
+                        <span className="block truncate text-left text-foreground-second">
+                            {workspace.title}
+                        </span>
+                    </TapTooltip>
                 ) : (
                     <span className="text-foreground-third">
                         Untitled workspace
@@ -90,7 +95,7 @@ const WorkspaceTableRow = ({
             </td>
             <td className={cellClass}>
                 {workspace.startTime ? (
-                    <span className="">
+                    <span className="text-foreground-second">
                         {formatSessionTime(workspace.startTime)}
                     </span>
                 ) : (

@@ -50,7 +50,7 @@ const NextContent = ({
 }) => (
     <div className="flex flex-col gap-6 lg:pr-8">
         <p className="text-caption font-inter-regular gradient-text">
-            COMING UP NEXT
+            Coming up next
         </p>
         <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
             <Avatar className="size-12 rounded-md after:rounded-md">
@@ -61,11 +61,11 @@ const NextContent = ({
                 />
                 <AvatarFallback className="rounded-md bg-foreground-third" />
             </Avatar>
-            <div>
+            <div className="flex flex-col gap-2">
                 <p className="text-heading font-inter-bold">
                     {formatSessionTime(workspace.startTime)}
                 </p>
-                <p className="text-body font-inter-bold text-foreground-second">
+                <p className="text-body font-inter-bold text-foreground-second leading-5.5">
                     {workspace.title}
                 </p>
             </div>
@@ -95,8 +95,6 @@ const NextContent = ({
     </div>
 );
 
-// No `display` utility: each wrapper sets its own, and a baked-in `flex` would
-// fight the `hidden` it needs at the other breakpoint.
 const CARD_CLASS =
     "w-full lg:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
@@ -122,10 +120,6 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     return (
         <>
-            {/* Below lg the card is inert: the board is desktop-only for now,
-                so nothing here links to it. Rendered as a separate element
-                rather than a disabled button so there is no tap target and no
-                open-in-new affordance to mislead. */}
             <div className={cn(CARD_CLASS, "flex lg:hidden")}>
                 <NextContent
                     workspace={workspace}

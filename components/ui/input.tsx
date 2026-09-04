@@ -17,7 +17,14 @@ import { cn } from "@/lib/utils"
     No `text-*` utility here: `text-small` is a component-layer class and a
     utility-layer `text-base`/`md:text-sm` would outrank it. */
 const baseClasses =
-  "control-surface bg-card-background-hover w-full min-w-0 px-3 text-small text-foreground transition-colors outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-foreground-third focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
+  "control-surface w-full min-w-0 px-3 text-small text-foreground transition-colors outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-foreground-third focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
+
+const variantClasses = {
+  default: "bg-card-background-hover",
+  control: "bg-card-background hover:bg-card-background-hover",
+} as const
+
+type InputVariant = keyof typeof variantClasses
 
 /*  ── Floating label ──────────────────────────────────────────────────────
     Passing `label` turns the field into a floating-label input: the label
@@ -57,9 +64,10 @@ const baseClasses =
     compiles those utilities to the standalone CSS properties of the same
     name, so a `transition-property: transform` matches nothing and the
     label teleports instead of rising. */
-function fieldClasses(hasLabel: boolean) {
+function fieldClasses(hasLabel: boolean, variant: InputVariant = "default") {
   return cn(
     baseClasses,
+    variantClasses[variant],
     hasLabel
       ? "peer pt-6 pb-2 placeholder:opacity-0 placeholder:transition-opacity placeholder:duration-150 placeholder:ease-in-out focus:placeholder:opacity-100"
       : "py-2"
@@ -72,12 +80,14 @@ const floatingLabelClasses =
 type InputProps = React.ComponentProps<"input"> & {
   /** Field name. Supplying it switches on the floating-label treatment. */
   label?: string
+  variant?: InputVariant
 }
 
 function Input({
   className,
   type,
   label,
+  variant = "default",
   id,
   placeholder,
   ...props
@@ -91,7 +101,7 @@ function Input({
       id={label ? inputId : id}
       data-slot="input"
       placeholder={label ? placeholder || " " : placeholder}
-      className={cn(fieldClasses(!!label), className)}
+      className={cn(fieldClasses(!!label, variant), className)}
       {...props}
     />
   )

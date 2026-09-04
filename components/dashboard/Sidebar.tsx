@@ -26,11 +26,16 @@ type SidebarItem = {
     active?: boolean;
 };
 
+const navItemClass =
+    "flex gap-3 items-center radius-tag border border-transparent px-2 py-2 transition-colors";
+
+const navItemEnabledClass =
+    "bg-accent text-foreground-second font-inter-bold cursor-pointer hover:bg-foreground-third/35";
+
 type SidebarProps = {
     friends?: userInfo[];
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
     onLinked?: (link: LinkSummary) => void;
-    // Server-resolved; the client role reads "student" until Clerk hydrates.
     role?: UserRole;
 };
 
@@ -111,12 +116,12 @@ const Sidebar = ({
             </>
         );
         const className = cn(
-            "flex gap-3 items-center radius-tag border px-2 py-2 transition-colors",
+            navItemClass,
             item.active
-                ? "border-transparent bg-foreground text-background! font-inter-bold cursor-pointer"
+                ? "bg-foreground text-background! font-inter-bold cursor-pointer"
                 : item.status
-                  ? "border-border bg-card text-foreground-second font-inter-bold cursor-pointer hover:bg-accent"
-                  : "border-border bg-card text-foreground-second cursor-not-allowed",
+                  ? navItemEnabledClass
+                  : "bg-accent text-foreground-second cursor-not-allowed",
         );
 
         if (item.link && item.status) {
@@ -192,7 +197,7 @@ const Sidebar = ({
             <div className="flex flex-col gap-8">
                 <Link
                     href="/"
-                    className="text-foreground-second font-inter-bold mx-2 flex gap-3 items-center radius-tag cursor-pointer"
+                    className={cn(navItemClass, navItemEnabledClass)}
                 >
                     <div className="relative w-5 h-5">
                         <Image src="/icons/house.svg" alt="Return Home" fill />

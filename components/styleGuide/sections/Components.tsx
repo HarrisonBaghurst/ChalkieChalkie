@@ -113,7 +113,7 @@ const Components = () => {
         >
             <Block
                 title="Button"
-                description="Seven variants. default is the canonical primary action — white fill, dark label — and there should be at most one per view. secondary and outline are for supporting actions, ghost for icon buttons and toolbar chrome, link for inline navigation."
+                description="Seven variants. default is the canonical primary action — white fill, dark label — and there should be at most one per view. secondary and outline are for supporting actions: outline is solid despite the name, filled at --card-background-hover so it lifts off a card without needing a border, and secondary sits below the card instead. ghost is for icon buttons and toolbar chrome, link for inline navigation."
             >
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-wrap items-center gap-4">
@@ -214,10 +214,18 @@ const Components = () => {
 
             <Block
                 title="Form controls"
-                description="Input and Textarea share one class string, built on .control-surface — a card-background-hover fill (a tier lighter than the card/modal surface they usually sit on), a faint foreground-third hairline border, text-small. Both carry the focus-visible ring; never remove it with focus:outline-none, which is what the hand-rolled inputs these replaced did."
+                description="Input and Textarea share one class string, built on .control-surface — a faint foreground-third hairline border, text-small, and by default a card-background-hover fill, a tier lighter than the card or modal surface they usually sit on. The control variant drops that fill back to control-surface's own card-background and brightens on hover instead, so a field standing in a row of .control-surface triggers reads as one of them; the dashboard's session search is the case it exists for. Both carry the focus-visible ring; never remove it with focus:outline-none, which is what the hand-rolled inputs these replaced did."
             >
                 <div className="flex max-w-md flex-col gap-5">
-                    <Input placeholder="Search sessions..." />
+                    <Item label="variant default">
+                        <Input placeholder="Search sessions..." />
+                    </Item>
+                    <Item label="variant control">
+                        <Input
+                            variant="control"
+                            placeholder="Search sessions..."
+                        />
+                    </Item>
                     <Input placeholder="Invalid value" aria-invalid />
                     <Input placeholder="Disabled" disabled />
                     <Textarea placeholder="Lesson description" rows={3} />

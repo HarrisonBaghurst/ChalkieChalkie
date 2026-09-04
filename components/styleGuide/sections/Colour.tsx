@@ -52,7 +52,7 @@ const Colour = () => (
                 />
                 <Swatch
                     token="--card-background-hover"
-                    usage="The brighten-on-hover state for anything filled with --card-background."
+                    usage="The brighten-on-hover state for anything filled with --card-background, and the resting fill of a solid outline button sitting on one."
                 />
             </div>
         </Block>
@@ -113,7 +113,7 @@ const Colour = () => (
                     />
                     <Swatch
                         token="--accent"
-                        usage="= --card-background-hover. Hover fill for ghost/outline/secondary buttons and menu items."
+                        usage="= --card-background-hover. Hover fill for ghost and secondary buttons and menu items, and the resting fill of outline, which hovers a step lighter on --foreground-third/35 rather than a fourth grey."
                     />
                 </Grid>
                 <Note>

@@ -7,7 +7,6 @@ const PLACEHOLDER_ROWS = 4;
 
 const cellClass = "px-3 py-3 align-middle border-b border-foreground-third/10";
 
-// Mirrors ConnectionRow cell for cell.
 const ConnectionRowSkeleton = () => (
     <tr>
         <td className={cellClass}>
@@ -23,7 +22,7 @@ const ConnectionRowSkeleton = () => (
             <Skeleton className="h-4 w-24" />
         </td>
         <td className={cellClass}>
-            <Skeleton className="h-6 w-24 radius-tag" />
+            <Skeleton className="h-4 w-24" />
         </td>
         <td className={cellClass}>
             <div className="flex justify-end">
@@ -37,14 +36,11 @@ type ConnectionsSkeletonProps = {
     heading: string;
 };
 
-// Only the rows shimmer, so nothing shifts once the fetch lands.
 const ConnectionsSkeleton = ({ heading }: ConnectionsSkeletonProps) => {
     return (
         <>
             <div className="flex items-center justify-between">
                 <p className="text-heading font-inter-bold">{heading}</p>
-                {/* The real button is lg-only — below that the action lives
-                    on the TabBar's floating button. */}
                 <Skeleton className="hidden h-9 w-36 radius-control lg:block" />
             </div>
 

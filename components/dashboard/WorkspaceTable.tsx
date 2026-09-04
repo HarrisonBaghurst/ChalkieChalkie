@@ -21,7 +21,6 @@ type WorkspaceTableProps = {
     onWorkspaceDeleted: (workspaceId: string) => void;
 };
 
-// Shared with the loading skeleton so both tables lay out identically.
 const COLUMNS = WORKSPACE_TABLE_COLUMNS;
 
 const WorkspaceTable = ({
@@ -33,12 +32,6 @@ const WorkspaceTable = ({
 }: WorkspaceTableProps) => {
     return (
         <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">
-            {/* border-separate (not collapse) so the header/last-row cells can
-                carry their own rounded corners. This keeps the table visually
-                rounded WITHOUT an overflow-hidden on the container, which would
-                otherwise clip row popovers (e.g. RowActionsMenu) at the edges.
-                Corner radius is 13px = radius-surface (14px) minus the 1px
-                border, so cells nest cleanly inside the rounded container. */}
             <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
                 <thead>
                     <tr>

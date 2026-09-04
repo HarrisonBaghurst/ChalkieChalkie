@@ -13,7 +13,6 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -80,10 +79,10 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
                                 <p className="text-caption text-foreground-third">
                                     Shared workspaces
                                 </p>
-                                <Badge>
+                                <p className="text-small text-foreground-second">
                                     {link.sharedWorkspaces} workspace
                                     {link.sharedWorkspaces === 1 ? "" : "s"}
-                                </Badge>
+                                </p>
                             </div>
                         </div>
                     </SheetBody>

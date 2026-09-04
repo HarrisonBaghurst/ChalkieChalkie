@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
 import { formatRelativeTime } from "@/lib/textUtils";
 import { LinkSummary } from "@/types/linkTypes";
@@ -11,17 +10,16 @@ type ConnectionRowProps = {
     onRemove: (linkId: string) => void;
 };
 
-// On the cells, not the <tr>: border-separate won't render <tr> borders or
-// clip the last row's corners reliably.
 const cellClass =
-    "px-3 py-3 align-middle text-small border-b border-foreground-third/10 group-hover:bg-foreground-third/10";
+    "px-3 py-3 align-middle text-small border-b border-foreground-third/10";
 
 const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
     const { counterparty } = link;
-    const fullName = `${counterparty.firstName} ${counterparty.lastName}`.trim();
+    const fullName =
+        `${counterparty.firstName} ${counterparty.lastName}`.trim();
 
     return (
-        <tr className="group">
+        <tr>
             <td className={cellClass}>
                 <div className="flex items-center gap-3">
                     <Avatar className="rounded-md after:rounded-md">
@@ -50,10 +48,10 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
                 </span>
             </td>
             <td className={cellClass}>
-                <Badge>
+                <span className="text-foreground-second">
                     {link.sharedWorkspaces} workspace
                     {link.sharedWorkspaces === 1 ? "" : "s"}
-                </Badge>
+                </span>
             </td>
             <td className={cellClass}>
                 <RowActionsMenu
