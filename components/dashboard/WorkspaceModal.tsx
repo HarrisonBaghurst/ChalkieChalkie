@@ -27,6 +27,7 @@ type WorkspaceModalProps = {
     open: boolean;
     mode: WorkspaceModalMode;
     friends: userInfo[];
+    initialStep?: number;
     onClose: () => void;
     onSubmitted: (workspace: Workspace, collaborators: userInfo[]) => void;
     onDeleted: (workspaceId: string) => void;
@@ -60,6 +61,9 @@ const STEPS = [
     { id: 5, label: "Review" },
 ] as const;
 
+export const FEEDBACK_STEP =
+    STEPS.findIndex((s) => s.label === "Feedback") + 1;
+
 const emptyForm: FormData = {
     title: "",
     description: "",
@@ -72,12 +76,13 @@ const WorkspaceModal = ({
     open,
     mode,
     friends,
+    initialStep = 1,
     onClose,
     onSubmitted,
     onDeleted,
 }: WorkspaceModalProps) => {
     const { user } = useUser();
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(initialStep);
     const [form, setForm] = useState<FormData>(emptyForm);
     const [submitting, setSubmitting] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -85,7 +90,7 @@ const WorkspaceModal = ({
 
     useEffect(() => {
         if (!open) return;
-        setStep(1);
+        setStep(initialStep);
         setConfirmingDelete(false);
 
         if (mode.kind === "edit") {
@@ -117,7 +122,7 @@ const WorkspaceModal = ({
                 collaborators: ownerInfo ? [ownerInfo] : [],
             });
         }
-    }, [open, mode, user]);
+    }, [open, mode, user, initialStep]);
 
     if (!open) return null;
 

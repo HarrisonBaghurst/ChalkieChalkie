@@ -10,7 +10,7 @@ import { isHost } from "@/lib/workspaceHost";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { WorkspaceBucket } from "../WorkspaceTableRow";
-import WorkspaceModal from "../WorkspaceModal";
+import WorkspaceModal, { FEEDBACK_STEP } from "../WorkspaceModal";
 import WorkspaceDetailSheet from "./WorkspaceDetailSheet";
 
 type WorkspaceRowProps = {
@@ -35,10 +35,12 @@ const WorkspaceRow = ({
     const { user } = useUser();
     const role = useUserRole();
     const [detailOpen, setDetailOpen] = useState(false);
-    const [editOpen, setEditOpen] = useState(false);
+    const [modalStep, setModalStep] = useState<number | null>(null);
 
     // Mirrors the API route guard.
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
+
+    const canAddFeedback = canManage && bucket === "previous";
 
     const participants = useMemo<userInfo[]>(() => {
         const ordered = [
@@ -115,19 +117,25 @@ const WorkspaceRow = ({
                 bucket={bucket}
                 participants={participants}
                 canManage={canManage}
+                canAddFeedback={canAddFeedback}
                 onEdit={() => {
                     setDetailOpen(false);
-                    setEditOpen(true);
+                    setModalStep(1);
+                }}
+                onAddFeedback={() => {
+                    setDetailOpen(false);
+                    setModalStep(FEEDBACK_STEP);
                 }}
                 onClose={() => setDetailOpen(false)}
             />
 
             {canManage && (
                 <WorkspaceModal
-                    open={editOpen}
+                    open={modalStep !== null}
                     mode={{ kind: "edit", workspace, collaborators: participants }}
                     friends={friends}
-                    onClose={() => setEditOpen(false)}
+                    initialStep={modalStep ?? 1}
+                    onClose={() => setModalStep(null)}
                     onSubmitted={onUpdated}
                     onDeleted={onDeleted}
                 />

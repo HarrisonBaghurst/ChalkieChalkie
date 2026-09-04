@@ -11,8 +11,9 @@ import { useUserRole } from "@/hooks/useUserRole";
 import PeopleStack from "./PeopleStack";
 import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import RowActionsMenu from "./RowActionsMenu";
-import WorkspaceModal from "./WorkspaceModal";
+import WorkspaceModal, { FEEDBACK_STEP } from "./WorkspaceModal";
 
 export type WorkspaceBucket = "upcoming" | "previous";
 
@@ -28,7 +29,7 @@ type WorkspaceTableRowProps = {
 // On the cells, not the <tr>: border-separate won't render <tr> borders or
 // clip the last row's corners reliably.
 const cellClass =
-    "px-3 py-3 align-middle text-small border-b border-foreground-third/10 group-hover:bg-foreground-third/10";
+    "px-3 py-3 align-middle text-small border-b border-foreground-third/10";
 
 const WorkspaceTableRow = ({
     workspace,
@@ -41,10 +42,12 @@ const WorkspaceTableRow = ({
     const router = useRouter();
     const { user } = useUser();
     const role = useUserRole();
-    const [editOpen, setEditOpen] = useState(false);
+    const [modalStep, setModalStep] = useState<number | null>(null);
 
     // Mirrors the API route guard.
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
+
+    const canAddFeedback = canManage && bucket === "previous";
 
     const people = useMemo<userInfo[]>(
         () =>
@@ -70,7 +73,7 @@ const WorkspaceTableRow = ({
     const join = () => router.push(`/board/${workspace.id}`);
 
     return (
-        <tr className="group">
+        <tr>
             <td className={cellClass}>
                 <PeopleStack people={people} host={usersMap[workspace.host]} />
             </td>
@@ -124,6 +127,14 @@ const WorkspaceTableRow = ({
                             {workspace.feedback}
                         </span>
                     </TapTooltip>
+                ) : canAddFeedback ? (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setModalStep(FEEDBACK_STEP)}
+                    >
+                        Add feedback
+                    </Button>
                 ) : (
                     <span className="text-foreground-third">—</span>
                 )}
@@ -149,7 +160,7 @@ const WorkspaceTableRow = ({
                             ? [
                                   {
                                       label: "Edit workspace",
-                                      onSelect: () => setEditOpen(true),
+                                      onSelect: () => setModalStep(1),
                                   },
                               ]
                             : []),
@@ -157,10 +168,11 @@ const WorkspaceTableRow = ({
                 />
                 {canManage && (
                     <WorkspaceModal
-                        open={editOpen}
+                        open={modalStep !== null}
                         mode={{ kind: "edit", workspace, collaborators }}
                         friends={friends}
-                        onClose={() => setEditOpen(false)}
+                        initialStep={modalStep ?? 1}
+                        onClose={() => setModalStep(null)}
                         onSubmitted={onUpdated}
                         onDeleted={onDeleted}
                     />

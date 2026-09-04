@@ -61,17 +61,7 @@ When you add a token, utility class or shared component, add a specimen to the s
 
 ## Comments
 
-A comment explains **why**, never **what**. The code already says what it does; restating it is noise that goes stale.
-
-- **Default to none.** Reach for a clearer name or a smaller function first. Most code needs no comment at all.
-- **One or two lines.** If a reason needs a paragraph, it belongs in this file or the commit message, not above the code. Never write a file-header essay.
-- **Never narrate.** Delete on sight: `// fetch the user`, `// tutor-only action`, `// render pen strokes`, `// ─── DOWN ───` banners, and JSDoc that restates a function's name or its parameter names.
-- **Record the trap, not the tour.** A comment earns its place only when it holds something the code cannot: a non-obvious ordering constraint, a platform footgun, a rejected alternative, a deliberate omission. Example: `// Two queries, not one .or(): ISO dots collide with PostgREST's operator separator and mis-parse silently.`
-- **Don't restate CLAUDE.md.** If it is documented here, a file-header copy just drifts out of sync with it.
-- **Explain in the CLI, not the file.** If a change needs walking through, say it in your response. Don't leave the explanation behind in the source.
-- **`TODO:` is exempt** from why-only, but keep it to the actionable sentence.
-
-When editing a file that still carries old prose, trim it as you pass.
+Do not add comments, if a comment is necessary, explain the information you want to give in the cli.
 
 ## Architecture
 

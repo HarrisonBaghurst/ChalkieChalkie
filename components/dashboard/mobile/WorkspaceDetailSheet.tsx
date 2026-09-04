@@ -24,7 +24,9 @@ type WorkspaceDetailSheetProps = {
     bucket: WorkspaceBucket;
     participants: userInfo[]; // host first
     canManage: boolean;
+    canAddFeedback: boolean;
     onEdit: () => void;
+    onAddFeedback: () => void;
     onClose: () => void;
 };
 
@@ -49,7 +51,9 @@ const WorkspaceDetailSheet = ({
     bucket,
     participants,
     canManage,
+    canAddFeedback,
     onEdit,
+    onAddFeedback,
     onClose,
 }: WorkspaceDetailSheetProps) => {
     return (
@@ -90,9 +94,20 @@ const WorkspaceDetailSheet = ({
                         </Field>
 
                         <Field label="Feedback">
-                            <p className="text-small text-foreground-second leading-5">
-                                {workspace.feedback || "—"}
-                            </p>
+                            {!workspace.feedback && canAddFeedback ? (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="self-start"
+                                    onClick={onAddFeedback}
+                                >
+                                    Add feedback
+                                </Button>
+                            ) : (
+                                <p className="text-small text-foreground-second leading-5">
+                                    {workspace.feedback || "—"}
+                                </p>
+                            )}
                         </Field>
 
                         <Field label={`Participants (${participants.length})`}>
