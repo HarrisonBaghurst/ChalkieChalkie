@@ -165,7 +165,7 @@ const Surfaces = () => (
                         </div>
                         <Code>.skeleton-shimmer</Code>
                         <Caption>
-                            1.6s chalk sweep across loading placeholders.
+                            1.6s grey sweep across loading placeholders.
                         </Caption>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -174,7 +174,7 @@ const Surfaces = () => (
                         </div>
                         <Code>.spinner-chalk</Code>
                         <Caption>
-                            Conic chalk ring, masked to a 3px stroke. Pair with{" "}
+                            Conic grey ring, masked to a 3px stroke. Pair with{" "}
                             <Code>animate-spin</Code>.
                         </Caption>
                     </div>

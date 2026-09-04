@@ -5,7 +5,6 @@ type SpinnerProps = {
     className?: string;
 };
 
-// Branded ring spinner. Defaults to a 40px ring; override size via `className`.
 const Spinner = ({ className }: SpinnerProps) => {
     return (
         <div

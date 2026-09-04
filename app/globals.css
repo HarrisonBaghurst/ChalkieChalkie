@@ -391,7 +391,7 @@
         -webkit-text-fill-color: transparent;
     }
 
-    /* Chalk gradient shimmer band that sweeps across skeleton placeholders. */
+    /* Neutral shimmer band that sweeps across skeleton placeholders. */
     @keyframes skeleton-shimmer {
         100% {
             transform: translateX(100%);
@@ -404,8 +404,8 @@
         background: linear-gradient(
             90deg,
             transparent 0%,
-            rgba(245, 139, 47, 0.12) 40%,
-            rgba(230, 110, 170, 0.16) 60%,
+            color-mix(in oklab, var(--foreground-third) 25%, transparent) 40%,
+            color-mix(in oklab, var(--foreground-second) 18%, transparent) 60%,
             transparent 100%
         );
         animation: skeleton-shimmer 1.6s ease-in-out infinite;
@@ -450,8 +450,8 @@
         background: conic-gradient(
             from 0deg,
             transparent 0%,
-            rgba(245, 139, 47, 0.9) 70%,
-            rgba(230, 110, 170, 1) 100%
+            var(--foreground-third) 70%,
+            var(--foreground-second) 100%
         );
         -webkit-mask: radial-gradient(
             farthest-side,
