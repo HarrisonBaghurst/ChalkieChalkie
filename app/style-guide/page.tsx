@@ -5,7 +5,7 @@ import { getUserRole } from "@/lib/serverRole";
 import StyleGuide from "@/components/styleGuide/StyleGuide";
 
 export const metadata: Metadata = {
-    title: "Style guide | Chalkie Chalkie",
+    title: "Style guide",
     robots: { index: false, follow: false },
 };
 

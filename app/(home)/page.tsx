@@ -2,6 +2,11 @@ import DashboardLinkButton from "@/components/DashboardLinkButton";
 import Footer from "@/components/Footer";
 import BetaSignUpButton from "@/components/home/BetaSignUpButton";
 import Image from "next/image";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    alternates: { canonical: "/" },
+};
 
 const page = () => {
     return (
