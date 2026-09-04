@@ -1,6 +1,6 @@
 import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { toWorldPoint } from "../helpers";
-import { simplifyRDP } from "@/lib/strokeOptimisation";
+import { simplifyRDP, SIMPLIFY_EPSILON } from "@/lib/strokeOptimisation";
 import { newId } from "@/lib/id";
 
 const onDown = ({ e, state }: ToolContext) => {
@@ -31,7 +31,10 @@ const onUp = ({ e, state, callbacks }: ToolContext) => {
     if (state.currentStroke) {
         const simplified = e.shiftKey
             ? state.currentStroke.points
-            : simplifyRDP(state.currentStroke.points, 1);
+            : simplifyRDP(
+                  state.currentStroke.points,
+                  SIMPLIFY_EPSILON / state.viewport.zoom,
+              );
         callbacks.onStrokeFinished({
             ...state.currentStroke,
             points: simplified,
