@@ -2,21 +2,9 @@ import { errorResponse } from "@/lib/errorResponse";
 import { MAX_PDF_PAGES } from "@/lib/imageLimits";
 import { createPdfLease } from "@/lib/pdfLease";
 import { enforceRateLimit } from "@/lib/ratelimit";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-
-const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
-const ID_MAX_LENGTH = 64;
-
-function isSafeId(value: unknown): value is string {
-    return (
-        typeof value === "string" &&
-        value.length > 0 &&
-        value.length <= ID_MAX_LENGTH &&
-        SAFE_ID_REGEX.test(value)
-    );
-}
+import { isSafeId, requireRoomMembership } from "../_shared";
 
 // Charges a whole PDF's worth of tokens in one decision and hands back a lease
 // the page uploads spend instead. Whoever calls this learns they are over
@@ -58,16 +46,8 @@ export async function POST(
         );
     }
 
-    const { data } = await supabaseAdmin
-        .from("Room")
-        .select("user_ids")
-        .eq("id", workspaceId)
-        .contains("user_ids", [userId])
-        .single();
-
-    if (!data || !data.user_ids) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = await requireRoomMembership(workspaceId, userId);
+    if (forbidden) return forbidden;
 
     // Membership first: a non-member should not be able to burn someone's
     // budget by reserving against a room they cannot upload to anyway.

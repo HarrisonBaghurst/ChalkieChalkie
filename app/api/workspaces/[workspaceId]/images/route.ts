@@ -4,28 +4,15 @@ import {
     MAX_UPLOAD_BYTES,
 } from "@/lib/imageLimits";
 import { consumePdfLease } from "@/lib/pdfLease";
+import { deleteImage, imageKey, putImage } from "@/lib/r2";
 import { enforceRateLimit } from "@/lib/ratelimit";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { isSafeId, requireRoomMembership } from "./_shared";
 
-const SAFE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
-const ID_MAX_LENGTH = 64;
 // A header, not a form field, so the limiter below still decides before the
 // body is parsed rather than after.
 const LEASE_HEADER = "x-pdf-lease";
-// TODO: rooms active past 14 days outlive this URL and show broken images.
-// Store the storage path in the meta and sign it client-side instead.
-const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days, matches room TTL
-
-function isSafeId(value: unknown): value is string {
-    return (
-        typeof value === "string" &&
-        value.length > 0 &&
-        value.length <= ID_MAX_LENGTH &&
-        SAFE_ID_REGEX.test(value)
-    );
-}
 
 export async function POST(
     req: NextRequest,
@@ -110,43 +97,25 @@ export async function POST(
         return NextResponse.json({ error: "File too large" }, { status: 413 });
     }
 
-    const { data } = await supabaseAdmin
-        .from("Room")
-        .select("user_ids")
-        .eq("id", urlWorkspaceId)
-        .contains("user_ids", [userId])
-        .single();
+    const forbidden = await requireRoomMembership(urlWorkspaceId, userId);
+    if (forbidden) return forbidden;
 
-    if (!data || !data.user_ids) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const path = `${urlWorkspaceId}/${imageId}`;
-
-    const { error: uploadError } = await supabaseAdmin.storage
-        .from("workspace-images")
-        .upload(path, buffer, { contentType: file.type });
-
-    if (uploadError) {
-        return errorResponse("workspace-image:upload", uploadError, 500, {
+    try {
+        await putImage(
+            imageKey(urlWorkspaceId, imageId),
+            Buffer.from(await file.arrayBuffer()),
+            file.type,
+        );
+    } catch (err) {
+        return errorResponse("workspace-image:upload", err, 500, {
             userId,
             publicMessage: "Failed to upload image",
         });
     }
 
-    const { data: signedData, error: signedError } = await supabaseAdmin.storage
-        .from("workspace-images")
-        .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-
-    if (signedError) {
-        return errorResponse("workspace-image:sign", signedError, 500, {
-            userId,
-            publicMessage: "Failed to sign image url",
-        });
-    }
-
-    return NextResponse.json({ url: signedData.signedUrl });
+    return NextResponse.json({
+        url: `/api/workspaces/${urlWorkspaceId}/images/${imageId}`,
+    });
 }
 
 export async function DELETE(
@@ -200,25 +169,13 @@ export async function DELETE(
         );
     }
 
-    const { data } = await supabaseAdmin
-        .from("Room")
-        .select("user_ids")
-        .eq("id", urlWorkspaceId)
-        .contains("user_ids", [userId])
-        .single();
+    const forbidden = await requireRoomMembership(urlWorkspaceId, userId);
+    if (forbidden) return forbidden;
 
-    if (!data || !data.user_ids) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const path = `${urlWorkspaceId}/${imageId}`;
-
-    const { error: deleteError } = await supabaseAdmin.storage
-        .from("workspace-images")
-        .remove([path]);
-
-    if (deleteError) {
-        return errorResponse("workspace-image:delete", deleteError, 500, {
+    try {
+        await deleteImage(imageKey(urlWorkspaceId, imageId));
+    } catch (err) {
+        return errorResponse("workspace-image:delete", err, 500, {
             userId,
             publicMessage: "Failed to delete image",
         });
