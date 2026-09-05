@@ -1,6 +1,6 @@
 "use client";
 
-import { useOthers, useSelf } from "@liveblocks/react";
+import { useOthers, useSelf } from "@/hooks/realtime/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";

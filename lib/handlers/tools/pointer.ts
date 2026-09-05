@@ -5,6 +5,7 @@ import {
 } from "@/types/canvasStateTypes";
 import { toWorldPoint } from "../helpers";
 import { getImageAtPoint, getResizeHandleAtPoint } from "@/lib/imageUtils";
+import { roundCoord, roundPoints } from "@/lib/strokeOptimisation";
 import { PastedImage, ResizeHandle, ResizeHandleKey } from "@/types/imageTypes";
 import { Point } from "@/types/strokeTypes";
 import {
@@ -315,10 +316,10 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
         const img = state.pastedImages.find((i) => i.id === id);
         if (img) {
             callbacks.onImageMoved(id, {
-                x: img.x,
-                y: img.y,
-                width: img.width,
-                height: img.height,
+                x: roundCoord(img.x),
+                y: roundCoord(img.y),
+                width: roundCoord(img.width),
+                height: roundCoord(img.height),
             });
         }
         return;
@@ -335,10 +336,14 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
                 return [
                     {
                         id,
-                        points: stroke.points.map((p) => ({
-                            x: p.x + dx,
-                            y: p.y + dy,
-                        })),
+                        // Rounded here too: the offset reintroduces full
+                        // precision into strokes that were clean on commit.
+                        points: roundPoints(
+                            stroke.points.map((p) => ({
+                                x: p.x + dx,
+                                y: p.y + dy,
+                            })),
+                        ),
                     },
                 ];
             });
@@ -346,7 +351,10 @@ const onUp = ({ state, strokes, callbacks }: ToolContext) => {
 
             for (const img of state.pastedImages) {
                 if (state.selectedImageIds.includes(img.id)) {
-                    callbacks.onImageMoved(img.id, { x: img.x, y: img.y });
+                    callbacks.onImageMoved(img.id, {
+                        x: roundCoord(img.x),
+                        y: roundCoord(img.y),
+                    });
                 }
             }
         }

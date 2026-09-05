@@ -9,7 +9,7 @@ Give all plans concisely.
 
 ChalkieChalkie is a real-time collaborative whiteboard application for tutoring. Tutors schedule lessons (workspaces) with students, and multiple users can draw, highlight, erase, select/move, and paste images on a shared canvas simultaneously.
 
-**Core tech stack:** Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui on Radix primitives, Liveblocks (real-time sync), Clerk (auth), Supabase (PostgreSQL + image storage), Upstash Redis (rate limiting), Resend (contact emails), sonner (toasts), lucide-react (icons), motion (animation).
+**Core tech stack:** Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui on Radix primitives, Cloudflare Workers + Durable Objects (real-time sync), Cloudflare R2 (image storage), Clerk (auth), Supabase (PostgreSQL), Upstash Redis (rate limiting), Resend (contact emails), sonner (toasts), lucide-react (icons), motion (animation).
 
 ## Commands
 
@@ -18,15 +18,25 @@ npm run dev      # Start dev server at http://localhost:3000
 npm run build    # Production build
 npm run start    # Start production server
 npm run lint     # Run ESLint
+
+cd realtime
+npm run dev        # wrangler dev on :8787 — the board needs this running
+npm run typecheck  # tsc over the Worker; not covered by the root build
+npm run deploy     # wrangler deploy
+npm run tail       # live production logs
 ```
 
 No test suite exists in this project.
+
+The Worker is a **separate npm project** with its own `package.json`, `tsconfig.json` and `node_modules`. It is excluded from the root `tsconfig.json` and from `eslint.config.mjs`, because Cloudflare's globals and the Next/React rules do not apply to each other — so `npm run build` at the root will not catch a Worker error. Run its typecheck separately.
+
+`realtime/package.json` pins **wrangler 4.86** because anything newer requires Node 22 and this machine is on 20. `compatibility_date` in `wrangler.jsonc` is bounded by that binary; raise both together.
 
 ## Required Environment Variables
 
 Create `.env.local` with:
 
-- `NEXT_PUBLIC_LIVE_BLOCKS_API_KEY`, `LIVEBLOCKS_SECRET_KEY`
+- `NEXT_PUBLIC_REALTIME_URL` (e.g. `wss://realtime.chalkiechalkie.com`, or `ws://localhost:8787` against `wrangler dev`), `REALTIME_TICKET_SECRET`, `REALTIME_ADMIN_SECRET` — the last two are shared with the Worker and set there with `wrangler secret put`. `lib/realtimeAdmin.ts` derives its HTTP origin from `NEXT_PUBLIC_REALTIME_URL` by swapping the `ws` scheme, so the two can never drift apart
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL`
 - `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` — Cloudflare R2, where every pasted image and rasterised PDF page is stored. The API token needs **Object Read & Write** on that bucket and nothing more. The bucket must stay **private**: no public dev URL, no unauthenticated custom domain, since the app's own route is the only thing that authorises a read (see Image Storage & Serving below)
@@ -72,13 +82,13 @@ Do not add comments, if a comment is necessary, explain the information you want
 - `app/(legal)/` — `privacy-policy`, `terms-of-service`, `cookie-policy`; content authored as JSON in `data/policies/` and rendered by `components/policy/PolicyDocument.tsx`
 - `app/dashboard/` — Authenticated dashboard: upcoming/past lessons, filters, workspace create/edit modal (`components/dashboard/`)
 - `app/dashboard/connections/` — Tutor↔student linking: "Your Students" (tutor) / "Your Tutors" (student), invite-code exchange in a Dialog (`components/dashboard/connections/`)
-- `app/board/[boardId]/` — The whiteboard canvas page; wraps `<Workspace>` in a Liveblocks `<Room>` provider (`Room.tsx`)
+- `app/board/[boardId]/` — The whiteboard canvas page; wraps `<Workspace>` in the realtime `<Room>` provider (`Room.tsx`)
 - `app/sign-in/` — Clerk sign-in page (styled via `lib/clerkAppearance.ts`)
 - `app/style-guide/` — Admin-only design system reference (see above)
-- `app/forbidden/` — Shown when a user fails workspace access (403 from liveblocks-auth)
+- `app/forbidden/` — Shown when a user fails workspace access (403 from realtime-auth)
 - `app/not-found.tsx` — 404, also what unauthorised style-guide requests render
 - `app/api/` — Backend routes:
-    - `liveblocks-auth` — issues Liveblocks tokens after membership check
+    - `realtime-auth` — issues a 60-second HMAC ticket after the membership check, and is the only writer of `Room.last_activity_at` besides workspace-create
     - `workspaces` (+ `[workspaceId]`, `[workspaceId]/images`, `[workspaceId]/images/[imageId]`, `[workspaceId]/images/reserve`) — workspace CRUD, pasted-image upload/delete, the authorising image-serve redirect, and the PDF page-quota reservation; workspace-body validation in `workspaces/_shared.ts`, and the id/membership guards the three image routes share in `images/_shared.ts`
     - `users/batch`, `users/friends`, `users/workspaces` — user lookups; `friends` returns the caller's linked tutor-student counterparties (see below), not a general user search
     - `links` (+ `[linkId]`, `invites`, `redeem`) — tutor↔student linking: list/unlink, generate/read/revoke an invite code, redeem a code; shared validation in `_shared.ts`
@@ -88,25 +98,29 @@ Do not add comments, if a comment is necessary, explain the information you want
 
 `proxy.ts` is the Clerk middleware: protects `/board(.*)` and `/dashboard(.*)`. `/style-guide` is deliberately **not** listed there — a middleware redirect to sign-in would advertise that the route exists, so the page gates itself and 404s instead.
 
-### Real-Time Data Model (Liveblocks)
+### Real-Time Data Model (Cloudflare Durable Objects)
 
-Defined in `liveblocks.config.ts`:
+Sync runs on a Cloudflare Worker in `realtime/`, deployed separately with `wrangler`. One `BoardRoom` Durable Object per room id, addressed by `idFromName(roomId)` — created on first connect, exactly as the Liveblocks room it replaced was. The Supabase `Room` row stays the authoritative record.
+
+The protocol is defined once in `types/realtimeTypes.ts` and imported by both sides (`realtime/tsconfig.json` maps `@/*` to the repo root). Two flat record lists, not a CRDT:
 
 ```ts
-Storage: {
-  canvasStrokes: LiveList<Stroke>        // All drawing strokes
-  pastedImages: LiveList<PastedImageMeta> // Pasted images with position/size
-}
-Presence: {
-  cursor: { x: number; y: number } | null       // Live cursor position per user
-  selection: SelectionPresence | null           // { strokeIds, imageIds, bounds } — committed geometry, see below
-}
-UserMeta: { id, info: { firstName, lastName, imageUrl, email } } // set server-side at auth
+Storage (DO SQLite): strokes, images     // id PK, seq, body JSON, deleted flag
+Presence (DO memory): { cursor, selection }
+Identity: { connectionId, userId, info } // in ws.serializeAttachment
 ```
 
-All mutations (add/delete/move strokes, add/move/resize images) go through hooks in `hooks/useLiveWorkspace.tsx`. Never mutate Liveblocks storage directly from components.
+Seven ops (`types/realtimeTypes.ts`) map 1:1 onto the six mutations in `hooks/useLiveWorkspace.tsx`, plus `restoreStrokes`, which only undo uses. Never send an op from a component; go through `useLiveWorkspace`.
 
-Presence types must be **type aliases, not interfaces** (`types/presenceTypes.ts`) — Liveblocks' JSON constraint needs the implicit index signature only aliases carry, and an interface fails with a string-literal "not a valid JSON object" type error rather than anything readable.
+- **`seq` is paint order** — it reproduces the old `LiveList` insertion order, and reads are `WHERE deleted = 0 ORDER BY seq`. `updateImage` and `moveStrokes` deliberately never touch it, matching the `LiveList.set` they replaced.
+- **Deletes are soft, and that is what makes undo work.** A hard delete loses `seq`, so an undone erase would come back on top of the stack instead of in its original layer — visible for highlighters and images. Tombstones are cleared when a room is opened with no other connection (nobody can hold an undo stack for it), capped at 2000 as a backstop.
+- **The `seq` counter is derived from `SELECT MAX(seq)` on wake, never persisted.** A counter row per insert would roughly double rows-written, which is the first billing limit to bind.
+- **`ctx.storage.deleteAll()` drops the tables**, and `migrate()` only runs in the constructor — so the teardown path re-migrates. Without that, deleting a workspace poisons the board id and every later connection 500s on "no such table".
+- **Ops echo back to the sender**, so the DO is the sequencer; the client reducer is "set record by id" and returns the same array identity when nothing changed. Without the echo, two concurrent `updateImage`s leave clients permanently disagreeing; without the identity check, every echo restarts the render loop.
+- **Presence is in memory and recovered by resync, never by `serializeAttachment`.** That attachment caps at 16,384 bytes and a marquee over ~450 strokes of UUIDs exceeds it. On a wake from hibernation the DO broadcasts `resync-presence` and each client replays its cached presence — the cache lives in `hooks/realtime/client.ts` because `useSelectionPresence` dedupes on a signature and would never resend on its own.
+- **Hibernation is load-bearing for cost**, not an optimisation: `acceptWebSocket` plus `setWebSocketAutoResponse` for ping/pong means an idle room accrues no duration charge. A plain `server.accept()` would pin it in memory and bill continuously.
+
+Presence types are still **type aliases, not interfaces** (`types/presenceTypes.ts`). The Liveblocks JSON constraint that forced this is gone, but the shapes are shared with the Worker and aliases keep that portable.
 
 ### Selection Sharing & Locking
 
@@ -122,30 +136,31 @@ Presence types must be **type aliases, not interfaces** (`types/presenceTypes.ts
 
 ### Drawing Pipeline
 
+0. `hooks/realtime/` is the sync layer. `client.ts` owns the socket — op queue, reconnect with backoff, 250 ms cursor coalescing, the presence cache used for resync, the idempotent reducers, and the undo/redo stacks. `RoomProvider.tsx` owns its lifetime; `hooks.ts` exposes `useOthers` / `useSelf` / `useUpdateMyPresence` / `useHistory` with **the same signatures the Liveblocks hooks had**, which is why the six consumer files changed only an import line. Keep those signatures if you touch them.
 1. `hooks/useCanvasInput.tsx` owns every input on the `<canvas>` in `components/Workspace.tsx` and dispatches to per-tool strategies in `lib/handlers/tools/` (`pen`, `eraser`, `pointer`, `highlighter`) registered in `lib/handlers/toolStrategies.ts`. Pan is intentionally not a strategy: it is bound to the right mouse button regardless of active tool (`tools/pan.ts`).
-2. All mutable interaction state (viewport/camera, in-progress stroke, selection, images) lives in a single `CanvasState` object held in one ref — see `types/canvasStateTypes.ts`. Tools receive a `ToolContext` with that state plus `ToolCallbacks` (Liveblocks mutations) and commit on pointer-up.
+2. All mutable interaction state (viewport/camera, in-progress stroke, selection, images) lives in a single `CanvasState` object held in one ref — see `types/canvasStateTypes.ts`. Tools receive a `ToolContext` with that state plus `ToolCallbacks` (realtime mutations) and commit on pointer-up.
 3. `hooks/useCanvasRenderLoop.tsx` runs a `requestAnimationFrame` loop calling primitives in `lib/canvasDrawing.ts` to render all strokes and images.
 4. Stroke points are simplified via `lib/strokeOptimisation.ts` before being stored. Hit-testing (eraser, pointer) uses `lib/genometry.ts`, which tests segments rather than points because simplification discards intermediate points.
 5. Images reach the canvas through one shared path, `hooks/useInsertImage.tsx`, from two entry points: Cmd+V (`hooks/useImagePaste.tsx`, which does clipboard extraction and nothing else) and the toolbar's file picker. The picker is the only route without a keyboard, which is why it exists — iPadOS fires no `paste` event and the board's `select-none` suppresses the long-press callout. They differ only in anchor: paste drops the image's top-left at the cursor, the picker centres it in the viewport, since there is no cursor to read on a tablet. Both fit the image to at most 60% of the visible canvas (`fitToViewport` in `lib/viewport.ts`, never upscaling) and both select the new image and switch to `pointer`, so its handles are live without a second gesture. Both entry points dispatch on MIME first: a PDF goes to `hooks/useInsertPdf.tsx` instead (see PDF Insertion below).
-6. Uploads go to Cloudflare R2 via `api/workspaces/[workspaceId]/images`, which returns a **path**, not a URL, and that is what lands in Liveblocks meta (see Image Storage & Serving below). **Everything is re-encoded to JPEG client-side, so that is the only type the route ever stores** — `ALLOWED_IMAGE_STORAGE_TYPES` in `lib/imageLimits.ts` still lists PNG so older stored objects keep agreeing. `ACCEPTED_IMAGE_INPUT_TYPES` in the same file is the wider client-only set of what a user may _hand_ the board, and `ACCEPTED_INPUT_TYPES` is that plus PDF. **The input sets must never be derived from `ALLOWED_IMAGE_STORAGE_TYPES`** — they were, and narrowing the storable set to JPEG silently stopped Cmd+V accepting the `image/png` a clipboard screenshot arrives as, with no toast because the paste listener skips an unlisted type rather than reporting it. Widening the input side costs the route nothing, since the encoder flattens all of it to JPEG first. **Unlike the Supabase bucket this replaced, R2 enforces no `allowed_mime_types` or `file_size_limit` of its own, so the route's 415 and 413 are now the only gates there are** — there is no longer a backstop that turns a mismatch into an opaque 500, but equally nothing stops a widened limit in `lib/imageLimits.ts` from taking effect immediately.
+6. Uploads go to Cloudflare R2 via `api/workspaces/[workspaceId]/images`, which returns a **path**, not a URL, and that is what lands in the room's image meta (see Image Storage & Serving below). **Everything is re-encoded to JPEG client-side, so that is the only type the route ever stores** — `ALLOWED_IMAGE_STORAGE_TYPES` in `lib/imageLimits.ts` still lists PNG so older stored objects keep agreeing. `ACCEPTED_IMAGE_INPUT_TYPES` in the same file is the wider client-only set of what a user may _hand_ the board, and `ACCEPTED_INPUT_TYPES` is that plus PDF. **The input sets must never be derived from `ALLOWED_IMAGE_STORAGE_TYPES`** — they were, and narrowing the storable set to JPEG silently stopped Cmd+V accepting the `image/png` a clipboard screenshot arrives as, with no toast because the paste listener skips an unlisted type rather than reporting it. Widening the input side costs the route nothing, since the encoder flattens all of it to JPEG first. **Unlike the Supabase bucket this replaced, R2 enforces no `allowed_mime_types` or `file_size_limit` of its own, so the route's 415 and 413 are now the only gates there are** — there is no longer a backstop that turns a mismatch into an opaque 500, but equally nothing stops a widened limit in `lib/imageLimits.ts` from taking effect immediately.
 7. `prepareImageFile` in `lib/imagePrepare.ts` re-encodes **every** image before upload — never a pass-through. One encode, no search: the source is scaled into `MAX_IMAGE_WIDTH × MAX_IMAGE_HEIGHT` preserving aspect ratio, capped at 1 so nothing is upscaled, and written as JPEG at `NEXT_PUBLIC_IMAGE_QUALITY`. Output size therefore follows from those knobs alone; pick them so the result clears `MAX_UPLOAD_BYTES`, because there is no fallback ladder any more — `null` means the caller rejects the file outright. **Note PNG size tracks content, not dimensions** (a photographic PNG at 2048px is 6–9 MB), which is exactly why the output format is fixed rather than mirrored from the input. Bright images are inverted for the dark canvas in the same pass, baked into the bytes, so what is stored is what every client renders. Do not reintroduce a render-time inversion flag: it made appearance depend on `ctx.filter`, which is silently a no-op on engines that lack it. The black backfill must come **after** the inversion — laid down first it comes back white.
 
 ### Image Storage & Serving
 
 Images live in a **private** Cloudflare R2 bucket at `{workspaceId}/{imageId}`, and `PastedImageMeta.url` holds the path `/api/workspaces/{workspaceId}/images/{imageId}` — **never a signed URL**. Every read is authorised at request time by `images/[imageId]/route.ts`, which checks the Clerk session and `Room.user_ids`, then 302s to an R2 URL presigned for **60 seconds**. The browser follows the redirect and pulls bytes straight from R2, so no image data transits Vercel.
 
-- **Nothing persisted anywhere is a credential.** This is the whole point of the design. The previous model stored a 14-day Supabase signed URL in Liveblocks storage, which meant anyone handed that link could load the image without being in the room, and rooms outliving the TTL showed broken images. Both problems are gone because the stored value grants nothing on its own.
+- **Nothing persisted anywhere is a credential.** This is the whole point of the design. The previous model stored a 14-day Supabase signed URL in room storage, which meant anyone handed that link could load the image without being in the room, and rooms outliving the TTL showed broken images. Both problems are gone because the stored value grants nothing on its own.
 - **`img.src` works with the bare path** because the request is same-origin and carries the Clerk cookie automatically. `proxy.ts`'s matcher runs `clerkMiddleware` on `/(api|trpc)(.*)`, which is what makes `auth()` resolve inside the route — the board pages themselves being in `isProtectedRoute` is unrelated and not sufficient.
 - **The 302 is `Cache-Control: no-store`.** A cached redirect would outlive both its signature and the membership that earned it, so removing someone from a room would not bite until the browser felt like revalidating. Do not "optimise" this by caching the redirect; cache the *object* behind it if that ever matters.
 - **Presigning is a local HMAC, not a network call**, so the per-image cost is the Clerk check plus one Supabase membership query. That query is the real per-image cost — a 50-page PDF opens 50 of them. If that ever bites, cache membership in Redis briefly rather than moving the check off the read path.
-- **Approach chosen over batch-presigning at room open** (the Notion/Figma model) because the document arrives over a Liveblocks websocket, not an API response there'd be anywhere to attach signed URLs to — and because images stream in mid-session when someone else pastes, which would otherwise need a client-side signing subscription with expiry tracking and retry. This redirect model is Rails ActiveStorage's default and the OCI distribution spec's blob behaviour.
+- **Approach chosen over batch-presigning at room open** (the Notion/Figma model) because the document arrives over the realtime websocket, not an API response there'd be anywhere to attach signed URLs to — and because images stream in mid-session when someone else pastes, which would otherwise need a client-side signing subscription with expiry tracking and retry. This redirect model is Rails ActiveStorage's default and the OCI distribution spec's blob behaviour.
 - **Expiry after load is harmless.** `usePastedImagesSync` decodes each image once into an `HTMLImageElement` the render loop draws from forever; the URL matters only at load, which is why 60 seconds is not tight.
 - R2 access is wrapped in `lib/r2.ts`. Room teardown deletes by `{workspaceId}/` prefix (`deleteWorkspaceImages`), paginating the list and mapping each page to one `DeleteObjects` call, since both cap at 1000 keys.
 - **The migration was a hard cut**: images uploaded before it still hold absolute Supabase URLs in their room's meta and are simply gone. There is no fallback path, and the `workspace-images` Supabase bucket is orphaned — no code touches it.
 
 ### PDF Insertion
 
-A PDF is never stored as a PDF. `hooks/useInsertPdf.tsx` rasterises each page client-side with pdf.js and pushes them through the same encoder, upload route and Liveblocks meta as any pasted image — a page on the canvas is an ordinary `PastedImageMeta` with no PDF-ness left in it, which is why hit-testing, resize, delete and remote sync all work unchanged.
+A PDF is never stored as a PDF. `hooks/useInsertPdf.tsx` rasterises each page client-side with pdf.js and pushes them through the same encoder, upload route and image meta as any pasted image — a page on the canvas is an ordinary `PastedImageMeta` with no PDF-ness left in it, which is why hit-testing, resize, delete and remote sync all work unchanged.
 
 - **pdf.js is imported lazily**, on the first PDF only. It is a 420 KB chunk and a lesson that never opens one should not download it. The worker is resolved with `new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)`, which Turbopack emits under `/_next/static/media/` — already inside `proxy.ts`'s skip list.
 - **The page render scale is deliberately _not_ capped at 1**, unlike `prepareImageFile`'s. A PDF page is vector, so there is no native resolution to preserve; scale 1 means 72 dpi and a blurry page. The cap belongs on bitmaps only.
@@ -187,7 +202,9 @@ components/
     ├─ CursorLayer.tsx    ← renders other users' cursors from Presence
     ├─ SelectionActions   ← delete button pinned under the selection box; the
     │                       only route to delete without a keyboard
-    └─ FullscreenLoader   ← shown until Liveblocks storage resolves
+    └─ FullscreenLoader   ← shown until the room's first init completes
+  ConnectionNotice        ← held-open toast while the socket is down; strokes
+                            keep committing locally behind it
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
       └─ DashboardShell   ← Sidebar (lg+) / Navbar + TabBar swap, and the content column
@@ -246,13 +263,20 @@ Two distinct concepts:
     - `tutor` — creates, edits and deletes workspaces; can link to students and see their linked students. The workspace collaborator picker (`CollaboratorsPicker`) only ever offers linked students — `/api/users/friends` is strictly the caller's linked counterparties, not a general user search.
     - `admin` — internal tooling only (currently `/style-guide`). No product privileges, including linking — an admin can hold no tutor-student links. Don't widen a tutor-gated route to admins to make internal tooling easier.
 - **Workspace host** — the creator of a workspace (`Workspace.host`), the only member allowed to edit it. Helpers in `lib/workspaceHost.ts`.
-- **Tutor-student links** — a separate relation from workspace membership, stored in Supabase `tutor_links` (positional `tutor_id`/`student_id`, not role-stamped) and formed by redeeming a 10-minute invite code (`link_invites`). Either side can remove a link; removing one also strips the student from the tutor's future-dated rooms (`lib/unlinkRooms.ts` — note the accepted Liveblocks-token-revocation gap documented there). See `lib/links.ts`, `lib/inviteCode.ts`, `app/api/links/`.
+- **Tutor-student links** — a separate relation from workspace membership, stored in Supabase `tutor_links` (positional `tutor_id`/`student_id`, not role-stamped) and formed by redeeming a 10-minute invite code (`link_invites`). Either side can remove a link; removing one also strips the student from the tutor's future-dated rooms (`lib/unlinkRooms.ts` — note the accepted live-socket revocation gap documented there). See `lib/links.ts`, `lib/inviteCode.ts`, `app/api/links/`.
 
 `useUserRole` returns `student` until Clerk hydrates, so anything privileged must also gate on `isLoaded` or take a server-resolved role as a prop (`app/dashboard/page.tsx` resolves it and passes it to `DashboardClient`/`Sidebar` for this reason).
 
-`app/api/liveblocks-auth/route.ts` gates room access: checks Supabase to confirm the authenticated Clerk user is in the room's `user_ids` array before issuing a Liveblocks token. Returns 403 otherwise (client redirects to `/forbidden`).
+`app/api/realtime-auth/route.ts` gates room access: checks Supabase to confirm the authenticated Clerk user is in the room's `user_ids` array before signing a ticket. Returns 403 otherwise (client redirects to `/forbidden`).
+
+- The ticket is a 60-second HMAC-SHA256 JWS over `{ sub, room, info, iat, exp }`, signed in `lib/realtimeTicket.ts` and verified in `realtime/src/ticket.ts` against a shared `REALTIME_TICKET_SECRET`. It authorises **exactly one room**, so a member of one room cannot replay their ticket into another.
+- **It travels as a websocket subprotocol, not a query parameter** — `new WebSocket(url, ["chalkie.v1", ticket])` — so it never lands in a URL or an access log. Two things this depends on: the DO must echo `Sec-WebSocket-Protocol: chalkie.v1` on its 101 or Chrome fails the handshake, and base64url plus `.` are all valid RFC 7230 `tchar`s so a JWS is header-safe.
+- **The Worker forwards the original `Request`, never a rebuilt one.** A fresh `Request` drops `Upgrade: websocket` and the runtime then refuses to return a socket at all. Identity is added as `x-chalkie-user` / `x-chalkie-info` headers on a copy, and the ticket header is stripped before the DO sees it.
+- Verification happens in the Worker, not the DO, so a forged or expired ticket costs one Worker request and never wakes a Durable Object.
 
 ### Deployment (staged, promoted nightly)
+
+**The realtime Worker deploys on a different clock to the app.** `wrangler deploy` is immediate; a push to `main` sits `STAGED` until promoted. A protocol change therefore goes live against a client that may not speak it for up to a day unless the Vercel build is force-promoted in the same window. There is no version negotiation — the Worker speaks exactly one protocol, and `chalkie.v1` is a label rather than a compatibility mechanism.
 
 Pushes to `main` build but **do not go live**. The Vercel project has **Auto-assign Custom Production Domains** turned off (Project Settings → Environments → Production → Branch Tracking), so each push produces a production deployment in the `STAGED` substate serving no traffic. `app/api/cron/promote-latest` promotes the newest staged build overnight, so a mid-afternoon push can't interrupt a lesson in progress.
 
@@ -285,13 +309,14 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 - `toolTypes.ts` — `Tools: "pen" | "eraser" | "pointer" | "highlighter"` + per-tool cursor map. There is no `selector`: the marquee lives inside `pointer`
 - `canvasStateTypes.ts` — `CanvasState`, `Viewport`, `ToolContext`, `ToolCallbacks`, `ToolStrategy`
 - `presenceTypes.ts` — `SelectionPresence` (the Presence payload), `RemoteSelection` (what the renderer draws)
+- `realtimeTypes.ts` — the wire protocol shared with the Worker: `Op`, `ClientMessage`, `ServerMessage`, `Presence`, `TicketClaims`. Keep it free of DOM types; the Worker cannot load the DOM lib alongside `@cloudflare/workers-types`
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`
 - `linkTypes.ts` — `LinkRole`, `TutorLinkRow`/`LinkInviteRow` (raw Supabase shapes), `LinkInvite`/`LinkSummary` (client-facing shapes)
 - `policyTypes.ts` — `PolicyDocument`/`PolicySection`/`PolicyBlock` for the legal pages, including the supported inline markup
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `r2.ts` (the R2 client and every put/delete/prefix-delete/presign against it — see Image Storage & Serving above), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `dashboardActions.ts` (the route × role → single action rule shared by `Sidebar` and `TabBar` — see Dashboard Actions above), `deleteWorkspace.ts` (tears down Liveblocks room, storage images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `r2.ts` (the R2 client and every put/delete/prefix-delete/presign against it — see Image Storage & Serving above), `realtimeTicket.ts` (signs the 60-second websocket ticket — see Access Control above), `realtimeAdmin.ts` (the secret-gated calls into the Worker; currently room teardown, and where the unlink eviction in `TODO.md` belongs), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `dashboardActions.ts` (the route × role → single action rule shared by `Sidebar` and `TabBar` — see Dashboard Actions above), `deleteWorkspace.ts` (tears down the Durable Object, R2 images and the Supabase row in a recoverable order), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
 
 ### Path Alias
 

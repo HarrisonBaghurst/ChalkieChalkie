@@ -1,4 +1,4 @@
-import { useOthers } from "@liveblocks/react";
+import { useOthers } from "@/hooks/realtime/hooks";
 import { RefObject, useEffect, useRef } from "react";
 import Image from "next/image";
 import { CanvasState } from "@/types/canvasStateTypes";

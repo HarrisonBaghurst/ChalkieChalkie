@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, RefObject, useRef } from "react";
-import { useHistory } from "@liveblocks/react";
+import { useHistory } from "@/hooks/realtime/hooks";
 import { Tools } from "@/types/toolTypes";
 import { ACCEPTED_INPUT_TYPES } from "@/lib/imageLimits";
 import ToolbarButton from "./ToolbarButton";

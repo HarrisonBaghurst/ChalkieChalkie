@@ -1,17 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
 
-// Scoped by host_id, never "any room containing both": another tutor's room is
-// their relationship to manage, and scoping by host means a host can never be
-// stripped from their own room and 403'd out of it.
-//
-// Null start_time counts as future because the dashboard buckets it as Upcoming.
-//
-// Accepted gap: an already-connected student keeps their Liveblocks token until
-// it expires — grants live inside the token and there is no revocation API.
-//
-// Throws on first write failure, leaving the tutor_links row intact so the
-// caller's retry is safe.
 export async function stripStudentFromFutureRooms(
     tutorId: string,
     studentId: string,

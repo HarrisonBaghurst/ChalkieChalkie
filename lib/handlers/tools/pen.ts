@@ -1,6 +1,10 @@
 import { ToolContext, ToolStrategy } from "@/types/canvasStateTypes";
 import { toWorldPoint } from "../helpers";
-import { simplifyRDP, SIMPLIFY_EPSILON } from "@/lib/strokeOptimisation";
+import {
+    roundPoints,
+    simplifyRDP,
+    SIMPLIFY_EPSILON,
+} from "@/lib/strokeOptimisation";
 import { newId } from "@/lib/id";
 
 const onDown = ({ e, state }: ToolContext) => {
@@ -36,7 +40,7 @@ const onUp = ({ e, state, callbacks }: ToolContext) => {
               );
         callbacks.onStrokeFinished({
             ...state.currentStroke,
-            points: simplified,
+            points: roundPoints(simplified),
         });
         state.currentStroke = null;
     }

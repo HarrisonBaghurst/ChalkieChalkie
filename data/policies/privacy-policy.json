@@ -177,7 +177,7 @@
                     "items": [
                         { "term": "Cloud Computing Services", "description": "Supabase" },
                         { "term": "Communicate and Chat with Users", "description": "Resend" },
-                        { "term": "Functionality and Infrastructure Optimisation", "description": "Liveblocks and Upstash/Redis" },
+                        { "term": "Functionality and Infrastructure Optimisation", "description": "Cloudflare and Upstash/Redis" },
                         { "term": "User Account Registration and Authentication", "description": "Google Sign-In and Clerk" },
                         { "term": "Website Hosting", "description": "Vercel" }
                     ]

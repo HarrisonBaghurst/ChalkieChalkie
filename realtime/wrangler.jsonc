@@ -1,0 +1,35 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "chalkiechalkie-realtime",
+    "main": "src/index.ts",
+    // Bounded by the wrangler pinned in package.json, which is the newest
+    // release that still runs on Node 20. Raise both together.
+    "compatibility_date": "2026-05-01",
+    "observability": {
+        "enabled": true
+    },
+    // workers.dev is on the public suffix list and is blocked by a lot of school
+    // and corporate filters, which would look like a board that loads but never
+    // syncs. Requires chalkiechalkie.com to be on Cloudflare DNS.
+    "routes": [
+        {
+            "pattern": "realtime.chalkiechalkie.com",
+            "custom_domain": true
+        }
+    ],
+    "workers_dev": false,
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "BOARD_ROOM",
+                "class_name": "BoardRoom"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["BoardRoom"]
+        }
+    ]
+}

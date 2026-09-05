@@ -1,4 +1,4 @@
-import { useUpdateMyPresence } from "@liveblocks/react";
+import { useUpdateMyPresence } from "@/hooks/realtime/hooks";
 import { RefObject, useEffect, useRef } from "react";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { SelectionPresence } from "@/types/presenceTypes";

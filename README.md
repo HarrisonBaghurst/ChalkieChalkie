@@ -14,9 +14,9 @@ Chalkie Chalkie is an online, collaborative workspace built specifically with tu
 
 - Framework & language - Next.js, React, TypeScript
 - Styling & UI - Tailwind CSS, Shadcn/ui
-- Real time collaboration - Liveblocks
+- Real time collaboration - Cloudflare Workers & Durable Objects
 - Auth & access control - Clerk
-- Data & storage - Supabase
+- Data & storage - Supabase, Cloudflare R2
 - Infrastructure - Upstash Redis, Vercel Cron
 - Messaging - Resend
 

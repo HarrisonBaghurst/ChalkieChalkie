@@ -13,8 +13,6 @@ export function isSafeId(value: unknown): value is string {
     );
 }
 
-// The same Room.user_ids check liveblocks-auth gates a token on, so storage
-// access and room access can never disagree.
 export async function requireRoomMembership(
     workspaceId: string,
     userId: string,

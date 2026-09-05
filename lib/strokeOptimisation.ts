@@ -2,6 +2,16 @@ import { Point } from "@/types/strokeTypes";
 
 export const SIMPLIFY_EPSILON = 0.5;
 
+const COORD_DECIMALS = 2;
+const COORD_FACTOR = 10 ** COORD_DECIMALS;
+
+export const roundCoord = (value: number): number =>
+    Math.round(value * COORD_FACTOR) / COORD_FACTOR;
+
+export function roundPoints(points: Point[]): Point[] {
+    return points.map((p) => ({ x: roundCoord(p.x), y: roundCoord(p.y) }));
+}
+
 // Ramer–Douglas–Peucker; epsilon is the maximum deviation in world units.
 export function simplifyRDP(
     points: Point[],

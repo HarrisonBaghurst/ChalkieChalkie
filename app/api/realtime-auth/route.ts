@@ -1,18 +1,11 @@
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { signTicket } from "@/lib/realtimeTicket";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { Liveblocks } from "@liveblocks/node";
 import { NextRequest } from "next/server";
 
-const secret_key = process.env.LIVEBLOCKS_SECRET_KEY!;
-
-const liveblocks = new Liveblocks({
-    secret: secret_key,
-});
-
 export async function POST(request: NextRequest) {
-    // Per-IP guard runs before auth as cheap flood defence.
-    const ipBlocked = await enforceRateLimit(request, "liveblocks-auth:ip");
+    const ipBlocked = await enforceRateLimit(request, "realtime-auth:ip");
     if (ipBlocked) return ipBlocked;
 
     const { userId } = await auth();
@@ -21,10 +14,9 @@ export async function POST(request: NextRequest) {
         return new Response("Unauthorised", { status: 401 });
     }
 
-    // Before any further Clerk round-trips.
     const userBlocked = await enforceRateLimit(
         request,
-        "liveblocks-auth:user",
+        "realtime-auth:user",
         userId,
     );
     if (userBlocked) return userBlocked;
@@ -51,7 +43,6 @@ export async function POST(request: NextRequest) {
         return new Response("Forbidden", { status: 403 });
     }
 
-    // Only after auth, rate limit and membership have all passed.
     const user = await currentUser();
     if (!user) {
         return new Response("Unauthorised", { status: 401 });
@@ -63,17 +54,12 @@ export async function POST(request: NextRequest) {
         p_user_id: userId,
     });
 
-    const session = liveblocks.prepareSession(userId, {
-        userInfo: {
-            firstName: user.firstName ?? "",
-            lastName: user.lastName ?? "",
-            imageUrl: user.imageUrl ?? "",
-            email: user.emailAddresses[0]?.emailAddress ?? "",
-        },
+    const ticket = await signTicket(userId, room, {
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
+        imageUrl: user.imageUrl ?? "",
+        email: user.emailAddresses[0]?.emailAddress ?? "",
     });
 
-    session.allow(room, session.FULL_ACCESS);
-
-    const { status, body } = await session.authorize();
-    return new Response(body, { status });
+    return Response.json({ ticket });
 }

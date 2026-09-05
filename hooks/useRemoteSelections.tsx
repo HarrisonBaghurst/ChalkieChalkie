@@ -1,4 +1,4 @@
-import { useOthers } from "@liveblocks/react";
+import { useOthers } from "@/hooks/realtime/hooks";
 import { RefObject, useEffect, useRef } from "react";
 import { CanvasState } from "@/types/canvasStateTypes";
 import { RemoteSelection } from "@/types/presenceTypes";

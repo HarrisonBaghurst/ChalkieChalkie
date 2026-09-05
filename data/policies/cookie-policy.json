@@ -140,8 +140,8 @@
                             "description": "Handles account registration, sign-in, and session management. Sets the cookies listed in section 3, including the Cloudflare cookie used to protect its infrastructure."
                         },
                         {
-                            "term": "Supabase, Liveblocks, Upstash, Resend, and Vercel",
-                            "description": "Provide our database and file storage, real-time whiteboard collaboration, rate limiting, contact emails, and website hosting respectively. These are used from our servers or authenticated with tokens held only in memory, and do not set cookies in your browser."
+                            "term": "Supabase, Cloudflare, Upstash, Resend, and Vercel",
+                            "description": "Provide our database, file storage and real-time whiteboard collaboration, rate limiting, contact emails, and website hosting respectively. These are used from our servers or authenticated with tokens held only in memory, and do not set cookies in your browser."
                         }
                     ]
                 },

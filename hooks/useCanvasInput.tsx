@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useRef } from "react";
-import { useUpdateMyPresence } from "@liveblocks/react";
+import { useUpdateMyPresence } from "@/hooks/realtime/hooks";
 import { Point, Stroke } from "@/types/strokeTypes";
 import {
     CanvasState,
