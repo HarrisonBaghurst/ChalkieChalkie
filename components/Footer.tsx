@@ -33,6 +33,9 @@ const Footer = () => {
                             <Link href="/sign-in" className={linkClass}>
                                 Sign in
                             </Link>
+                            <Link href="/changelog" className={linkClass}>
+                                Changelog
+                            </Link>
                         </div>
                     </div>
                     <div className="flex flex-col gap-5">

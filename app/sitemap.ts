@@ -3,6 +3,7 @@ import { absoluteUrl } from "@/lib/siteUrl";
 import cookiePolicy from "@/data/policies/cookie-policy.json";
 import privacyPolicy from "@/data/policies/privacy-policy.json";
 import termsOfService from "@/data/policies/terms-of-service.json";
+import changelog from "@/data/changelog.json";
 
 const MONTHS = [
     "january",
@@ -21,7 +22,7 @@ const MONTHS = [
 
 // Parsed as UTC rather than handed to `new Date(string)`: that reads
 // "19 July 2026" as local midnight, so a BST build emits the 18th.
-const parsePolicyDate = (value: string): Date | undefined => {
+const parseDocumentDate = (value: string): Date | undefined => {
     const match = /^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/.exec(value.trim());
     if (!match) return undefined;
 
@@ -46,9 +47,15 @@ const sitemap = (): MetadataRoute.Sitemap => [
         changeFrequency: "monthly",
         priority: 1,
     },
+    {
+        url: absoluteUrl("/changelog"),
+        lastModified: parseDocumentDate(changelog.entries.at(0)?.date ?? ""),
+        changeFrequency: "monthly",
+        priority: 0.5,
+    },
     ...policyPages.map(({ path, lastUpdated }) => ({
         url: absoluteUrl(path),
-        lastModified: parsePolicyDate(lastUpdated),
+        lastModified: parseDocumentDate(lastUpdated),
         changeFrequency: "yearly" as const,
         priority: 0.3,
     })),

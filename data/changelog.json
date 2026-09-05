@@ -1,0 +1,22 @@
+{
+    "title": "Changelog",
+    "currentVersion": "0.1.0",
+    "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
+    "entries": [
+        {
+            "version": "0.1.0",
+            "date": "5 September 2026",
+            "changes": [
+                "Chalkie Chalkie's minimal-production release. This includes all basic features that the app will continue to develop and sets up the infrastructre to build upon.",
+                {
+                    "tag": "Changed",
+                    "text": "Migrated image storage from Supabase to Cloudflare R2."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Migrated realtime infrastructure from Liveblocks to Cloudflare workers & durable objects."
+                }
+            ]
+        }
+    ]
+}

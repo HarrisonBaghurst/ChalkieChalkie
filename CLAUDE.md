@@ -79,7 +79,7 @@ Do not add comments, if a comment is necessary, explain the information you want
 ### Route Structure
 
 - `app/(home)/` — Public landing page (hero, beta sign-up, contact) with its own `Navbar` + `Footer` layout
-- `app/(legal)/` — `privacy-policy`, `terms-of-service`, `cookie-policy`; content authored as JSON in `data/policies/` and rendered by `components/policy/PolicyDocument.tsx`
+- `app/(legal)/` — `privacy-policy`, `terms-of-service`, `cookie-policy`; content authored as JSON in `data/policies/` and rendered by `components/policy/PolicyDocument.tsx`. `changelog` also lives here despite not being a legal page: it wants exactly this layout's `Navbar` + `Footer` chrome, and a route group affects nothing but which layout wraps the page (see Changelog below)
 - `app/dashboard/` — Authenticated dashboard: upcoming/past lessons, filters, workspace create/edit modal (`components/dashboard/`)
 - `app/dashboard/connections/` — Tutor↔student linking: "Your Students" (tutor) / "Your Tutors" (student), invite-code exchange in a Dialog (`components/dashboard/connections/`)
 - `app/board/[boardId]/` — The whiteboard canvas page; wraps `<Workspace>` in the realtime `<Room>` provider (`Room.tsx`)
@@ -224,6 +224,9 @@ components/
            └─ skeletons/       ← loading states mirroring the real layouts, mobile and desktop
   home/                   ← Navbar (shared with dashboard/legal), hero CTAs
   policy/PolicyDocument   ← renders data/policies/*.json
+  changelog/ChangelogDocument ← renders data/changelog.json
+  inlineMarkup.tsx        ← the [label](url) / **bold** / {{CONTACT_EMAIL}} pass
+                            both of the above share
 ```
 
 Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybinds.tsx`.
@@ -274,6 +277,16 @@ Two distinct concepts:
 - **The Worker forwards the original `Request`, never a rebuilt one.** A fresh `Request` drops `Upgrade: websocket` and the runtime then refuses to return a socket at all. Identity is added as `x-chalkie-user` / `x-chalkie-info` headers on a copy, and the ticket header is stripped before the DO sees it.
 - Verification happens in the Worker, not the DO, so a forged or expired ticket costs one Worker request and never wakes a Durable Object.
 
+### Changelog & Version
+
+`data/changelog.json` is the only place a version number is written. It is `{ title, currentVersion, intro?, entries[] }`, where each entry is `{ version, date, changes[] }` and a change is either a bare string or `{ tag, text }` with `tag` one of `Added | Fixed | Changed | Removed`. `components/changelog/ChangelogDocument.tsx` renders it at `/changelog`, reusing the policy pages' inline markup and the `Badge` primitive's variants for the tags — no colours of its own.
+
+- **Entries render in file order**, so author the newest at the top. Nothing sorts or parses `version`; the anchor id is just the version slugified.
+- **`currentVersion` feeds the app's version tag.** `next.config.ts` reads it and exposes it as `NEXT_PUBLIC_VERSION`, which is what the dashboard `Sidebar` prints. Config `env` wins over a `.env` file, so any leftover `NEXT_PUBLIC_VERSION` there is inert — delete it rather than trusting it.
+- **That indirection is deliberate.** The `Sidebar` is a client component, and a JSON import from one bundles the whole file: importing the changelog to read a single string shipped every release note to every dashboard visitor. Do not "simplify" this back into a `lib/` module that imports the JSON.
+- Being build-time inlined, a version bump needs a rebuild — already true, since `/changelog` is statically prerendered.
+- `app/sitemap.ts` lists the page with `lastModified` taken from the newest entry's date, parsed by the same UTC-safe helper the policies use.
+
 ### Deployment (staged, promoted nightly)
 
 **The realtime Worker deploys on a different clock to the app.** `wrangler deploy` is immediate; a push to `main` sits `STAGED` until promoted. A protocol change therefore goes live against a client that may not speak it for up to a day unless the Vercel build is force-promoted in the same window. There is no version negotiation — the Worker speaks exactly one protocol, and `chalkie.v1` is a label rather than a compatibility mechanism.
@@ -313,6 +326,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 - `userTypes.ts` — `UserRole`, `userInfo`, `Workspace`, `WorkspaceEditData`
 - `linkTypes.ts` — `LinkRole`, `TutorLinkRow`/`LinkInviteRow` (raw Supabase shapes), `LinkInvite`/`LinkSummary` (client-facing shapes)
 - `policyTypes.ts` — `PolicyDocument`/`PolicySection`/`PolicyBlock` for the legal pages, including the supported inline markup
+- `changelogTypes.ts` — `ChangelogDocument`/`ChangelogEntry`/`ChangelogChange`/`ChangeTag` for `data/changelog.json`
 
 ### Shared Helpers (`lib/`)
 

@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
+import changelog from "./data/changelog.json";
 
 const nextConfig: NextConfig = {
+    env: {
+        NEXT_PUBLIC_VERSION: changelog.currentVersion,
+    },
     images: {
         remotePatterns: [
             {
