@@ -1,3 +1,5 @@
+import { reportError } from "@/lib/errorResponse";
+
 // The realtime Worker's origin over HTTPS. NEXT_PUBLIC_REALTIME_URL is a wss://
 // URL because that is what the browser opens; the admin calls are plain fetches.
 const httpOrigin = () =>
@@ -18,4 +20,29 @@ export async function deleteRealtimeRoom(roomId: string): Promise<void> {
             `Failed to delete realtime room ${roomId}: ${response.status}`,
         );
     }
+}
+
+export type RoomEviction = { roomId: string; userId: string };
+
+export async function evictRoomMembers(
+    evictions: RoomEviction[],
+): Promise<void> {
+    await Promise.all(
+        evictions.map(async ({ roomId, userId }) => {
+            try {
+                const response = await fetch(
+                    `${httpOrigin()}/rooms/${encodeURIComponent(roomId)}/evict` +
+                        `?userId=${encodeURIComponent(userId)}`,
+                    { method: "POST", headers: adminHeaders() },
+                );
+                if (!response.ok) {
+                    throw new Error(
+                        `Evict returned ${response.status} for room ${roomId}`,
+                    );
+                }
+            } catch (error) {
+                await reportError("realtime:evict", error, undefined, userId);
+            }
+        }),
+    );
 }

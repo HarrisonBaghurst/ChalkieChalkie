@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
+import { evictRoomMembers } from "@/lib/realtimeAdmin";
 
 export async function stripStudentFromFutureRooms(
     tutorId: string,
@@ -14,8 +15,6 @@ export async function stripStudentFromFutureRooms(
             .eq("host_id", tutorId)
             .contains("user_ids", [studentId]);
 
-    // Two queries, not one .or(): ISO dots collide with PostgREST's operator
-    // separator and mis-parse silently.
     const [scheduledRes, unscheduledRes] = await Promise.all([
         scoped().gte("start_time", cutoff),
         scoped().is("start_time", null),
@@ -40,6 +39,10 @@ export async function stripStudentFromFutureRooms(
             .eq("id", id);
         if (error) throw error;
     }
+
+    await evictRoomMembers(
+        [...rooms.keys()].map((roomId) => ({ roomId, userId: studentId })),
+    );
 
     return rooms.size;
 }

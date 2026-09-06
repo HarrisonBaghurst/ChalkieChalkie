@@ -1,6 +1,7 @@
 import { deleteWorkspaceResources } from "@/lib/deleteWorkspace";
 import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { evictRoomMembers } from "@/lib/realtimeAdmin";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -96,7 +97,7 @@ export async function PATCH(
 
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
         .from("Room")
-        .select("id, host_id")
+        .select("id, host_id, user_ids")
         .eq("id", roomId)
         .single();
 
@@ -113,6 +114,16 @@ export async function PATCH(
 
     if (error) {
         return errorResponse("workspace:patch", error, 500, { userId });
+    }
+
+    const nextUserIds = update.user_ids as string[] | undefined;
+    if (nextUserIds) {
+        const removed = ((existingRoom.user_ids ?? []) as string[]).filter(
+            (id) => !nextUserIds.includes(id),
+        );
+        await evictRoomMembers(
+            removed.map((removedId) => ({ roomId, userId: removedId })),
+        );
     }
 
     return Response.json(data);

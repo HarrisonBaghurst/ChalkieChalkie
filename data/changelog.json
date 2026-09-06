@@ -10,6 +10,10 @@
                 {
                     "tag": "Fixed",
                     "text": "Corrected inconsistencies between styling of the coming up next card's empty and loading states."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Users now get evicted from the workspace if they are removed by a tutor instead of their access persisting until their next page reload."
                 }
             ]
         },
