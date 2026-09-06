@@ -21,7 +21,7 @@ const NextSkeleton = () => {
             </div>
             <div className="flex flex-col gap-6 lg:pr-8">
                 <p className="text-caption font-inter-regular gradient-text">
-                    COMING UP NEXT
+                    Coming up next
                 </p>
                 {/* Same grid as NextContent — avatar beside the time only on a
                     phone, sharing its column with every block from lg. */}

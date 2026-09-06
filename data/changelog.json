@@ -1,8 +1,18 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.1.0",
+    "currentVersion": "0.1.1",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.1.1",
+            "date": "6 September 2026",
+            "changes": [
+                {
+                    "tag": "Fixed",
+                    "text": "Corrected inconsistencies between styling of the coming up next card's empty and loading states."
+                }
+            ]
+        },
         {
             "version": "0.1.0",
             "date": "5 September 2026",

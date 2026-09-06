@@ -109,8 +109,8 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
 
     if (!workspace) {
         return (
-            <div className="w-full lg:w-1/2 2xl:w-1/3 h-50 bg-card-background border-2 p-4 radius-surface flex flex-col gap-3 gradient-border">
-                <p className="text-caption text-foreground-second font-inter-regular">
+            <div className={cn(CARD_CLASS, "flex h-50")}>
+                <p className="text-caption font-inter-regular gradient-text">
                     Coming up next
                 </p>
                 <p className="text-subheading">No upcoming sessions</p>
