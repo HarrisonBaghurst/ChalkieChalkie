@@ -8,12 +8,24 @@
             "date": "6 September 2026",
             "changes": [
                 {
+                    "tag": "Changed",
+                    "text": "Users now get evicted from the workspace if they are removed by a tutor instead of their access persisting until their next page reload."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The nightly clean-up of inactive workspaces now works in batches within a time limit, so a large backlog is cleared over several nights rather than timing out."
+                },
+                {
                     "tag": "Fixed",
                     "text": "Corrected inconsistencies between styling of the coming up next card's empty and loading states."
                 },
                 {
-                    "tag": "Changed",
-                    "text": "Users now get evicted from the workspace if they are removed by a tutor instead of their access persisting until their next page reload."
+                    "tag": "Fixed",
+                    "text": "Deleting a workspace now fully releases its realtime storage. Previously every deleted board left an empty room behind that was never reclaimed."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Deleting a workspace while its board was still open could leave that room's storage behind. It is now cleared either way."
                 }
             ]
         },

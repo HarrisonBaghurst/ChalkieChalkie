@@ -72,7 +72,7 @@ When you add a token, utility class or shared component, add a specimen to the s
 
 ## Comments
 
-Do not add comments, if a comment is necessary, explain the information you want to give in the cli.
+Do not add comments to code, if you deem a comment is neccessary, explain the information you want to give in the cli instead.
 
 ## Architecture
 
@@ -93,7 +93,7 @@ Do not add comments, if a comment is necessary, explain the information you want
     - `users/batch`, `users/friends`, `users/workspaces` — user lookups; `friends` returns the caller's linked tutor-student counterparties (see below), not a general user search
     - `links` (+ `[linkId]`, `invites`, `redeem`) — tutor↔student linking: list/unlink, generate/read/revoke an invite code, redeem a code; shared validation in `_shared.ts`
     - `contact` — contact form via Resend
-    - `cron/remove-unused-rooms` — deletes rooms inactive >2 weeks; runs daily at 05:00 via `vercel.json` crons, authenticated with `CRON_SECRET`
+    - `cron/remove-unused-rooms` — deletes rooms inactive >2 weeks; runs daily at 05:00 via `vercel.json` crons, authenticated with `CRON_SECRET`. Reads in batches of 500 because PostgREST caps a request at 1000 rows, and re-reads from the top each time rather than paging by offset, since deleting a room removes it from the result set. A room whose teardown throws is held aside so a batch of nothing but failures ends the drain instead of looping on it, and the whole loop stops at a 45-second budget — under Vercel's 60-second default, with the remainder still expired tomorrow
     - `cron/promote-latest` — promotes the newest staged production build to live (see Deployment below)
 
 `proxy.ts` is the Clerk middleware: protects `/board(.*)` and `/dashboard(.*)`. `/style-guide` is deliberately **not** listed there — a middleware redirect to sign-in would advertise that the route exists, so the page gates itself and 404s instead.
@@ -102,6 +102,7 @@ Do not add comments, if a comment is necessary, explain the information you want
 
 Sync runs on a Cloudflare Worker in `realtime/`, deployed separately with `wrangler`. One `BoardRoom` Durable Object per room id, addressed by `idFromName(roomId)` — created on first connect, exactly as the Liveblocks room it replaced was. The Supabase `Room` row stays the authoritative record.
 
+**The class is exported as `BoardRoomV2`** while the source class keeps its own name. Migration `v3` deleted the original namespace outright, which was the only way to reach the objects the constructor-migrate bug had made permanent: their rooms were long gone from Supabase, and `idFromName` is one-way, so nothing could address them by name. A delete migration is illegal while any code or binding still references the class, so the replacement could not reuse the name — hence `v2` provisions `BoardRoomV2` alongside `v3`'s delete, in one deploy, so no request ever finds no namespace. Applied tags cannot be removed or edited, so the array only ever grows; another wipe would need `v4` provisioning `BoardRoomV3` beside `v5` deleting `BoardRoomV2`. The binding stays `BOARD_ROOM`, which is why no application code knows any of this happened.
 The protocol is defined once in `types/realtimeTypes.ts` and imported by both sides (`realtime/tsconfig.json` maps `@/*` to the repo root). Two flat record lists, not a CRDT:
 
 ```ts
@@ -115,7 +116,7 @@ Seven ops (`types/realtimeTypes.ts`) map 1:1 onto the six mutations in `hooks/us
 - **`seq` is paint order** — it reproduces the old `LiveList` insertion order, and reads are `WHERE deleted = 0 ORDER BY seq`. `updateImage` and `moveStrokes` deliberately never touch it, matching the `LiveList.set` they replaced.
 - **Deletes are soft, and that is what makes undo work.** A hard delete loses `seq`, so an undone erase would come back on top of the stack instead of in its original layer — visible for highlighters and images. Tombstones are cleared when a room is opened with no other connection (nobody can hold an undo stack for it), capped at 2000 as a backstop.
 - **The `seq` counter is derived from `SELECT MAX(seq)` on wake, never persisted.** A counter row per insert would roughly double rows-written, which is the first billing limit to bind.
-- **`ctx.storage.deleteAll()` drops the tables**, and `migrate()` only runs in the constructor — so the teardown path re-migrates. Without that, deleting a workspace poisons the board id and every later connection 500s on "no such table".
+- **The schema is created lazily and the teardown path must leave it gone.** A Durable Object ceases to exist only if its storage is empty when it shuts down, so `migrate()` runs from `ensureSchema()` on the first connect — never in the constructor, and never after `ctx.storage.deleteAll()`. Both of those were true once and both leaked: re-migrating after `deleteAll` made every deleted room's DO permanent, and migrating in the constructor meant the admin `DELETE` for a workspace that was _never opened_ conjured a Durable Object purely in order to delete it. Nothing bills much per empty room, but neither leak has a ceiling. `ensureSchema()` is called from `sendInit` and `applyOp`, which is every path that touches SQL; the "no such table" 500 it also prevents is a side effect, not the reason.
 - **Ops echo back to the sender**, so the DO is the sequencer; the client reducer is "set record by id" and returns the same array identity when nothing changed. Without the echo, two concurrent `updateImage`s leave clients permanently disagreeing; without the identity check, every echo restarts the render loop.
 - **Presence is in memory and recovered by resync, never by `serializeAttachment`.** That attachment caps at 16,384 bytes and a marquee over ~450 strokes of UUIDs exceeds it. On a wake from hibernation the DO broadcasts `resync-presence` and each client replays its cached presence — the cache lives in `hooks/realtime/client.ts` because `useSelectionPresence` dedupes on a signature and would never resend on its own.
 - **Hibernation is load-bearing for cost**, not an optimisation: `acceptWebSocket` plus `setWebSocketAutoResponse` for ping/pong means an idle room accrues no duration charge. A plain `server.accept()` would pin it in memory and bill continuously.
@@ -151,7 +152,7 @@ Images live in a **private** Cloudflare R2 bucket at `{workspaceId}/{imageId}`, 
 
 - **Nothing persisted anywhere is a credential.** This is the whole point of the design. The previous model stored a 14-day Supabase signed URL in room storage, which meant anyone handed that link could load the image without being in the room, and rooms outliving the TTL showed broken images. Both problems are gone because the stored value grants nothing on its own.
 - **`img.src` works with the bare path** because the request is same-origin and carries the Clerk cookie automatically. `proxy.ts`'s matcher runs `clerkMiddleware` on `/(api|trpc)(.*)`, which is what makes `auth()` resolve inside the route — the board pages themselves being in `isProtectedRoute` is unrelated and not sufficient.
-- **The 302 is `Cache-Control: no-store`.** A cached redirect would outlive both its signature and the membership that earned it, so removing someone from a room would not bite until the browser felt like revalidating. Do not "optimise" this by caching the redirect; cache the *object* behind it if that ever matters.
+- **The 302 is `Cache-Control: no-store`.** A cached redirect would outlive both its signature and the membership that earned it, so removing someone from a room would not bite until the browser felt like revalidating. Do not "optimise" this by caching the redirect; cache the _object_ behind it if that ever matters.
 - **Presigning is a local HMAC, not a network call**, so the per-image cost is the Clerk check plus one Supabase membership query. That query is the real per-image cost — a 50-page PDF opens 50 of them. If that ever bites, cache membership in Redis briefly rather than moving the check off the read path.
 - **Approach chosen over batch-presigning at room open** (the Notion/Figma model) because the document arrives over the realtime websocket, not an API response there'd be anywhere to attach signed URLs to — and because images stream in mid-session when someone else pastes, which would otherwise need a client-side signing subscription with expiry tracking and retry. This redirect model is Rails ActiveStorage's default and the OCI distribution spec's blob behaviour.
 - **Expiry after load is harmless.** `usePastedImagesSync` decodes each image once into an `HTMLImageElement` the render loop draws from forever; the URL matters only at load, which is why 60 seconds is not tight.

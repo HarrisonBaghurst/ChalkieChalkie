@@ -2,7 +2,9 @@ import { REALTIME_SUBPROTOCOL } from "@/types/realtimeTypes";
 import { BoardRoom } from "./BoardRoom";
 import { verifyTicket } from "./ticket";
 
-export { BoardRoom };
+// A delete migration is only legal once nothing references the class, so the
+// replacement could not reuse the name. The source class keeps its own.
+export { BoardRoom as BoardRoomV2 };
 
 export interface Env {
     BOARD_ROOM: DurableObjectNamespace;

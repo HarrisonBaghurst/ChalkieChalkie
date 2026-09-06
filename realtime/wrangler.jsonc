@@ -22,14 +22,23 @@
         "bindings": [
             {
                 "name": "BOARD_ROOM",
-                "class_name": "BoardRoom"
+                "class_name": "BoardRoomV2"
             }
         ]
     },
+    // Applied tags cannot be removed or edited, so this array only ever grows.
     "migrations": [
         {
             "tag": "v1",
             "new_sqlite_classes": ["BoardRoom"]
+        },
+        {
+            "tag": "v2",
+            "new_sqlite_classes": ["BoardRoomV2"]
+        },
+        {
+            "tag": "v3",
+            "deleted_classes": ["BoardRoom"]
         }
     ]
 }

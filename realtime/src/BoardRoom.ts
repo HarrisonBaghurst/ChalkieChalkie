@@ -51,6 +51,7 @@ export class BoardRoom implements DurableObject {
     private nextSeq = 0;
     private nextConnectionId = 1;
     private connections = new Map<WebSocket, Connection>();
+    private schemaReady = false;
     // Set when the constructor finds live sockets but no presence, which only
     // happens on a wake from hibernation.
     private needsPresenceResync = false;
@@ -59,9 +60,6 @@ export class BoardRoom implements DurableObject {
         this.ctx = ctx;
 
         this.ctx.blockConcurrencyWhile(async () => {
-            this.migrate();
-            this.nextSeq = this.readMaxSeq() + 1;
-
             const sockets = this.ctx.getWebSockets();
             for (const socket of sockets) {
                 const attachment =
@@ -92,6 +90,15 @@ export class BoardRoom implements DurableObject {
 
     private get sql() {
         return this.ctx.storage.sql;
+    }
+
+    // Lazy, never in the constructor: a DO ceases to exist only if its storage
+    // is empty at shutdown, and creating tables up front makes that impossible.
+    private ensureSchema() {
+        if (this.schemaReady) return;
+        this.migrate();
+        this.nextSeq = this.readMaxSeq() + 1;
+        this.schemaReady = true;
     }
 
     // WITHOUT ROWID and no secondary index, because rows written is the first
@@ -157,11 +164,10 @@ export class BoardRoom implements DurableObject {
             }
             this.connections.clear();
             await this.ctx.storage.deleteAll();
-            // deleteAll drops the tables, and migrate only runs in the
-            // constructor. Without this, the next connection to a deleted room
-            // 500s on "no such table" instead of getting a fresh board.
-            this.migrate();
-            this.nextSeq = 1;
+            // Left empty, not re-migrated: the next connection rebuilds the
+            // schema, so an unvisited deleted room stops existing entirely.
+            this.schemaReady = false;
+            this.nextSeq = 0;
             return new Response(null, { status: 204 });
         }
 
@@ -227,6 +233,7 @@ export class BoardRoom implements DurableObject {
     }
 
     private sendInit(socket: WebSocket, self: Attachment) {
+        this.ensureSchema();
         this.vacuumIfIdle();
 
         this.send(socket, {
@@ -391,6 +398,7 @@ export class BoardRoom implements DurableObject {
     }
 
     private applyOp(op: Op) {
+        this.ensureSchema();
         this.ctx.storage.transactionSync(() => {
             switch (op.t) {
                 case "addStroke":
