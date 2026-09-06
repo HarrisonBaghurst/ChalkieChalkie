@@ -91,7 +91,7 @@ export const useInsertPdf = ({
                     id: toastId,
                     description: `Up to ${MAX_PDF_PAGES} pages can be added. Split the file and try again.`,
                 });
-                doc.destroy();
+                doc.loadingTask.destroy();
                 return;
             }
 
@@ -107,7 +107,7 @@ export const useInsertPdf = ({
                     id: toastId,
                     description: "Please wait a few minutes and try again.",
                 });
-                doc.destroy();
+                doc.loadingTask.destroy();
                 return;
             }
 
@@ -171,7 +171,7 @@ export const useInsertPdf = ({
                     id: toastId,
                     description: "The file may be damaged or password locked.",
                 });
-                doc.destroy();
+                doc.loadingTask.destroy();
                 return;
             }
 
@@ -265,7 +265,7 @@ export const useInsertPdf = ({
                 },
             );
 
-            doc.destroy();
+            doc.loadingTask.destroy();
 
             if (failedPages.length > 0) {
                 if (insertedIds.length === 0) {
