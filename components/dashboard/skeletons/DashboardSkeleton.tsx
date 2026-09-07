@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import { SlidersHorizontalIcon } from "lucide-react";
 import Skeleton from "@/components/ui/Skeleton";
+import { fieldClasses } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
@@ -72,7 +74,12 @@ const ControlsSkeleton = () => {
                 ))}
             </div>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <div className="w-full control-surface bg-card-background-hover py-2 px-3 text-small text-foreground-third lg:w-56">
+                <div
+                    className={cn(
+                        fieldClasses(false, "control"),
+                        "pointer-events-none text-foreground-third lg:w-56",
+                    )}
+                >
                     Search sessions...
                 </div>
                 <div className="control-surface flex w-full items-center justify-between gap-2 py-2 px-3 text-small text-foreground-second lg:hidden">

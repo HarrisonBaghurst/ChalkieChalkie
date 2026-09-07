@@ -34,6 +34,10 @@
                 {
                     "tag": "Changed",
                     "text": "Changelog entries are now dated by the day a version went live rather than the day its code was written, so the dates line up with when the changes actually reached the app."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "The loader for the search sessions input, within the dashboard, has been updated to match the styling of the loaded input."
                 }
             ]
         },
