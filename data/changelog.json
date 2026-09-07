@@ -38,6 +38,10 @@
                 {
                     "tag": "Fixed",
                     "text": "The loader for the search sessions input, within the dashboard, has been updated to match the styling of the loaded input."
+                },
+                {
+                    "tag": "Added",
+                    "text": "The version you are running is now shown in the footer of the home page, beside the copyright, and is written with a v prefix everywhere it appears."
                 }
             ]
         },

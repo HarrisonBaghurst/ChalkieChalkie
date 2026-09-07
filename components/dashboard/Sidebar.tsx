@@ -209,7 +209,7 @@ const Sidebar = ({
                         © Chalkie Chalkie 2026
                     </p>
                     <p className="text-foreground-third text-caption">
-                        {process.env.NEXT_PUBLIC_VERSION}
+                        v{process.env.NEXT_PUBLIC_VERSION}
                     </p>
                 </div>
             </div>

@@ -81,6 +81,8 @@ const Footer = () => {
             <div className="flex gap-4 text-foreground-third text-caption">
                 <p>© Chalkie Chalkie 2026</p>
                 <p>|</p>
+                <p>v{process.env.NEXT_PUBLIC_VERSION}</p>
+                <p>|</p>
                 <p>Harrison Baghurst Digital</p>
             </div>
             {showSendMessage && (
