@@ -25,7 +25,7 @@ interface UseCanvasInputProps {
 // highlighter and pointer moves touch local state only, and starving those is
 // what loses handwriting detail.
 const PRESENCE_THROTTLE_MS = 16;
-const ERASER_THROTTLE_MS = 16;
+const ERASER_THROTTLE_MS = 50;
 
 type ActivePointer = { clientX: number; clientY: number };
 

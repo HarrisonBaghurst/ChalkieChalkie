@@ -12,11 +12,16 @@ import type {
 
 const INIT_CHUNK_BYTES = 256 * 1024;
 const TOMBSTONE_CAP = 2000;
+const MAX_CONNECTIONS_PER_USER = 3;
+
+const TABLES = ["strokes", "images"] as const;
 
 const OP_BURST = 120;
 const OP_REFILL_PER_SECOND = 60;
 const PRESENCE_BURST = 60;
 const PRESENCE_REFILL_PER_SECOND = 30;
+const CONNECT_BURST = 5;
+const CONNECT_REFILL_PER_SECOND = 1 / 60;
 
 type Attachment = {
     connectionId: number;
@@ -51,6 +56,11 @@ export class BoardRoom implements DurableObject {
     private nextSeq = 0;
     private nextConnectionId = 1;
     private connections = new Map<WebSocket, Connection>();
+    private connectBuckets = new Map<string, Bucket>();
+    private tombstones: Record<"strokes" | "images", number> = {
+        strokes: 0,
+        images: 0,
+    };
     private schemaReady = false;
     // Set when the constructor finds live sockets but no presence, which only
     // happens on a wake from hibernation.
@@ -97,7 +107,7 @@ export class BoardRoom implements DurableObject {
     private ensureSchema() {
         if (this.schemaReady) return;
         this.migrate();
-        this.nextSeq = this.readMaxSeq() + 1;
+        this.nextSeq = this.readCounters() + 1;
         this.schemaReady = true;
     }
 
@@ -108,7 +118,7 @@ export class BoardRoom implements DurableObject {
     // WITHOUT ROWID makes the key the table itself, so it is 1. The index only
     // ever paid off on the init read, and reads have 50x the free allowance.
     private migrate() {
-        for (const table of ["strokes", "images"]) {
+        for (const table of TABLES) {
             if (this.isLegacySchema(table)) {
                 this.sql.exec(`DROP TABLE IF EXISTS ${table}`);
             }
@@ -142,17 +152,20 @@ export class BoardRoom implements DurableObject {
 
     // No persisted counter: a meta write per insert would roughly double rows
     // written, which is the first billing limit to bind.
-    private readMaxSeq(): number {
-        const rows = this.sql
-            .exec<{ value: number | null }>(
-                `SELECT MAX(value) AS value FROM (
-                    SELECT MAX(seq) AS value FROM strokes
-                    UNION ALL
-                    SELECT MAX(seq) AS value FROM images
-                )`,
-            )
-            .toArray();
-        return rows[0]?.value ?? 0;
+    private readCounters(): number {
+        let maxSeq = 0;
+        for (const table of TABLES) {
+            const rows = this.sql
+                .exec<{ maxSeq: number | null; tombstones: number }>(
+                    `SELECT MAX(seq) AS maxSeq,
+                            COALESCE(SUM(deleted), 0) AS tombstones
+                     FROM ${table}`,
+                )
+                .toArray();
+            maxSeq = Math.max(maxSeq, rows[0]?.maxSeq ?? 0);
+            this.tombstones[table] = rows[0]?.tombstones ?? 0;
+        }
+        return maxSeq;
     }
 
     async fetch(request: Request): Promise<Response> {
@@ -168,6 +181,7 @@ export class BoardRoom implements DurableObject {
             // schema, so an unvisited deleted room stops existing entirely.
             this.schemaReady = false;
             this.nextSeq = 0;
+            this.tombstones = { strokes: 0, images: 0 };
             return new Response(null, { status: 204 });
         }
 
@@ -196,6 +210,25 @@ export class BoardRoom implements DurableObject {
             info = JSON.parse(rawInfo);
         } catch {
             return new Response("Bad identity", { status: 400 });
+        }
+
+        let held = 0;
+        for (const peer of this.ctx.getWebSockets()) {
+            const peerAttachment =
+                peer.deserializeAttachment() as Attachment | null;
+            if (peerAttachment?.userId === userId) held++;
+        }
+        if (held >= MAX_CONNECTIONS_PER_USER) {
+            return new Response("Too many connections", { status: 429 });
+        }
+
+        let connectBucket = this.connectBuckets.get(userId);
+        if (!connectBucket) {
+            connectBucket = { tokens: CONNECT_BURST, last: Date.now() };
+            this.connectBuckets.set(userId, connectBucket);
+        }
+        if (!spend(connectBucket, CONNECT_BURST, CONNECT_REFILL_PER_SECOND)) {
+            return new Response("Connecting too often", { status: 429 });
         }
 
         const pair = new WebSocketPair();
@@ -296,24 +329,35 @@ export class BoardRoom implements DurableObject {
     // stack that still refers to these rows.
     private vacuumIfIdle() {
         if (this.connections.size > 1) return;
-        for (const table of ["strokes", "images"]) {
+        for (const table of TABLES) {
             this.sql.exec(`DELETE FROM ${table} WHERE deleted = 1`);
+            this.tombstones[table] = 0;
         }
     }
 
     private capTombstones(table: "strokes" | "images") {
+        if (this.tombstones[table] <= TOMBSTONE_CAP) return;
+
+        this.tombstones[table] = this.countTombstones(table);
+        if (this.tombstones[table] <= TOMBSTONE_CAP) return;
+
+        const keep = Math.floor(TOMBSTONE_CAP / 4);
+        this.sql.exec(
+            `DELETE FROM ${table} WHERE deleted = 1 AND seq NOT IN (
+                SELECT seq FROM ${table} WHERE deleted = 1 ORDER BY seq DESC LIMIT ?
+            )`,
+            keep,
+        );
+        this.tombstones[table] = keep;
+    }
+
+    private countTombstones(table: "strokes" | "images"): number {
         const rows = this.sql
             .exec<{ count: number }>(
                 `SELECT COUNT(*) AS count FROM ${table} WHERE deleted = 1`,
             )
             .toArray();
-        if ((rows[0]?.count ?? 0) <= TOMBSTONE_CAP) return;
-        this.sql.exec(
-            `DELETE FROM ${table} WHERE deleted = 1 AND seq NOT IN (
-                SELECT seq FROM ${table} WHERE deleted = 1 ORDER BY seq DESC LIMIT ?
-            )`,
-            Math.floor(TOMBSTONE_CAP / 4),
-        );
+        return rows[0]?.count ?? 0;
     }
 
     webSocketMessage(socket: WebSocket, raw: string | ArrayBuffer) {
@@ -449,10 +493,11 @@ export class BoardRoom implements DurableObject {
     private softDelete(table: "strokes" | "images", ids: string[]) {
         if (ids.length === 0) return;
         const placeholders = ids.map(() => "?").join(",");
-        this.sql.exec(
-            `UPDATE ${table} SET deleted = 1 WHERE id IN (${placeholders})`,
+        this.tombstones[table] += this.sql.exec(
+            `UPDATE ${table} SET deleted = 1
+             WHERE id IN (${placeholders}) AND deleted = 0`,
             ...ids,
-        );
+        ).rowsWritten;
         this.capTombstones(table);
     }
 
@@ -460,11 +505,16 @@ export class BoardRoom implements DurableObject {
     // back at its original seq and therefore its original paint layer.
     private restore(table: "strokes" | "images", id: string, body: unknown) {
         const changed = this.sql.exec(
-            `UPDATE ${table} SET deleted = 0, body = ? WHERE id = ?`,
+            `UPDATE ${table} SET deleted = 0, body = ?
+             WHERE id = ? AND deleted = 1`,
             JSON.stringify(body),
             id,
         ).rowsWritten;
-        if (changed === 0) this.insert(table, id, body);
+        if (changed === 0) {
+            this.insert(table, id, body);
+            return;
+        }
+        this.tombstones[table] -= changed;
     }
 
     private merge(

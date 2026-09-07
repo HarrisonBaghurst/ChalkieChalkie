@@ -42,6 +42,22 @@
                 {
                     "tag": "Added",
                     "text": "The version you are running is now shown in the footer of the home page, beside the copyright, and is written with a v prefix everywhere it appears."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Erasing no longer makes a board re-count everything it has ever held each time something is rubbed out. This was by far the largest source of database work during a lesson, and a busy board now costs a small fraction of what it did."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The eraser sends its changes a little less often while it is being dragged. Rubbing out feels the same, but a long sweep across a full board is a fraction of the work it was."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A board now accepts at most three connections at once from the same person, so one account cannot hold a room open across a dozen tabs. A fourth tab waits instead of joining, and connects as soon as one of the others is closed."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Rejoining the same board over and over is now limited, since every join reloads the whole drawing. Ordinary use is unaffected and a few reloads in a row are fine, but a run of rapid reconnections is held back until it settles."
                 }
             ]
         },
