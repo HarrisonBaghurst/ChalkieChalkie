@@ -7,7 +7,9 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
+import { joinDenialLabel, lifecycleStatus } from "@/lib/workspaceLifecycle";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useNow } from "@/hooks/useNow";
 import PeopleStack from "./PeopleStack";
 import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +42,11 @@ const WorkspaceTableRow = ({
     const router = useRouter();
     const { user } = useUser();
     const role = useUserRole();
+    const now = useNow();
     const [modalStep, setModalStep] = useState<number | null>(null);
+
+    const status = lifecycleStatus(workspace, now);
+    const joinDenial = joinDenialLabel(workspace, now);
 
     const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
 
@@ -145,22 +151,24 @@ const WorkspaceTableRow = ({
                 )}
             </td>
             <td className={cellClass}>
-                <Badge variant="status">
+                <Badge variant="status" suppressHydrationWarning>
                     <span
                         className={cn(
                             "w-1.5 h-1.5 rounded-full",
-                            bucket === "previous"
-                                ? "bg-green-500"
-                                : "bg-amber-400",
+                            status.dotClass,
                         )}
                     />
-                    {bucket === "previous" ? "Completed" : "Upcoming"}
+                    {status.label}
                 </Badge>
             </td>
             <td className={cellClass}>
                 <RowActionsMenu
                     actions={[
-                        { label: "Join workspace", onSelect: join },
+                        {
+                            label: joinDenial ?? "Join workspace",
+                            onSelect: join,
+                            disabled: !!joinDenial,
+                        },
                         ...(canManage
                             ? [
                                   {

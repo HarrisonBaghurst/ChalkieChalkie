@@ -4,8 +4,42 @@
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
         {
+            "version": "0.1.2",
+            "date": "8 September 2026",
+            "changes": [
+                {
+                    "tag": "Changed",
+                    "text": "Workspaces now open an hour before the lesson begins rather than from the moment they are created, so a board can only be joined around the session it was made for."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "A workspace's start time is fixed once it has opened. Everything else stays editable, so feedback can still be written after the lesson; if a session is not going ahead, delete the workspace instead of moving it."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Workspaces are now removed 14 days after their start time rather than after 14 days without activity, so how long a board and its feedback are kept, is known the moment it is scheduled."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A status against every workspace showing where it is in that cycle - when it opens, that it is ready to join, or how long is left before it is deleted - counting down live without needing a page refresh."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Joining is now disabled, rather than failing on arrival, while a workspace is closed, and says why. A board opened directly outside its window explains whether it has not opened yet, has no start time, or has already been removed."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Warnings when scheduling a workspace that will not behave as expected: one with no start time cannot be opened and is deleted the same night, and one booked inside the opening hour opens straight away with its start time locked on save."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Changelog entries are now dated by the day a version went live rather than the day its code was written, so the dates line up with when the changes actually reached the app."
+                }
+            ]
+        },
+        {
             "version": "0.1.1",
-            "date": "6 September 2026",
+            "date": "7 September 2026",
             "changes": [
                 {
                     "tag": "Changed",
@@ -31,7 +65,7 @@
         },
         {
             "version": "0.1.0",
-            "date": "5 September 2026",
+            "date": "6 September 2026",
             "changes": [
                 "Chalkie Chalkie's minimal-production release. This includes all basic features that the app will continue to develop and sets up the infrastructre to build upon.",
                 {

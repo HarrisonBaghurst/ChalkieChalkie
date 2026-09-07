@@ -3,6 +3,7 @@ import testWorkspaces from "@/data/testWorkspaces.json";
 import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/serverRole";
+import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
 
 // Server-side so the tutor-only Actions are right on first paint. auth() stays
 // outside the try: Next throws from it to force dynamic rendering, and that
@@ -22,6 +23,8 @@ const page = async () => {
     const role = await resolveRole();
 
     if (process.env.ENVIRONMENT === "testing") {
+        const limits = limitsForPlan();
+
         const upcoming: Workspace[] = testWorkspaces.upcomingLessons.map(
             (lesson) => ({
                 id: lesson.id,
@@ -30,6 +33,7 @@ const page = async () => {
                 host: lesson.host,
                 collaboratorIds: lesson.collaboratorIds,
                 startTime: lesson.startTime,
+                ...scheduleWindow(lesson.startTime, limits),
                 lastActivity: lesson.lastActivity,
             }),
         );
@@ -40,6 +44,7 @@ const page = async () => {
             host: lesson.host,
             collaboratorIds: lesson.collaboratorIds,
             startTime: lesson.startTime,
+            ...scheduleWindow(lesson.startTime, limits),
             lastActivity: lesson.lastActivity,
             feedback: lesson.feedback,
         }));

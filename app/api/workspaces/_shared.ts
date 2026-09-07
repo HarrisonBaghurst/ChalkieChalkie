@@ -51,12 +51,13 @@ export function validateWorkspaceBody(
         return new Response("Invalid feedback", { status: 400 });
     }
 
-    if (
-        startTime !== undefined &&
-        startTime !== null &&
-        typeof startTime !== "string"
-    ) {
-        return new Response("Invalid startTime", { status: 400 });
+    if (startTime !== undefined && startTime !== null) {
+        if (
+            typeof startTime !== "string" ||
+            Number.isNaN(new Date(startTime).getTime())
+        ) {
+            return new Response("Invalid startTime", { status: 400 });
+        }
     }
 
     let collaboratorIds: string[] = [];

@@ -6,6 +6,12 @@ import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import {
+    isStartTimeLocked,
+    limitsForPlan,
+    sameInstant,
+    scheduleWindow,
+} from "@/lib/workspaceLifecycle";
+import {
     validateWorkspaceBody,
     type WorkspaceBody,
 } from "../_shared";
@@ -97,12 +103,40 @@ export async function PATCH(
 
     const { data: existingRoom, error: fetchError } = await supabaseAdmin
         .from("Room")
-        .select("id, host_id, user_ids")
+        .select("*")
         .eq("id", roomId)
         .single();
 
     if (fetchError || !existingRoom || existingRoom.host_id !== userId) {
         return new Response("Forbidden", { status: 403 });
+    }
+
+    if ("startTime" in body) {
+        const unchanged = sameInstant(
+            validated.startTime,
+            existingRoom.start_time,
+        );
+
+        if (isStartTimeLocked(existingRoom.opens_at)) {
+            if (!unchanged) {
+                return new Response(
+                    "Start time is locked once the workspace has opened",
+                    { status: 409 },
+                );
+            }
+            delete update.start_time;
+        } else {
+            const window = scheduleWindow(
+                validated.startTime,
+                limitsForPlan(),
+            );
+            update.opens_at = window.opensAt;
+            update.expires_at = window.expiresAt;
+        }
+    }
+
+    if (Object.keys(update).length === 0) {
+        return Response.json(existingRoom);
     }
 
     const { data, error } = await supabaseAdmin

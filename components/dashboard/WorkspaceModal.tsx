@@ -4,6 +4,12 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { userInfo, Workspace } from "@/types/userTypes";
+import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
+import {
+    isStartTimeLocked,
+    limitsForPlan,
+    opensWithinLockWindow,
+} from "@/lib/workspaceLifecycle";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
 import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
 import TeamStep from "./workspaceModalSteps/TeamStep";
@@ -41,18 +47,6 @@ type FormData = {
     feedback: string;
 };
 
-type RawRoom = {
-    id: string;
-    title: string;
-    description: string;
-    user_ids: string[];
-    host_id: string;
-    start_time: string;
-    last_activity_at?: string;
-    lastActivity?: string;
-    feedback?: string | null;
-};
-
 const STEPS = [
     { id: 1, label: "Basics" },
     { id: 2, label: "Schedule" },
@@ -61,8 +55,7 @@ const STEPS = [
     { id: 5, label: "Review" },
 ] as const;
 
-export const FEEDBACK_STEP =
-    STEPS.findIndex((s) => s.label === "Feedback") + 1;
+export const FEEDBACK_STEP = STEPS.findIndex((s) => s.label === "Feedback") + 1;
 
 const emptyForm: FormData = {
     title: "",
@@ -86,12 +79,14 @@ const WorkspaceModal = ({
     const [form, setForm] = useState<FormData>(emptyForm);
     const [submitting, setSubmitting] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [confirmingImmediate, setConfirmingImmediate] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (!open) return;
         setStep(initialStep);
         setConfirmingDelete(false);
+        setConfirmingImmediate(false);
 
         if (mode.kind === "edit") {
             setForm({
@@ -125,17 +120,6 @@ const WorkspaceModal = ({
     }, [open, mode, user, initialStep]);
 
     if (!open) return null;
-
-    const mapRawRoom = (raw: RawRoom): Workspace => ({
-        id: raw.id,
-        title: raw.title,
-        description: raw.description,
-        collaboratorIds: raw.user_ids,
-        host: raw.host_id,
-        startTime: raw.start_time,
-        lastActivity: raw.last_activity_at ?? raw.lastActivity ?? "",
-        feedback: raw.feedback ?? undefined,
-    });
 
     const handleSubmit = async () => {
         if (!user || submitting) return;
@@ -172,8 +156,8 @@ const WorkspaceModal = ({
                 return;
             }
 
-            const raw: RawRoom = await res.json();
-            const mapped = mapRawRoom(raw);
+            const raw: RoomRow = await res.json();
+            const mapped = mapRoomRow(raw);
             toast.success(
                 isCreate ? "Workspace created." : "Workspace updated.",
             );
@@ -217,6 +201,21 @@ const WorkspaceModal = ({
 
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
+
+    const startTimeLocked =
+        mode.kind === "edit" && isStartTimeLocked(mode.workspace.opensAt);
+
+    const needsImmediateConfirm =
+        !startTimeLocked &&
+        opensWithinLockWindow(form.startTime, limitsForPlan());
+
+    const handleSave = () => {
+        if (needsImmediateConfirm && !confirmingImmediate) {
+            setConfirmingImmediate(true);
+            return;
+        }
+        handleSubmit();
+    };
 
     return (
         <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -294,15 +293,6 @@ const WorkspaceModal = ({
                     onStepChange={setStep}
                 />
 
-                {/*  `-m-1 p-1` rather than a bare `pr-1`: overflow-y-auto makes
-                    overflow-x compute to auto as well (the spec resolves a
-                    `visible` axis to `auto` when the other axis isn't), so this
-                    clips on every side, not just vertically. A w-full field sits
-                    flush against the content edge and its focus-visible ring-3 —
-                    a box-shadow 3px outside the border box — was being sliced
-                    off. The padding gives the ring room and the matching
-                    negative margin pulls the box back so nothing shifts. Same
-                    idiom as SheetBody. */}
                 <div className="flex-1 min-h-80 overflow-y-auto -m-1 p-1">
                     {step === 1 && (
                         <BasicsStep
@@ -319,9 +309,11 @@ const WorkspaceModal = ({
                     {step === 2 && (
                         <ScheduleStep
                             value={form.startTime}
-                            onChange={(startTime) =>
-                                setForm((p) => ({ ...p, startTime }))
-                            }
+                            locked={startTimeLocked}
+                            onChange={(startTime) => {
+                                setConfirmingImmediate(false);
+                                setForm((p) => ({ ...p, startTime }));
+                            }}
                         />
                     )}
                     {step === 3 && (
@@ -352,11 +344,7 @@ const WorkspaceModal = ({
                     )}
                 </div>
 
-                {/* pb-safe with no --safe-pb adds nothing but the device's
-                    bottom inset, which is exactly what these buttons need when
-                    the dialog is full-screen and they sit on the viewport
-                    edge. It resolves to zero everywhere else. */}
-                <div className="flex items-center justify-between pb-safe">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-safe">
                     <Button
                         onClick={() => setStep((s) => Math.max(1, s - 1))}
                         disabled={isFirstStep}
@@ -364,13 +352,41 @@ const WorkspaceModal = ({
                         Back
                     </Button>
                     {isFinalStep ? (
-                        <Button onClick={handleSubmit} disabled={submitting}>
-                            {submitting
-                                ? "Saving..."
-                                : mode.kind === "create"
-                                  ? "Create"
-                                  : "Save"}
-                        </Button>
+                        confirmingImmediate ? (
+                            <div className="flex items-center gap-1 text-caption">
+                                <span className="text-foreground-third">
+                                    Opens now, time locked?
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
+                                    className="font-inter-bold"
+                                >
+                                    {submitting ? "Saving..." : "Confirm"}
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                        setConfirmingImmediate(false)
+                                    }
+                                    disabled={submitting}
+                                    className="text-foreground-third hover:text-foreground"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        ) : (
+                            <Button onClick={handleSave} disabled={submitting}>
+                                {submitting
+                                    ? "Saving..."
+                                    : mode.kind === "create"
+                                      ? "Create"
+                                      : "Save"}
+                            </Button>
+                        )
                     ) : (
                         <Button
                             onClick={() =>

@@ -7,6 +7,8 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime, daysUntil } from "@/lib/textUtils";
 import { pickCounterparty } from "@/lib/dashboardCounterparty";
+import { joinDenialLabel } from "@/lib/workspaceLifecycle";
+import { useNow } from "@/hooks/useNow";
 import {
     Tooltip,
     TooltipContent,
@@ -104,8 +106,10 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
         : null;
 
     const router = useRouter();
+    const now = useNow();
 
     const days = workspace ? daysUntil(workspace.startTime) : 0;
+    const denial = workspace ? joinDenialLabel(workspace, now) : null;
 
     if (!workspace) {
         return (
@@ -135,21 +139,25 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                 <TooltipTrigger asChild>
                     <button
                         type="button"
+                        disabled={!!denial}
                         onClick={() => router.push(`/board/${workspace.id}`)}
                         className={cn(
                             CARD_CLASS,
-                            "group relative hidden text-left cursor-pointer lg:flex",
+                            "group relative hidden text-left lg:flex",
+                            denial ? "cursor-default" : "cursor-pointer",
                         )}
                     >
-                        <div className="absolute top-5 right-5">
-                            <Image
-                                src="/icons/external-link.svg"
-                                alt="Open workspace"
-                                width={20}
-                                height={20}
-                                className="opacity-50 group-hover:opacity-100 transition-opacity"
-                            />
-                        </div>
+                        {!denial && (
+                            <div className="absolute top-5 right-5">
+                                <Image
+                                    src="/icons/external-link.svg"
+                                    alt="Open workspace"
+                                    width={20}
+                                    height={20}
+                                    className="opacity-50 group-hover:opacity-100 transition-opacity"
+                                />
+                            </div>
+                        )}
                         <NextContent
                             workspace={workspace}
                             counterparty={counterparty}
@@ -157,7 +165,9 @@ const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
                         />
                     </button>
                 </TooltipTrigger>
-                <TooltipContent>Join workspace</TooltipContent>
+                <TooltipContent suppressHydrationWarning>
+                    {denial ?? "Join workspace"}
+                </TooltipContent>
             </Tooltip>
         </>
     );

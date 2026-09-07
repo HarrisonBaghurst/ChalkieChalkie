@@ -47,9 +47,13 @@ export function RoomProvider({
     const [room, setRoom] = useState<RealtimeRoom | null>(null);
 
     useEffect(() => {
-        const instance = new RealtimeRoom(roomId, (status) => {
+        const instance = new RealtimeRoom(roomId, (status, reason) => {
             if (status === 403) {
-                routerRef.current.push("/forbidden");
+                routerRef.current.push(
+                    reason
+                        ? `/forbidden?reason=${encodeURIComponent(reason)}`
+                        : "/forbidden",
+                );
                 return;
             }
             toast.error("Authentication failed.");

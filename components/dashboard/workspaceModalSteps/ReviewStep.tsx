@@ -1,6 +1,7 @@
 import React from "react";
 import { userInfo } from "@/types/userTypes";
 import { formatDate } from "@/lib/textUtils";
+import ScheduleNotice from "./ScheduleNotice";
 
 type ReviewStepProps = {
     title: string;
@@ -37,7 +38,11 @@ const ReviewStep = ({
     return (
         <div className="flex flex-col gap-5">
             <Row label="TITLE">
-                {title.trim() ? title : <Placeholder text="Untitled workspace" />}
+                {title.trim() ? (
+                    title
+                ) : (
+                    <Placeholder text="Untitled workspace" />
+                )}
             </Row>
             <Row label="DESCRIPTION">
                 {description.trim() ? (
@@ -47,8 +52,18 @@ const ReviewStep = ({
                 )}
             </Row>
             <Row label="START TIME">
-                {startTime ? formatDate(startTime) : <Placeholder text="Not set" />}
+                {startTime ? (
+                    formatDate(startTime)
+                ) : (
+                    <Placeholder text="Not set" />
+                )}
             </Row>
+            {!startTime && (
+                <ScheduleNotice>
+                    A workspace with no start time cannot be opened, and will be
+                    deleted tonight.
+                </ScheduleNotice>
+            )}
             <Row label="COLLABORATORS">
                 {collaborators.length > 0 ? (
                     <div className="flex flex-col gap-1">

@@ -12,6 +12,7 @@ export type RowAction = {
     label: string;
     onSelect: () => void;
     variant?: "default" | "destructive";
+    disabled?: boolean;
 };
 
 type RowActionsMenuProps = {
@@ -52,6 +53,7 @@ const RowActionsMenu = ({
                         <DropdownMenuItem
                             key={action.label}
                             variant={action.variant}
+                            disabled={action.disabled}
                             onClick={runAction(action.onSelect)}
                         >
                             {action.label}

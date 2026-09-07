@@ -4,7 +4,6 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
-const INACTIVITY_HOURS = 24 * 14; // remove after 2 weeks of inactivity
 const INVITE_RETENTION_DAYS = 7;
 const DELETE_BATCH = 500;
 const TIME_BUDGET_MS = 45_000;
@@ -22,9 +21,7 @@ export async function GET(request: Request) {
     const blocked = await enforceRateLimit(request, "cron");
     if (blocked) return blocked;
 
-    const cutoff = new Date(
-        Date.now() - INACTIVITY_HOURS * 60 * 60 * 1000,
-    ).toISOString();
+    const cutoff = new Date().toISOString();
 
     const startedAt = Date.now();
     let deletedCount = 0;
@@ -35,11 +32,11 @@ export async function GET(request: Request) {
         const { data: rooms, error } = await supabaseAdmin
             .from("Room")
             .select("id")
-            .lt("last_activity_at", cutoff)
+            .lt("expires_at", cutoff)
             .limit(DELETE_BATCH);
 
         if (error) {
-            console.error("Failed to fetch inactive rooms:", error);
+            console.error("Failed to fetch expired rooms:", error);
             return Response.json(
                 { message: `Failed to fetch rooms`, error },
                 { status: 500 },

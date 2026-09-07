@@ -3,6 +3,7 @@ import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
+import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
 import { validateWorkspaceBody, type WorkspaceBody } from "./_shared";
 
 export async function POST(req: Request) {
@@ -31,6 +32,8 @@ export async function POST(req: Request) {
         new Set([userId, ...validated.collaborators]),
     );
 
+    const window = scheduleWindow(validated.startTime, limitsForPlan());
+
     const { data, error } = await supabaseAdmin
         .from("Room")
         .insert({
@@ -40,6 +43,8 @@ export async function POST(req: Request) {
             title: validated.title,
             description: validated.description,
             start_time: validated.startTime,
+            opens_at: window.opensAt,
+            expires_at: window.expiresAt,
             feedback: validated.feedback,
             last_activity_at: new Date(),
         })

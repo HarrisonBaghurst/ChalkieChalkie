@@ -110,7 +110,7 @@ export class RealtimeRoom {
 
     constructor(
         private roomId: string,
-        private onAuthFailure: (status: number) => void,
+        private onAuthFailure: (status: number, reason?: string) => void,
     ) {
         this.snapshot = this.buildSnapshot();
         this.connect();
@@ -152,7 +152,13 @@ export class RealtimeRoom {
                 body: JSON.stringify({ room: this.roomId }),
             });
             if (!response.ok) {
-                this.onAuthFailure(response.status);
+                let reason: string | undefined;
+                try {
+                    reason = (await response.json())?.reason;
+                } catch {
+                    reason = undefined;
+                }
+                this.onAuthFailure(response.status, reason);
                 if (response.status === 403 || response.status === 401) return;
                 this.scheduleReconnect();
                 return;

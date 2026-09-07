@@ -16,12 +16,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { WorkspaceBucket } from "../WorkspaceTableRow";
+import type { LifecycleStatus } from "@/lib/workspaceLifecycle";
 
 type WorkspaceDetailSheetProps = {
     open: boolean;
     workspace: Workspace;
-    bucket: WorkspaceBucket;
+    status: LifecycleStatus;
     participants: userInfo[]; // host first
     canManage: boolean;
     canAddFeedback: boolean;
@@ -48,7 +48,7 @@ const Field = ({
 const WorkspaceDetailSheet = ({
     open,
     workspace,
-    bucket,
+    status,
     participants,
     canManage,
     canAddFeedback,
@@ -75,16 +75,18 @@ const WorkspaceDetailSheet = ({
 
                 <SheetBody>
                     <div className="flex flex-col gap-5">
-                        <Badge variant="status" className="px-0">
+                        <Badge
+                            variant="status"
+                            className="px-0"
+                            suppressHydrationWarning
+                        >
                             <span
                                 className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    bucket === "previous"
-                                        ? "bg-green-500"
-                                        : "bg-amber-400",
+                                    status.dotClass,
                                 )}
                             />
-                            {bucket === "previous" ? "Completed" : "Upcoming"}
+                            {status.label}
                         </Badge>
 
                         <Field label="Description">

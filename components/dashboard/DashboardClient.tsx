@@ -12,7 +12,9 @@ import {
     hasActiveDashboardFilters,
 } from "@/lib/dashboardFilters";
 import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
+import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useNow } from "@/hooks/useNow";
 import Sidebar from "./Sidebar";
 import TabBar from "./mobile/TabBar";
 import DashboardShell from "./DashboardShell";
@@ -52,7 +54,7 @@ const DashboardClient = ({
         EMPTY_DASHBOARD_FILTERS,
     );
 
-    const now = useMemo(() => new Date(), []);
+    const now = useNow();
 
     useEffect(() => {
         if (!isLoaded || !isSignedIn) return;
@@ -91,30 +93,8 @@ const DashboardClient = ({
                     return;
                 }
 
-                type RawRoom = {
-                    id: string;
-                    title: string;
-                    description: string;
-                    user_ids: string[];
-                    host_id: string;
-                    start_time: string;
-                    last_activity_at?: string;
-                    lastActivity?: string;
-                    feedback?: string | null;
-                };
-
-                const raw: RawRoom[] = await res.json();
-                const mapped: Workspace[] = raw.map((ws) => ({
-                    id: ws.id,
-                    title: ws.title,
-                    description: ws.description,
-                    collaboratorIds: ws.user_ids,
-                    host: ws.host_id,
-                    startTime: ws.start_time,
-                    lastActivity: ws.last_activity_at ?? ws.lastActivity ?? "",
-                    feedback: ws.feedback ?? undefined,
-                }));
-                setWorkspaces(mapped);
+                const raw: RoomRow[] = await res.json();
+                setWorkspaces(raw.map(mapRoomRow));
 
                 const ids = new Set<string>();
                 raw.forEach((ws) => {
@@ -157,7 +137,7 @@ const DashboardClient = ({
         [usersInfo],
     );
 
-    const cutoff = now.getTime() - DASHBOARD_GRACE_MS;
+    const cutoff = now - DASHBOARD_GRACE_MS;
 
     const upcomingAll = useMemo(
         () =>
@@ -230,7 +210,7 @@ const DashboardClient = ({
 
     const activeFilters = hasActiveDashboardFilters(filters);
 
-    const nextWorkspace = upcomingAll[0] ?? null;
+    const nextWorkspace = upcomingAll.find((w) => !!w.startTime) ?? null;
 
     const mergeUsers = (incoming: userInfo[]) => {
         setUsersInfo((prev) => {

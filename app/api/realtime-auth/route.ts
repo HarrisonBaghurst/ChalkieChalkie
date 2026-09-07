@@ -1,6 +1,7 @@
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { signTicket } from "@/lib/realtimeTicket";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { boardAccessDenial } from "@/lib/workspaceLifecycle";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 
@@ -34,13 +35,18 @@ export async function POST(request: NextRequest) {
 
     const { data: roomData, error } = await supabaseAdmin
         .from("Room")
-        .select("id")
+        .select("id, opens_at, expires_at")
         .eq("id", room)
         .contains("user_ids", [userId])
         .single();
 
     if (error || !roomData) {
         return new Response("Forbidden", { status: 403 });
+    }
+
+    const denial = boardAccessDenial(roomData.opens_at, roomData.expires_at);
+    if (denial) {
+        return Response.json({ reason: denial }, { status: 403 });
     }
 
     const user = await currentUser();

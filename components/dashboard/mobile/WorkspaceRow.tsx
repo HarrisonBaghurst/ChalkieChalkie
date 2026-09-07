@@ -7,7 +7,9 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
+import { lifecycleStatus } from "@/lib/workspaceLifecycle";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useNow } from "@/hooks/useNow";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { WorkspaceBucket } from "../WorkspaceTableRow";
 import WorkspaceModal, { FEEDBACK_STEP } from "../WorkspaceModal";
@@ -34,6 +36,7 @@ const WorkspaceRow = ({
 }: WorkspaceRowProps) => {
     const { user } = useUser();
     const role = useUserRole();
+    const now = useNow();
     const [detailOpen, setDetailOpen] = useState(false);
     const [modalStep, setModalStep] = useState<number | null>(null);
 
@@ -61,7 +64,7 @@ const WorkspaceRow = ({
         return participants.find((p) => p.id !== workspace.host) ?? null;
     }, [user, workspace, usersMap, participants]);
 
-    const statusLabel = bucket === "previous" ? "Completed" : "Upcoming";
+    const status = lifecycleStatus(workspace, now);
 
     return (
         <>
@@ -104,17 +107,19 @@ const WorkspaceRow = ({
                 <span
                     className={cn(
                         "w-1.5 h-1.5 shrink-0 rounded-full",
-                        bucket === "previous" ? "bg-green-500" : "bg-amber-400",
+                        status.dotClass,
                     )}
                 />
-                <span className="sr-only">{statusLabel}</span>
+                <span className="sr-only" suppressHydrationWarning>
+                    {status.label}
+                </span>
                 <ChevronRightIcon className="size-4 shrink-0 text-foreground-third" />
             </button>
 
             <WorkspaceDetailSheet
                 open={detailOpen}
                 workspace={workspace}
-                bucket={bucket}
+                status={status}
                 participants={participants}
                 canManage={canManage}
                 canAddFeedback={canAddFeedback}
