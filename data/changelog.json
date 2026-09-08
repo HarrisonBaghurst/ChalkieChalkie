@@ -18,6 +18,10 @@
                 {
                     "tag": "Fixed",
                     "text": "Students would see their tutor icon in the next card and their own icon in the workspace list, this bug has been fixed."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Increased workspace grace period when moving from upcoming to previous tabs from 5 minutes to 10 minutes."
                 }
             ]
         },

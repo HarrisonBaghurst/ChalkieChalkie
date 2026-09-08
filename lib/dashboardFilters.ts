@@ -1,6 +1,6 @@
 import { Workspace } from "@/types/userTypes";
 
-export const DASHBOARD_GRACE_MS = 5 * 60 * 1000;
+export const DASHBOARD_GRACE_MS = 10 * 60 * 1000;
 
 export type SortDirection = "asc" | "desc";
 
