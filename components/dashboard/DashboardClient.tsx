@@ -11,7 +11,7 @@ import {
     EMPTY_DASHBOARD_FILTERS,
     hasActiveDashboardFilters,
 } from "@/lib/dashboardFilters";
-import { isHost, viewerIsHostOfAny } from "@/lib/workspaceHost";
+import { isHost } from "@/lib/workspaceHost";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
@@ -175,11 +175,6 @@ const DashboardClient = ({
         [workspaces, cutoff],
     );
 
-    const viewerIsHost = useMemo(
-        () => viewerIsHostOfAny(user?.id, [...upcomingAll, ...previousAll]),
-        [user?.id, upcomingAll, previousAll],
-    );
-
     // Union, not replacement: a new link with no workspaces yet and an
     // unlinked past collaborator both have to stay filterable.
     const collaborators = useMemo(() => {
@@ -266,7 +261,7 @@ const DashboardClient = ({
                     <Next
                         workspace={nextWorkspace}
                         usersMap={usersMap}
-                        viewerIsHost={viewerIsHost}
+                        viewerId={user?.id}
                     />
                     <WorkspaceLists
                         upcoming={upcomingFiltered}

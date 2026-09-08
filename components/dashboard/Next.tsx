@@ -38,7 +38,7 @@ const TagIcon = ({ src }: { src: string }) => (
 type NextProps = {
     workspace: Workspace | null;
     usersMap: Record<string, userInfo>;
-    viewerIsHost: boolean;
+    viewerId: string | undefined;
 };
 
 const NextContent = ({
@@ -100,9 +100,9 @@ const NextContent = ({
 const CARD_CLASS =
     "w-full lg:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
-const Next = ({ workspace, usersMap, viewerIsHost }: NextProps) => {
+const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
     const counterparty = workspace
-        ? pickCounterparty(workspace, usersMap, viewerIsHost)
+        ? pickCounterparty(workspace, usersMap, viewerId)
         : null;
 
     const router = useRouter();

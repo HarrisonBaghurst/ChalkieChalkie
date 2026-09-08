@@ -14,6 +14,10 @@
                 {
                     "tag": "Fixed",
                     "text": "Clear filters button styling updated for consistency between itself and other button states."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Students would see their tutor icon in the next card and their own icon in the workspace list, this bug has been fixed."
                 }
             ]
         },

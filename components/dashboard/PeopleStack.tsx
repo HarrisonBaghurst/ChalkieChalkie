@@ -5,19 +5,18 @@ import TapTooltip from "@/components/TapTooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type PeopleStackProps = {
-    people: userInfo[]; // non-host participants
-    host?: userInfo;
+    people: userInfo[]; // stacked avatars, viewer-relative
+    participants: userInfo[]; // the whole room, host first
+    hostId?: string;
 };
 
 const fullName = (person: userInfo) =>
     `${person.firstName} ${person.lastName}`.trim();
 
-const PeopleStack = ({ people, host }: PeopleStackProps) => {
+const PeopleStack = ({ people, participants, hostId }: PeopleStackProps) => {
     if (people.length === 0) {
         return <span className="text-caption text-foreground-third">—</span>;
     }
-
-    const participants = host ? [host, ...people] : people;
 
     const [first, ...rest] = people;
     const firstName = fullName(first);
@@ -35,7 +34,7 @@ const PeopleStack = ({ people, host }: PeopleStackProps) => {
                             className="flex items-center gap-2"
                         >
                             <span>{fullName(person)}</span>
-                            {host && person.id === host.id && (
+                            {person.id === hostId && (
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             )}
                         </div>

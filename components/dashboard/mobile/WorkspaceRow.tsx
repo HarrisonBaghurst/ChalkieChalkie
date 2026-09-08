@@ -7,6 +7,7 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
+import { pickCounterparty } from "@/lib/dashboardCounterparty";
 import { lifecycleStatus } from "@/lib/workspaceLifecycle";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
@@ -57,12 +58,10 @@ const WorkspaceRow = ({
             .filter((u): u is userInfo => !!u);
     }, [workspace.host, workspace.collaboratorIds, usersMap]);
 
-    // A host sees their first student, everyone else sees the host.
-    const counterparty = useMemo<userInfo | null>(() => {
-        const viewerHosts = !!user && isHost(user.id, workspace);
-        if (!viewerHosts) return usersMap[workspace.host] ?? null;
-        return participants.find((p) => p.id !== workspace.host) ?? null;
-    }, [user, workspace, usersMap, participants]);
+    const counterparty = useMemo<userInfo | null>(
+        () => pickCounterparty(workspace, usersMap, user?.id),
+        [workspace, usersMap, user?.id],
+    );
 
     const status = lifecycleStatus(workspace, now);
 

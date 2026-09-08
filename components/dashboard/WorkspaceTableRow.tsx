@@ -7,6 +7,7 @@ import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
+import { pickCounterparties } from "@/lib/dashboardCounterparty";
 import { joinDenialLabel, lifecycleStatus } from "@/lib/workspaceLifecycle";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
@@ -53,12 +54,8 @@ const WorkspaceTableRow = ({
     const canAddFeedback = canManage && bucket === "previous";
 
     const people = useMemo<userInfo[]>(
-        () =>
-            (workspace.collaboratorIds ?? [])
-                .filter((id) => id !== workspace.host)
-                .map((id) => usersMap[id])
-                .filter((u): u is userInfo => !!u),
-        [workspace.collaboratorIds, workspace.host, usersMap],
+        () => pickCounterparties(workspace, usersMap, user?.id),
+        [workspace, usersMap, user?.id],
     );
 
     const collaborators = useMemo<userInfo[]>(() => {
@@ -78,7 +75,11 @@ const WorkspaceTableRow = ({
     return (
         <tr>
             <td className={cellClass}>
-                <PeopleStack people={people} host={usersMap[workspace.host]} />
+                <PeopleStack
+                    people={people}
+                    participants={collaborators}
+                    hostId={workspace.host}
+                />
             </td>
             <td className={cellClass}>
                 {workspace.title ? (
