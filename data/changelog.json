@@ -10,6 +10,10 @@
                 {
                     "tag": "Fixed",
                     "text": "Workspace creation and modification dialog would reset intermittently, this bug has been fixed."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Clear filters button styling updated for consistency between itself and other button states."
                 }
             ]
         },

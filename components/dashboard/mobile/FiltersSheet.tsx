@@ -128,8 +128,9 @@ const FiltersSheet = ({
                             disabled={!hasActiveFilters}
                             onClick={onClearFilters}
                             className={cn(
-                                "text-foreground-third",
-                                hasActiveFilters && "hover:text-foreground",
+                                hasActiveFilters
+                                    ? "text-foreground"
+                                    : "text-foreground-third",
                             )}
                         >
                             Clear filters
