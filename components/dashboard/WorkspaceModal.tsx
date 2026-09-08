@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { userInfo, Workspace } from "@/types/userTypes";
@@ -65,8 +65,43 @@ const emptyForm: FormData = {
     feedback: "",
 };
 
-const WorkspaceModal = ({
-    open,
+type ClerkUser = ReturnType<typeof useUser>["user"];
+
+const initialForm = (mode: WorkspaceModalMode, user: ClerkUser): FormData => {
+    if (mode.kind === "edit") {
+        return {
+            title: mode.workspace.title ?? "",
+            description: mode.workspace.description ?? "",
+            startTime: mode.workspace.startTime
+                ? new Date(mode.workspace.startTime)
+                : null,
+            collaborators: mode.collaborators,
+            feedback: mode.workspace.feedback ?? "",
+        };
+    }
+
+    const ownerInfo: userInfo | null = user
+        ? {
+              id: user.id,
+              firstName: user.firstName ?? "",
+              lastName: user.lastName ?? "",
+              imageUrl: user.imageUrl ?? "",
+              email:
+                  user.primaryEmailAddress?.emailAddress ??
+                  user.emailAddresses[0]?.emailAddress ??
+                  "",
+          }
+        : null;
+
+    return { ...emptyForm, collaborators: ownerInfo ? [ownerInfo] : [] };
+};
+
+const WorkspaceModal = (props: WorkspaceModalProps) => {
+    if (!props.open) return null;
+    return <WorkspaceModalContent {...props} />;
+};
+
+const WorkspaceModalContent = ({
     mode,
     friends,
     initialStep = 1,
@@ -76,50 +111,11 @@ const WorkspaceModal = ({
 }: WorkspaceModalProps) => {
     const { user } = useUser();
     const [step, setStep] = useState(initialStep);
-    const [form, setForm] = useState<FormData>(emptyForm);
+    const [form, setForm] = useState<FormData>(() => initialForm(mode, user));
     const [submitting, setSubmitting] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
     const [confirmingImmediate, setConfirmingImmediate] = useState(false);
     const [deleting, setDeleting] = useState(false);
-
-    useEffect(() => {
-        if (!open) return;
-        setStep(initialStep);
-        setConfirmingDelete(false);
-        setConfirmingImmediate(false);
-
-        if (mode.kind === "edit") {
-            setForm({
-                title: mode.workspace.title ?? "",
-                description: mode.workspace.description ?? "",
-                startTime: mode.workspace.startTime
-                    ? new Date(mode.workspace.startTime)
-                    : null,
-                collaborators: mode.collaborators,
-                feedback: mode.workspace.feedback ?? "",
-            });
-        } else {
-            const ownerInfo: userInfo | null = user
-                ? {
-                      id: user.id,
-                      firstName: user.firstName ?? "",
-                      lastName: user.lastName ?? "",
-                      imageUrl: user.imageUrl ?? "",
-                      email:
-                          user.primaryEmailAddress?.emailAddress ??
-                          user.emailAddresses[0]?.emailAddress ??
-                          "",
-                  }
-                : null;
-
-            setForm({
-                ...emptyForm,
-                collaborators: ownerInfo ? [ownerInfo] : [],
-            });
-        }
-    }, [open, mode, user, initialStep]);
-
-    if (!open) return null;
 
     const handleSubmit = async () => {
         if (!user || submitting) return;
@@ -218,7 +214,7 @@ const WorkspaceModal = ({
     };
 
     return (
-        <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+        <Dialog open onOpenChange={(next) => !next && onClose()}>
             <DialogContent
                 showCloseButton={false}
                 mobileFullScreen

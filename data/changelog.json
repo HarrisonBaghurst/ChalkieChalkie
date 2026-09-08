@@ -1,8 +1,18 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.1.2",
+    "currentVersion": "0.1.3",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.1.3",
+            "date": "9 September 2026",
+            "changes": [
+                {
+                    "tag": "Fixed",
+                    "text": "Workspace creation and modification dialog would reset intermittently, this bug has been fixed."
+                }
+            ]
+        },
         {
             "version": "0.1.2",
             "date": "8 September 2026",
