@@ -50,7 +50,7 @@ const NextContent = ({
     counterparty: userInfo | null;
     days: number;
 }) => (
-    <div className="flex flex-col gap-6 lg:pr-8">
+    <div className="flex flex-col gap-6 md:pr-8">
         <p className="text-caption font-inter-regular gradient-text">
             Coming up next
         </p>
@@ -72,7 +72,7 @@ const NextContent = ({
                 </p>
             </div>
             {workspace.description && (
-                <div className="col-span-2 flex flex-col gap-1 lg:col-span-1 lg:col-start-2">
+                <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
                     <p className="text-caption text-foreground-third">
                         Description
                     </p>
@@ -81,7 +81,7 @@ const NextContent = ({
                     </p>
                 </div>
             )}
-            <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1 lg:col-start-2">
+            <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1 md:col-start-2">
                 <Badge>
                     <TagIcon src="/icons/clock.svg" />
                     60 mins
@@ -98,7 +98,7 @@ const NextContent = ({
 );
 
 const CARD_CLASS =
-    "w-full lg:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+    "w-full md:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
 const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
     const counterparty = workspace
@@ -124,7 +124,7 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
 
     return (
         <>
-            <div className={cn(CARD_CLASS, "flex lg:hidden")}>
+            <div className={cn(CARD_CLASS, "flex md:hidden")}>
                 <NextContent
                     workspace={workspace}
                     counterparty={counterparty}
@@ -143,7 +143,7 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
                         onClick={() => router.push(`/board/${workspace.id}`)}
                         className={cn(
                             CARD_CLASS,
-                            "group relative hidden text-left lg:flex",
+                            "group relative hidden text-left md:flex",
                             denial ? "cursor-default" : "cursor-pointer",
                         )}
                     >

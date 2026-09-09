@@ -31,7 +31,7 @@ const WorkspaceTable = ({
     onWorkspaceDeleted,
 }: WorkspaceTableProps) => {
     return (
-        <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">
+        <div className="w-full radius-surface border border-foreground-third/15 bg-card-background overflow-hidden">
             <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
                 <thead>
                     <tr>

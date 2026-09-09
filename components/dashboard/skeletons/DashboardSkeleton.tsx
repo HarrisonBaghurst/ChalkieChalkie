@@ -8,20 +8,16 @@ import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
 
-// Only data-dependent parts shimmer, so nothing moves when the data lands.
-// Every breakpoint swap mirrors one in the real components — move a seam there
-// and it has to move here too.
-
 const PLACEHOLDER_ROWS = 5;
 
 // Mirrors Next.tsx.
 const NextSkeleton = () => {
     return (
-        <div className="relative w-full lg:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
-            <div className="absolute top-5 right-5 hidden lg:block">
+        <div className="relative w-full md:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
+            <div className="absolute top-5 right-5 hidden md:block">
                 <Skeleton className="w-5 h-5" />
             </div>
-            <div className="flex flex-col gap-6 lg:pr-8">
+            <div className="flex flex-col gap-6 md:pr-8">
                 <p className="text-caption font-inter-regular gradient-text">
                     Coming up next
                 </p>
@@ -33,19 +29,19 @@ const NextSkeleton = () => {
                         <Skeleton className="h-7 w-48 max-w-full" />
                         <Skeleton className="h-4 w-32 max-w-full" />
                     </div>
-                    <div className="col-span-2 flex flex-col gap-1 lg:col-span-1 lg:col-start-2">
+                    <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
                         <p className="text-caption text-foreground-third">
                             Description
                         </p>
                         <Skeleton className="h-4 w-full" />
                     </div>
-                    <div className="col-span-2 flex flex-wrap gap-2 lg:col-span-1 lg:col-start-2">
+                    <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1 md:col-start-2">
                         <Skeleton className="h-6 w-20 radius-tag" />
                         <Skeleton className="h-6 w-28 radius-tag" />
                     </div>
                 </div>
             </div>
-            <p className="text-caption text-foreground-third lg:hidden">
+            <p className="text-caption text-foreground-third md:hidden">
                 Open Chalkie Chalkie on a computer to join this workspace.
             </p>
         </div>
@@ -57,8 +53,8 @@ const ControlsSkeleton = () => {
     const tabs = ["Upcoming", "Previous", "All"];
 
     return (
-        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
-            <div className="flex w-full items-center gap-1 control-surface p-1 lg:w-fit">
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
+            <div className="flex w-full items-center gap-1 control-surface p-1 md:w-fit">
                 {tabs.map((label, i) => (
                     <div
                         key={label}
@@ -73,16 +69,16 @@ const ControlsSkeleton = () => {
                     </div>
                 ))}
             </div>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <div
                     className={cn(
                         fieldClasses(false, "control"),
-                        "pointer-events-none text-foreground-third lg:w-56",
+                        "pointer-events-none text-foreground-third md:w-56",
                     )}
                 >
                     Search sessions...
                 </div>
-                <div className="control-surface flex w-full items-center justify-between gap-2 py-2 px-3 text-small text-foreground-second lg:hidden">
+                <div className="control-surface flex w-full items-center justify-between gap-2 py-2 px-3 text-small text-foreground-second md:hidden">
                     <span className="flex items-center gap-2">
                         <SlidersHorizontalIcon className="size-4 text-foreground-third" />
                         Filters
@@ -91,7 +87,7 @@ const ControlsSkeleton = () => {
                         None
                     </span>
                 </div>
-                <div className="hidden lg:flex lg:items-center lg:gap-3">
+                <div className="hidden md:flex md:items-center md:gap-3">
                     <div className="control-surface py-2 px-3 flex items-center justify-between text-small gap-2 text-foreground-third">
                         <span>Members</span>
                         <Image
@@ -158,10 +154,10 @@ const DashboardSkeleton = () => {
 
             <div className="w-full flex flex-col gap-4 h-fit">
                 <ControlsSkeleton />
-                <div className="lg:hidden">
+                <div className="md:hidden">
                     <MobileListSkeleton rows={PLACEHOLDER_ROWS} showStatus />
                 </div>
-                <div className="hidden lg:block">
+                <div className="hidden md:block">
                     <TableSkeleton />
                 </div>
             </div>

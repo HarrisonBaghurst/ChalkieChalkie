@@ -138,7 +138,7 @@ const LinkCodeDialog = ({
             <DialogContent
                 showCloseButton={false}
                 mobileFullScreen
-                className="lg:max-w-125"
+                className="md:max-w-125"
             >
                 <div className="flex items-center justify-between">
                     <DialogTitle>Link a {counterpartyLabel(role)}</DialogTitle>

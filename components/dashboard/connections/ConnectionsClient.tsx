@@ -134,14 +134,14 @@ const ConnectionsClient = ({
 
                     {/* Swapped by CSS rather than a media-query hook, same as
                         the dashboard's list — see WorkspaceLists. */}
-                    <div className="lg:hidden">
+                    <div className="md:hidden">
                         <ConnectionsList
                             links={links}
                             role={linkRole}
                             onRemove={handleRemove}
                         />
                     </div>
-                    <div className="hidden lg:block">
+                    <div className="hidden md:block">
                         <ConnectionsTable
                             links={links}
                             role={linkRole}

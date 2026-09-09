@@ -71,13 +71,13 @@ const WorkspaceLists = ({
 
     return (
         <div className="w-full flex flex-col gap-4 h-fit">
-            <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
+            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
                 <Tabs
                     value={activeTab}
                     onValueChange={(id) => setActiveTab(id as TabId)}
-                    className="w-full lg:w-auto"
+                    className="w-full md:w-auto"
                 >
-                    <TabsList className="w-full lg:w-fit">
+                    <TabsList className="w-full md:w-fit">
                         {tabs.map((tab) => (
                             <TabsTrigger key={tab.id} value={tab.id}>
                                 <span className="text-small">{tab.label}</span>
@@ -88,16 +88,16 @@ const WorkspaceLists = ({
                         ))}
                     </TabsList>
                 </Tabs>
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center">
                     <Input
                         type="text"
                         variant="control"
                         value={filters.search}
                         onChange={(e) => onChangeSearch(e.target.value)}
                         placeholder="Search sessions..."
-                        className="w-full lg:w-56"
+                        className="w-full md:w-56"
                     />
-                    <div className="lg:hidden">
+                    <div className="md:hidden">
                         <FiltersSheet
                             collaborators={collaborators}
                             selectedIds={filters.collaboratorIds}
@@ -106,7 +106,7 @@ const WorkspaceLists = ({
                             onClearFilters={onClearFilters}
                         />
                     </div>
-                    <div className="hidden lg:flex lg:items-center lg:gap-3">
+                    <div className="hidden md:flex md:items-center md:gap-3">
                         <Filters
                             collaborators={collaborators}
                             selectedIds={filters.collaboratorIds}
@@ -129,7 +129,7 @@ const WorkspaceLists = ({
                 </div>
             </div>
 
-            <div className="lg:hidden">
+            <div className="md:hidden">
                 <WorkspaceList
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}
@@ -138,7 +138,7 @@ const WorkspaceLists = ({
                     onWorkspaceDeleted={onWorkspaceDeleted}
                 />
             </div>
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
                 <WorkspaceTable
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}

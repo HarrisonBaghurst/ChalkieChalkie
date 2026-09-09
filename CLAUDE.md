@@ -208,7 +208,7 @@ components/
                             keep committing locally behind it
   dashboard/
     DashboardClient.tsx   ← data fetching, filter state, role gating
-      └─ DashboardShell   ← Sidebar (lg+) / Navbar + TabBar swap, and the content column
+      └─ DashboardShell   ← Sidebar (md+) / Navbar + TabBar swap, and the content column
            ├─ Sidebar.tsx      ← identity, Menu, then a one-button Actions section (see Dashboard
            │                     Actions below); mounts whichever modal that action needs
            ├─ Next.tsx         ← the next upcoming lesson
@@ -216,7 +216,7 @@ components/
            ├─ WorkspaceLists   ← upcoming/past tabs
            │    └─ WorkspaceTable + WorkspaceTableRow (+ RowActionsMenu, PeopleStack)
            ├─ WorkspaceModal   ← create/edit, steps in workspaceModalSteps/
-           ├─ mobile/          ← the sub-lg surface: TabBar (bottom nav + a floating button
+           ├─ mobile/          ← the sub-md surface: TabBar (bottom nav + a floating button
            │                     carrying the same one action), WorkspaceList/WorkspaceRow
            │                     + WorkspaceDetailSheet, ConnectionsList/ConnectionRow,
            │                     FiltersSheet
@@ -234,7 +234,7 @@ Keyboard shortcuts (undo/redo, delete selection, etc.) live in `hooks/useKeybind
 
 ### Dashboard Actions
 
-The dashboard offers **at most one action per page**, derived from route × role in `lib/dashboardActions.ts` and rendered by the `Sidebar`'s Actions section at `lg+` and the `TabBar`'s floating button below it.
+The dashboard offers **at most one action per page**, derived from route × role in `lib/dashboardActions.ts` and rendered by the `Sidebar`'s Actions section at `md+` and the `TabBar`'s floating button below it.
 
 |         | `/dashboard`     | `/dashboard/connections` |
 | ------- | ---------------- | ------------------------ |
@@ -248,15 +248,27 @@ The dashboard offers **at most one action per page**, derived from route × role
 
 ### Responsive Model (dashboard)
 
-The dashboard is **mobile-first with a single seam at `lg`**. Below it, the phone layout; at `lg` and above, the desktop layout described throughout this file. There is deliberately no tablet tier yet — a portrait tablet currently gets the phone layout.
+The dashboard is **mobile-first with a single layout seam at `md`**. Below it, the phone layout; at `md` and above, the desktop layout described throughout this file. A portrait tablet therefore gets the desktop tree.
 
-- Breakpoint swaps are **CSS-only** (`lg:hidden` / `hidden lg:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets each tree keep behaviour the other doesn't have.
-- **Nothing below `lg` links to `/board`.** The canvas is desktop-only for now and this is enforced by omitting every link — the `Next` card is inert, rows open a detail sheet, and "Join workspace" is absent from the mobile actions. There is no route guard; opening a board URL directly still works.
-- **A landscape tablet clears `lg`, so the desktop tree must not assume a mouse.** Anything readable only on hover needs a tap path: `components/TapTooltip.tsx` keeps hover on a fine pointer and adds tap-to-open on a coarse one, decided per interaction from `pointerType` rather than a media query. Plain `Tooltip` is still fine for a label naming an action its trigger already performs.
+`lg` still appears in the dashboard, but it is a **second, narrower seam that decides one thing: how wide the sidebar starts.** Keep the two apart — a `lg:` added for layout reintroduces the tablet gap this seam was moved to close.
+
+- Breakpoint swaps are **CSS-only** (`md:hidden` / `hidden md:block`), never a media-query hook: both trees mount, which avoids hydration mismatch and first-paint flash, and lets each tree keep behaviour the other doesn't have.
+- **Nothing below `md` links to `/board`.** The canvas is desktop-only for now and this is enforced by omitting every link — the `Next` card is inert, rows open a detail sheet, and "Join workspace" is absent from the mobile actions. There is no route guard; opening a board URL directly still works.
+- **A tablet clears `md`, so the desktop tree must not assume a mouse.** Anything readable only on hover needs a tap path: `components/TapTooltip.tsx` keeps hover on a fine pointer and adds tap-to-open on a coarse one, decided per interaction from `pointerType` rather than a media query. Plain `Tooltip` is still fine for a label naming an action its trigger already performs.
 - **The desktop workspace row does not open the board on click.** Joining goes through the row's `⋯` menu or the `Next` card, so a stray tap on a tablet can't drop someone into a lesson.
 - Each table has a mobile counterpart in `components/dashboard/mobile/`: a compact row list whose rows open a `Sheet` holding the detail and actions that depend on hover at desktop.
-- The `Sidebar`'s Actions are unreachable below `lg`, so `TabBar` carries them on a floating action button, picking one action from the current page and role.
+- The `Sidebar`'s Actions are unreachable below `md`, so `TabBar` carries them on a floating action button, picking one action from the current page and role. In the rail they survive as an icon-only button with a tooltip (see Sidebar Collapse below).
 - Bottom-flush chrome uses the `.pb-safe` utility (see `app/globals.css`), which needs `viewportFit: "cover"` from `app/layout.tsx`.
+
+### Sidebar Collapse
+
+The sidebar is either a `w-17` icon rail or a `w-75` panel, and which one is **tri-state**: `lib/sidebarCookie.ts`'s `CollapseState` is `true` (rail), `false` (panel) or `null` (no cookie yet). Every consumer goes through `byCollapseState(collapsed, rail, panel, auto)` in `components/dashboard/sidebarCollapse.ts`, which picks a class string per state; `DashboardShell` holds the state and publishes it plus `toggle` on a context.
+
+- **`null` is not a third look, it is "let CSS decide"** — the `auto` argument is always a breakpoint pair (`w-17 lg:w-75`, `hidden lg:block`, `-rotate-90 lg:rotate-90`), so an untouched sidebar is a rail on a tablet and a panel on a desktop, from one server-rendered markup with no media-query hook and no flash. This is the **only** place `lg` means anything in the dashboard.
+- **The cookie is written only by `toggle`**, and from then on the state is absolute at every width: a user who collapsed it on a desktop still gets a rail on their phone-sized window. Deliberate — an explicit choice outranks the width heuristic.
+- **`toggle` resolves `null` by reading `matchMedia("(min-width: 64rem)")`**, i.e. by asking what the auto CSS is currently showing, so the first click always flips what the user can see. That literal must track the `lg` in the auto strings; Tailwind's breakpoints are stock, so `lg` is 64rem.
+- **Read server-side** by `lib/serverSidebarCookie.ts` and passed as `initialCollapsed`, so the first paint is already the right width. The cookie is scoped to `Path=/dashboard`.
+- Rail state hides every label, so anything added to the sidebar needs a `RailTooltip` alongside it or it becomes an unlabelled icon.
 
 ### Access Control & Roles
 
@@ -356,7 +368,7 @@ Pushes to `main` build but **do not go live**. The Vercel project has **Auto-ass
 
 ### Shared Helpers (`lib/`)
 
-Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `r2.ts` (the R2 client and every put/delete/prefix-delete/presign against it — see Image Storage & Serving above), `realtimeTicket.ts` (signs the 60-second websocket ticket — see Access Control above), `realtimeAdmin.ts` (the secret-gated calls into the Worker: room teardown and member eviction — see Access Control above), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `dashboardActions.ts` (the route × role → single action rule shared by `Sidebar` and `TabBar` — see Dashboard Actions above), `deleteWorkspace.ts` (tears down the Durable Object, R2 images and the Supabase row in a recoverable order), `workspaceLifecycle.ts` (plan limits, the `opens_at`/`expires_at` derivation, the access and lock predicates, and the phase→badge mapping — see Workspace Lifecycle above), `workspaceMapping.ts` (`mapRoomRow`, the one snake→camel `Room` mapping, shared by `DashboardClient` and `WorkspaceModal`), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
+Beyond the modules described above: `colours.ts` (pen/highlighter palettes), `userColour.ts` (deterministic per-user identity colour), `textUtils.ts` (relative/countdown/session time formatting), `imageUtils.ts` (image hit-testing and resize handles), `imageLimits.ts` (the storable MIME set and byte cap shared with the images route and matched by the storage bucket, the wider client-only input set, and the PDF page cap), `imagePrepare.ts` (decode, then re-encode every image once into the configured box as JPEG, inverting bright ones), `imageUpload.ts` (the upload/lease-reserve calls and the local-state adopt/rollback steps, shared by the image and PDF insert paths), `r2.ts` (the R2 client and every put/delete/prefix-delete/presign against it — see Image Storage & Serving above), `realtimeTicket.ts` (signs the 60-second websocket ticket — see Access Control above), `realtimeAdmin.ts` (the secret-gated calls into the Worker: room teardown and member eviction — see Access Control above), `pdfLease.ts` (the pre-paid page quota — see Rate Limiting above), `id.ts` (`newId` — client-side ids, see Touch above), `viewport.ts` (zoom clamps, the shared anchor rule, and insert placement/fit), `deleteSelection.ts` (shared by the Delete keybind and the on-canvas button), `dashboardFilters.ts` / `dashboardTableColumns.ts` / `connectionsTableColumns.ts` / `dashboardCounterparty.ts` (dashboard list logic), `dashboardActions.ts` (the route × role → single action rule shared by `Sidebar` and `TabBar` — see Dashboard Actions above), `sidebarCookie.ts` / `serverSidebarCookie.ts` (the tri-state sidebar width and its cookie — see Sidebar Collapse above), `deleteWorkspace.ts` (tears down the Durable Object, R2 images and the Supabase row in a recoverable order), `workspaceLifecycle.ts` (plan limits, the `opens_at`/`expires_at` derivation, the access and lock predicates, and the phase→badge mapping — see Workspace Lifecycle above), `workspaceMapping.ts` (`mapRoomRow`, the one snake→camel `Room` mapping, shared by `DashboardClient` and `WorkspaceModal`), `clerkAppearance.ts` (Clerk theming), `clerkUsers.ts` (`fetchUserProfiles` — the one place Clerk ids get turned into `userInfo`; guards the empty-array-returns-everyone Clerk API footgun), `inviteCode.ts` (invite code alphabet/generation/normalisation), `links.ts` (`tutor_links` queries), `unlinkRooms.ts` (the unlink-cascade helper — see Access Control above), `supabase/admin.ts` (service-role client), `vercelDeployments.ts` (Vercel REST API wrapper for the staged-deployment promotion flow — see Deployment above).
 
 ### Path Alias
 

@@ -41,14 +41,14 @@ const ConnectionsSkeleton = ({ heading }: ConnectionsSkeletonProps) => {
         <>
             <div className="flex items-center justify-between">
                 <p className="text-heading font-inter-bold">{heading}</p>
-                <Skeleton className="hidden h-9 w-36 radius-control lg:block" />
+                <Skeleton className="hidden h-9 w-36 radius-control md:block" />
             </div>
 
-            <div className="lg:hidden">
+            <div className="md:hidden">
                 <MobileListSkeleton rows={PLACEHOLDER_ROWS} />
             </div>
 
-            <div className="hidden w-full radius-surface border border-foreground-third/15 bg-card-background lg:block">
+            <div className="hidden w-full radius-surface border border-foreground-third/15 bg-card-background md:block">
                 <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
                     <thead>
                         <tr>

@@ -34,22 +34,32 @@ const Conventions = () => (
                 </Rule>
                 <Rule title="Dashboard">
                     <Code>DashboardShell</Code> owns the chrome, mobile-first
-                    with a single seam at <Code>lg</Code>. Below it:{" "}
+                    with a single layout seam at <Code>md</Code>. Below it:{" "}
                     <Code>Navbar</Code> on top, the bottom <Code>TabBar</Code>{" "}
                     and its floating action button beneath, and a content column
-                    running edge-to-edge. At <Code>lg</Code> the sidebar
-                    returns and the column becomes the inset panel (
-                    <Code>m-2</Code>, <Code>rounded-xl</Code>,{" "}
-                    <Code>p-[2.5dvw]</Code>) floating on the card surface. Page
-                    content goes in the column; don&apos;t reach outside it.
+                    running edge-to-edge. At <Code>md</Code> the sidebar returns
+                    and the column becomes the inset panel (<Code>m-2</Code>,{" "}
+                    <Code>rounded-xl</Code>, <Code>p-[2.5dvw]</Code>) floating
+                    on the card surface. Page content goes in the column;
+                    don&apos;t reach outside it.
+                </Rule>
+                <Rule title="Sidebar width">
+                    A second seam, at <Code>lg</Code>, decides only how wide the
+                    sidebar starts: a <Code>w-17</Code> icon rail from{" "}
+                    <Code>md</Code>, the full <Code>w-75</Code> panel from{" "}
+                    <Code>lg</Code>. That default is pure CSS and applies until
+                    the user toggles it, after which a cookie pins one state at
+                    every width. Rail-state labels move into{" "}
+                    <Code>RailTooltip</Code>, so anything you add to the sidebar
+                    needs a tooltip too.
                 </Rule>
                 <Rule title="Mobile dashboard">
                     Both tables swap for a compact row list below{" "}
-                    <Code>lg</Code>, each row opening a <Code>Sheet</Code> that
+                    <Code>md</Code>, each row opening a <Code>Sheet</Code> that
                     holds the detail and actions hover can&apos;t reach. Swap by
-                    CSS (<Code>lg:hidden</Code> / <Code>hidden lg:block</Code>
+                    CSS (<Code>md:hidden</Code> / <Code>hidden md:block</Code>
                     ), not a media-query hook — no hydration mismatch, no
-                    first-paint flash. Nothing below <Code>lg</Code> links to{" "}
+                    first-paint flash. Nothing below <Code>md</Code> links to{" "}
                     <Code>/board</Code>: the canvas is desktop-only for now, and
                     that is enforced by omitting the links, not by a route
                     guard.

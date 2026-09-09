@@ -17,6 +17,18 @@
                 },
                 {
                     "tag": "Changed",
+                    "text": "The dashboard now uses its full layout on tablets, with the sidebar, filters and workspace tables as they appear on a desktop, rather than the narrower phone version it showed before. Phone screens keep the layout they had."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The sidebar now starts collapsed to its icons on a tablet and expanded on wider screens, so a narrower window keeps more of its width for the workspace tables. Setting it with the Collapse button still overrides this at every screen size."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Workspaces can now be joined from a tablet, through the next card or a workspace's menu, rather than only from a desktop. Phones still cannot open a board."
+                },
+                {
+                    "tag": "Changed",
                     "text": "The [cookie policy](/cookie-policy) now covers the one cookie that remembers the sidebar setting. It holds nothing that identifies you and is only stored once the Collapse button is used."
                 },
                 {

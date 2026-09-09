@@ -6,8 +6,8 @@ import { CollapseState, writeSidebarCookie } from "@/lib/sidebarCookie";
 import { byCollapseState, SidebarCollapseContext } from "./sidebarCollapse";
 
 type DashboardShellProps = {
-    sidebar: React.ReactNode; // lg and up only
-    bottomBar: React.ReactNode; // below lg only; carries the Sidebar's Actions
+    sidebar: React.ReactNode;
+    bottomBar: React.ReactNode;
     initialCollapsed?: CollapseState;
     children: React.ReactNode;
 };
@@ -34,8 +34,8 @@ const DashboardShell = ({
     return (
         <SidebarCollapseContext.Provider value={{ collapsed, toggle }}>
             <div className="dashboard-root flex bg-card-background min-h-dvh">
-                <div className="hidden lg:block">{sidebar}</div>
-                <div className="block lg:hidden">
+                <div className="hidden md:block">{sidebar}</div>
+                <div className="block md:hidden">
                     <Navbar />
                 </div>
                 <div
@@ -47,20 +47,20 @@ const DashboardShell = ({
                         // plain CSS, so Tailwind can't build a breakpoint variant.
                         "w-full min-h-dvh flex flex-col bg-background " +
                         "px-4 pt-[calc(2.5rem+4svh+2rem)] gap-6 pb-safe [--safe-pb:6rem] " +
-                        "lg:m-2 lg:min-h-[calc(100dvh-1rem)] lg:rounded-xl " +
-                        "lg:px-[2.5dvw] lg:pt-[2.5dvw] lg:gap-[2.5dvw] lg:[--safe-pb:2.5dvw] " +
-                        "lg:transition-[margin-left] " +
+                        "md:m-2 md:min-h-[calc(100dvh-1rem)] md:rounded-xl " +
+                        "md:px-[2.5dvw] md:pt-[2.5dvw] md:gap-[2.5dvw] md:[--safe-pb:2.5dvw] " +
+                        "md:transition-[margin-left] " +
                         byCollapseState(
                             collapsed,
-                            "lg:ml-17",
-                            "lg:ml-75",
-                            "lg:ml-75",
+                            "md:ml-17",
+                            "md:ml-75",
+                            "md:ml-17 lg:ml-75",
                         )
                     }
                 >
                     {children}
                 </div>
-                <div className="lg:hidden">{bottomBar}</div>
+                <div className="md:hidden">{bottomBar}</div>
             </div>
         </SidebarCollapseContext.Provider>
     );
