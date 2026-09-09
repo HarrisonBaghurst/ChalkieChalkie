@@ -16,6 +16,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    byCollapseState,
+    CollapseState,
+    useSidebarCollapse,
+} from "./sidebarCollapse";
 
 // Masked rather than tinted, so the icon tracks its tag's text colour.
 const TagIcon = ({ src }: { src: string }) => (
@@ -76,7 +81,7 @@ const NextContent = ({
                     <p className="text-caption text-foreground-third">
                         Description
                     </p>
-                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2">
+                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2 text-justify">
                         {workspace.description}
                     </p>
                 </div>
@@ -98,7 +103,15 @@ const NextContent = ({
 );
 
 const CARD_CLASS =
-    "w-full md:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+    "h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+
+export const nextCardWidth = (collapsed: CollapseState) =>
+    byCollapseState(
+        collapsed,
+        "w-full lg:w-1/2 2xl:w-1/3",
+        "w-full xl:w-1/2 2xl:w-1/3",
+        "w-full xl:w-1/2 2xl:w-1/3",
+    );
 
 const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
     const counterparty = workspace
@@ -107,13 +120,15 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
 
     const router = useRouter();
     const now = useNow();
+    const { collapsed } = useSidebarCollapse();
+    const width = nextCardWidth(collapsed);
 
     const days = workspace ? daysUntil(workspace.startTime) : 0;
     const denial = workspace ? joinDenialLabel(workspace, now) : null;
 
     if (!workspace) {
         return (
-            <div className={cn(CARD_CLASS, "flex h-50")}>
+            <div className={cn(CARD_CLASS, width, "flex h-50")}>
                 <p className="text-caption font-inter-regular gradient-text">
                     Coming up next
                 </p>
@@ -124,7 +139,7 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
 
     return (
         <>
-            <div className={cn(CARD_CLASS, "flex md:hidden")}>
+            <div className={cn(CARD_CLASS, width, "flex md:hidden")}>
                 <NextContent
                     workspace={workspace}
                     counterparty={counterparty}
@@ -143,6 +158,7 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
                         onClick={() => router.push(`/board/${workspace.id}`)}
                         className={cn(
                             CARD_CLASS,
+                            width,
                             "group relative hidden text-left md:flex",
                             denial ? "cursor-default" : "cursor-pointer",
                         )}

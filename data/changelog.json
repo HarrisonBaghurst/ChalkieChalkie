@@ -24,6 +24,10 @@
                     "text": "The sidebar now starts collapsed to its icons on a tablet and expanded on wider screens, so a narrower window keeps more of its width for the workspace tables. Setting it with the Collapse button still overrides this at every screen size."
                 },
                 {
+                    "tag": "Changed",
+                    "text": "The next card now sizes itself against the room the sidebar leaves rather than always taking the same share of it. On a tablet it spans the full width, and on a smaller laptop it does the same while the sidebar is expanded, narrowing to half the row once the sidebar is collapsed. Wider screens are unchanged."
+                },
+                {
                     "tag": "Added",
                     "text": "Workspaces can now be joined from a tablet, through the next card or a workspace's menu, rather than only from a desktop. Phones still cannot open a board."
                 },

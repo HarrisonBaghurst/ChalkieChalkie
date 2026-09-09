@@ -5,6 +5,8 @@ import Skeleton from "@/components/ui/Skeleton";
 import { fieldClasses } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
+import { useSidebarCollapse } from "../sidebarCollapse";
+import { nextCardWidth } from "../Next";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
 
@@ -12,8 +14,15 @@ const PLACEHOLDER_ROWS = 5;
 
 // Mirrors Next.tsx.
 const NextSkeleton = () => {
+    const { collapsed } = useSidebarCollapse();
+
     return (
-        <div className="relative w-full md:w-1/2 2xl:w-1/3 h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border">
+        <div
+            className={cn(
+                "relative h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border",
+                nextCardWidth(collapsed),
+            )}
+        >
             <div className="absolute top-5 right-5 hidden md:block">
                 <Skeleton className="w-5 h-5" />
             </div>
