@@ -4,6 +4,7 @@ import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/serverRole";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
+import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
 import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
 
 const resolveRole = async (): Promise<UserRole | undefined> => {
@@ -20,6 +21,7 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
 const page = async () => {
     const role = await resolveRole();
     const sidebarCollapsed = await readSidebarCookie();
+    const tableDensity = await readTableDensityCookie();
 
     if (process.env.ENVIRONMENT === "testing") {
         const limits = limitsForPlan();
@@ -82,12 +84,19 @@ const page = async () => {
             <DashboardClient
                 role={role}
                 sidebarCollapsed={sidebarCollapsed}
+                tableDensity={tableDensity}
                 testData={{ workspaces, users }}
             />
         );
     }
 
-    return <DashboardClient role={role} sidebarCollapsed={sidebarCollapsed} />;
+    return (
+        <DashboardClient
+            role={role}
+            sidebarCollapsed={sidebarCollapsed}
+            tableDensity={tableDensity}
+        />
+    );
 };
 
 export default page;

@@ -1,17 +1,11 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Filters from "./Filters";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import WorkspaceControls, { TabId } from "./WorkspaceControls";
 import WorkspaceTable, { WorkspaceRow } from "./WorkspaceTable";
 import WorkspaceList from "./mobile/WorkspaceList";
-import FiltersSheet from "./mobile/FiltersSheet";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { DashboardFilterState } from "@/lib/dashboardFilters";
-import { cn } from "@/lib/utils";
-
-type TabId = "upcoming" | "previous" | "all";
 
 type WorkspaceListsProps = {
     upcoming: Workspace[];
@@ -63,73 +57,30 @@ const WorkspaceLists = ({
         all: [...upcomingRows, ...previousRows],
     };
 
-    const tabs = [
+    const tabs: { id: TabId; label: string; count: number }[] = [
         { id: "upcoming", label: "Upcoming", count: upcomingRows.length },
         { id: "previous", label: "Previous", count: previousRows.length },
         { id: "all", label: "All", count: rowsByTab.all.length },
     ];
 
-    return (
-        <div className="w-full flex flex-col gap-4 h-fit">
-            <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
-                <Tabs
-                    value={activeTab}
-                    onValueChange={(id) => setActiveTab(id as TabId)}
-                    className="w-full md:w-auto"
-                >
-                    <TabsList className="w-full md:w-fit">
-                        {tabs.map((tab) => (
-                            <TabsTrigger key={tab.id} value={tab.id}>
-                                <span className="text-small">{tab.label}</span>
-                                <span className="text-small text-foreground-third [[data-state=active]>&]:text-foreground-second">
-                                    {tab.count}
-                                </span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </Tabs>
-                <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                    <Input
-                        type="text"
-                        variant="control"
-                        value={filters.search}
-                        onChange={(e) => onChangeSearch(e.target.value)}
-                        placeholder="Search sessions..."
-                        className="w-full md:w-56"
-                    />
-                    <div className="md:hidden">
-                        <FiltersSheet
-                            collaborators={collaborators}
-                            selectedIds={filters.collaboratorIds}
-                            onChange={onChangeCollaboratorIds}
-                            hasActiveFilters={hasActiveFilters}
-                            onClearFilters={onClearFilters}
-                        />
-                    </div>
-                    <div className="hidden md:flex md:items-center md:gap-3">
-                        <Filters
-                            collaborators={collaborators}
-                            selectedIds={filters.collaboratorIds}
-                            onChange={onChangeCollaboratorIds}
-                        />
-                        <button
-                            type="button"
-                            onClick={onClearFilters}
-                            disabled={!hasActiveFilters}
-                            className={cn(
-                                "control-surface py-2 px-3 text-small whitespace-nowrap cursor-pointer",
-                                hasActiveFilters
-                                    ? "text-foreground hover:bg-card-background-hover"
-                                    : "text-foreground-third cursor-not-allowed opacity-60",
-                            )}
-                        >
-                            Clear filters
-                        </button>
-                    </div>
-                </div>
-            </div>
+    const controls = (
+        <WorkspaceControls
+            tabs={tabs}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            collaborators={collaborators}
+            filters={filters}
+            hasActiveFilters={hasActiveFilters}
+            onChangeSearch={onChangeSearch}
+            onChangeCollaboratorIds={onChangeCollaboratorIds}
+            onClearFilters={onClearFilters}
+        />
+    );
 
-            <div className="md:hidden">
+    return (
+        <div className="w-full min-w-0 h-fit">
+            <div className="flex flex-col gap-4 md:hidden">
+                {controls}
                 <WorkspaceList
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}
@@ -143,6 +94,7 @@ const WorkspaceLists = ({
                     rows={rowsByTab[activeTab]}
                     usersMap={usersMap}
                     friends={friends}
+                    toolbar={controls}
                     onWorkspaceUpdated={onWorkspaceUpdated}
                     onWorkspaceDeleted={onWorkspaceDeleted}
                 />

@@ -32,8 +32,24 @@
                     "text": "Workspaces can now be joined from a tablet, through the next card or a workspace's menu, rather than only from a desktop. Phones still cannot open a board."
                 },
                 {
+                    "tag": "Added",
+                    "text": "The tabs, search and column headings above a workspace table now stay pinned to the top of the page as you scroll, so you can see which column you are reading and switch tab without scrolling back up. Only the page title and the next card scroll away."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Row height can now be set to compact, default or comfortable from the new button beside Clear filters, so you can fit more workspaces on screen or give each one more room. The setting is remembered between visits and applies to your connections as well."
+                },
+                {
                     "tag": "Changed",
-                    "text": "The [cookie policy](/cookie-policy) now covers the one cookie that remembers the sidebar setting. It holds nothing that identifies you and is only stored once the Collapse button is used."
+                    "text": "The workspace and connections tables now give every column a minimum width and scroll sideways when there is not enough room for all of them, rather than squeezing each column into a fixed share of the width. Columns still share out any spare space on a wide screen."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "A workspace's header, or a person's name on the connections page, now stays pinned to the left of its row while the table is scrolled sideways, and the row's menu stays pinned to the right, so a row can always be identified and acted on."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The [cookie policy](/cookie-policy) now covers the two cookies that remember the sidebar setting and the row height. Neither holds anything that identifies you, and each is only stored once you have used the control that sets it."
                 },
                 {
                     "tag": "Changed",

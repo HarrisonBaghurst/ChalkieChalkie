@@ -1,8 +1,14 @@
 "use client";
 
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
+import { DataTableRow } from "@/components/dashboard/DataTable";
 import { formatRelativeTime } from "@/lib/textUtils";
+import {
+    CONNECTIONS_TABLE_COLUMNS,
+    ConnectionColumnKey,
+} from "@/lib/connectionsTableColumns";
 import { LinkSummary } from "@/types/linkTypes";
 
 type ConnectionRowProps = {
@@ -10,62 +16,59 @@ type ConnectionRowProps = {
     onRemove: (linkId: string) => void;
 };
 
-const cellClass =
-    "px-3 py-3 align-middle text-small border-b border-foreground-third/10";
-
 const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
     const { counterparty } = link;
     const fullName =
         `${counterparty.firstName} ${counterparty.lastName}`.trim();
 
-    return (
-        <tr>
-            <td className={cellClass}>
-                <div className="flex items-center gap-3">
-                    <Avatar className="rounded-md after:rounded-md">
-                        <AvatarImage
-                            src={counterparty.imageUrl}
-                            alt={fullName}
-                            className="rounded-md"
-                        />
-                        <AvatarFallback className="rounded-md bg-foreground-third">
-                            {counterparty.firstName.charAt(0)}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                        <span className="font-inter-bold text-foreground">
-                            {fullName || counterparty.email}
-                        </span>
-                        <span className="text-caption text-foreground-third">
-                            {counterparty.email}
-                        </span>
-                    </div>
+    const cells: Record<ConnectionColumnKey, React.ReactNode> = {
+        person: (
+            <div className="flex items-center gap-3">
+                <Avatar className="rounded-md after:rounded-md shrink-0">
+                    <AvatarImage
+                        src={counterparty.imageUrl}
+                        alt={fullName}
+                        className="rounded-md"
+                    />
+                    <AvatarFallback className="rounded-md bg-foreground-third">
+                        {counterparty.firstName.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+                <div className="flex min-w-0 flex-col">
+                    <span className="truncate font-inter-bold text-foreground">
+                        {fullName || counterparty.email}
+                    </span>
+                    <span className="truncate text-caption text-foreground-third">
+                        {counterparty.email}
+                    </span>
                 </div>
-            </td>
-            <td className={cellClass}>
-                <span className="text-foreground-second">
-                    Linked {formatRelativeTime(link.createdAt)}
-                </span>
-            </td>
-            <td className={cellClass}>
-                <span className="text-foreground-second">
-                    {link.sharedWorkspaces} workspace
-                    {link.sharedWorkspaces === 1 ? "" : "s"}
-                </span>
-            </td>
-            <td className={cellClass}>
-                <RowActionsMenu
-                    actions={[
-                        {
-                            label: "Remove link",
-                            variant: "destructive",
-                            onSelect: () => onRemove(link.linkId),
-                        },
-                    ]}
-                />
-            </td>
-        </tr>
-    );
+            </div>
+        ),
+        linked: (
+            <span className="whitespace-nowrap text-foreground-second">
+                Linked {formatRelativeTime(link.createdAt)}
+            </span>
+        ),
+        workspaces: (
+            <span className="whitespace-nowrap text-foreground-second">
+                {link.sharedWorkspaces} workspace
+                {link.sharedWorkspaces === 1 ? "" : "s"}
+            </span>
+        ),
+        actions: (
+            <RowActionsMenu
+                actions={[
+                    {
+                        label: "Remove link",
+                        variant: "destructive",
+                        onSelect: () => onRemove(link.linkId),
+                    },
+                ]}
+            />
+        ),
+    };
+
+    return <DataTableRow columns={CONNECTIONS_TABLE_COLUMNS} cells={cells} />;
 };
 
 export default ConnectionRow;

@@ -9,12 +9,17 @@ import { formatSessionTime } from "@/lib/textUtils";
 import { isHost } from "@/lib/workspaceHost";
 import { pickCounterparties } from "@/lib/dashboardCounterparty";
 import { joinDenialLabel, lifecycleStatus } from "@/lib/workspaceLifecycle";
+import {
+    WORKSPACE_TABLE_COLUMNS,
+    WorkspaceColumnKey,
+} from "@/lib/dashboardTableColumns";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
 import PeopleStack from "./PeopleStack";
 import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DataTableRow } from "./DataTable";
 import RowActionsMenu from "./RowActionsMenu";
 import WorkspaceModal, { FEEDBACK_STEP } from "./WorkspaceModal";
 
@@ -29,8 +34,13 @@ type WorkspaceTableRowProps = {
     onDeleted: (workspaceId: string) => void;
 };
 
-const cellClass =
-    "px-3 py-3 align-middle text-small border-b border-foreground-third/10";
+const truncated = (text: string) => (
+    <TapTooltip content={<div className="w-64 whitespace-normal">{text}</div>}>
+        <span className="block truncate text-left text-foreground-second">
+            {text}
+        </span>
+    </TapTooltip>
+);
 
 const WorkspaceTableRow = ({
     workspace,
@@ -72,97 +82,54 @@ const WorkspaceTableRow = ({
 
     const join = () => router.push(`/board/${workspace.id}`);
 
-    return (
-        <tr>
-            <td className={cellClass}>
-                <PeopleStack
-                    people={people}
-                    participants={collaborators}
-                    hostId={workspace.host}
+    const cells: Record<WorkspaceColumnKey, React.ReactNode> = {
+        people: (
+            <PeopleStack
+                people={people}
+                participants={collaborators}
+                hostId={workspace.host}
+            />
+        ),
+        header: workspace.title ? (
+            truncated(workspace.title)
+        ) : (
+            <span className="text-foreground-third">Untitled workspace</span>
+        ),
+        startTime: workspace.startTime ? (
+            <span className="whitespace-nowrap text-foreground-second">
+                {formatSessionTime(workspace.startTime)}
+            </span>
+        ) : (
+            <span className="text-foreground-third">Unset</span>
+        ),
+        description: workspace.description ? (
+            truncated(workspace.description)
+        ) : (
+            <span className="text-foreground-third">—</span>
+        ),
+        feedback: workspace.feedback ? (
+            truncated(workspace.feedback)
+        ) : canAddFeedback ? (
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setModalStep(FEEDBACK_STEP)}
+            >
+                Add feedback
+            </Button>
+        ) : (
+            <span className="text-foreground-third">—</span>
+        ),
+        status: (
+            <Badge variant="status" suppressHydrationWarning>
+                <span
+                    className={cn("w-1.5 h-1.5 rounded-full", status.dotClass)}
                 />
-            </td>
-            <td className={cellClass}>
-                {workspace.title ? (
-                    <TapTooltip
-                        content={
-                            <div className="w-64 whitespace-normal">
-                                {workspace.title}
-                            </div>
-                        }
-                    >
-                        <span className="block truncate text-left text-foreground-second">
-                            {workspace.title}
-                        </span>
-                    </TapTooltip>
-                ) : (
-                    <span className="text-foreground-third">
-                        Untitled workspace
-                    </span>
-                )}
-            </td>
-            <td className={cellClass}>
-                {workspace.startTime ? (
-                    <span className="text-foreground-second">
-                        {formatSessionTime(workspace.startTime)}
-                    </span>
-                ) : (
-                    <span className="text-foreground-third">Unset</span>
-                )}
-            </td>
-            <td className={cellClass}>
-                {workspace.description ? (
-                    <TapTooltip
-                        content={
-                            <div className="w-64 whitespace-normal">
-                                {workspace.description}
-                            </div>
-                        }
-                    >
-                        <span className="block truncate text-left text-foreground-second">
-                            {workspace.description}
-                        </span>
-                    </TapTooltip>
-                ) : (
-                    <span className="text-foreground-third">—</span>
-                )}
-            </td>
-            <td className={cellClass}>
-                {workspace.feedback ? (
-                    <TapTooltip
-                        content={
-                            <div className="w-64 whitespace-normal">
-                                {workspace.feedback}
-                            </div>
-                        }
-                    >
-                        <span className="block truncate text-left text-foreground-second">
-                            {workspace.feedback}
-                        </span>
-                    </TapTooltip>
-                ) : canAddFeedback ? (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setModalStep(FEEDBACK_STEP)}
-                    >
-                        Add feedback
-                    </Button>
-                ) : (
-                    <span className="text-foreground-third">—</span>
-                )}
-            </td>
-            <td className={cellClass}>
-                <Badge variant="status" suppressHydrationWarning>
-                    <span
-                        className={cn(
-                            "w-1.5 h-1.5 rounded-full",
-                            status.dotClass,
-                        )}
-                    />
-                    {status.label}
-                </Badge>
-            </td>
-            <td className={cellClass}>
+                {status.label}
+            </Badge>
+        ),
+        actions: (
+            <>
                 <RowActionsMenu
                     actions={[
                         {
@@ -191,9 +158,11 @@ const WorkspaceTableRow = ({
                         onDeleted={onDeleted}
                     />
                 )}
-            </td>
-        </tr>
-    );
+            </>
+        ),
+    };
+
+    return <DataTableRow columns={WORKSPACE_TABLE_COLUMNS} cells={cells} />;
 };
 
 export default WorkspaceTableRow;

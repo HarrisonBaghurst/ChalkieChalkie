@@ -3,6 +3,7 @@
 import React from "react";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
+import DataTable from "./DataTable";
 import WorkspaceTableRow, { WorkspaceBucket } from "./WorkspaceTableRow";
 
 export type WorkspaceRow = {
@@ -14,6 +15,7 @@ type WorkspaceTableProps = {
     rows: WorkspaceRow[];
     usersMap: Record<string, userInfo>;
     friends: userInfo[];
+    toolbar?: React.ReactNode;
     onWorkspaceUpdated: (
         workspace: Workspace,
         collaborators: userInfo[],
@@ -21,62 +23,32 @@ type WorkspaceTableProps = {
     onWorkspaceDeleted: (workspaceId: string) => void;
 };
 
-const COLUMNS = WORKSPACE_TABLE_COLUMNS;
-
 const WorkspaceTable = ({
     rows,
     usersMap,
     friends,
+    toolbar,
     onWorkspaceUpdated,
     onWorkspaceDeleted,
 }: WorkspaceTableProps) => {
     return (
-        <div className="w-full radius-surface border border-foreground-third/15 bg-card-background overflow-hidden">
-            <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
-                <thead>
-                    <tr>
-                        {COLUMNS.map((col, i) => (
-                            <th
-                                key={col.key}
-                                className={`${col.width} border-b border-foreground-third/15 bg-background-second px-3 py-3 text-left text-caption font-inter-regular text-foreground-third ${
-                                    i === 0 ? "rounded-tl-[13px]" : ""
-                                } ${
-                                    i === COLUMNS.length - 1
-                                        ? "rounded-tr-[13px]"
-                                        : ""
-                                }`}
-                            >
-                                {col.label}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.length === 0 ? (
-                        <tr>
-                            <td
-                                colSpan={COLUMNS.length}
-                                className="px-3 py-8 text-center text-caption text-foreground-third"
-                            >
-                                No sessions
-                            </td>
-                        </tr>
-                    ) : (
-                        rows.map((row) => (
-                            <WorkspaceTableRow
-                                key={row.workspace.id}
-                                workspace={row.workspace}
-                                bucket={row.bucket}
-                                usersMap={usersMap}
-                                friends={friends}
-                                onUpdated={onWorkspaceUpdated}
-                                onDeleted={onWorkspaceDeleted}
-                            />
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
+        <DataTable
+            columns={WORKSPACE_TABLE_COLUMNS}
+            toolbar={toolbar}
+            empty="No sessions"
+        >
+            {rows.map((row) => (
+                <WorkspaceTableRow
+                    key={row.workspace.id}
+                    workspace={row.workspace}
+                    bucket={row.bucket}
+                    usersMap={usersMap}
+                    friends={friends}
+                    onUpdated={onWorkspaceUpdated}
+                    onDeleted={onWorkspaceDeleted}
+                />
+            ))}
+        </DataTable>
     );
 };
 

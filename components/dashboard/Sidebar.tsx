@@ -162,7 +162,7 @@ const Sidebar = ({
             icon: "/icons/message-square-text.svg",
             iconDark: "/icons/message-square-text-dark.svg",
             status: false,
-            badge: "Soon",
+            badge: "Upcoming",
         },
     ];
 

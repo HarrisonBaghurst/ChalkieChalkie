@@ -13,6 +13,7 @@ import {
 } from "@/lib/dashboardFilters";
 import { isHost } from "@/lib/workspaceHost";
 import { CollapseState } from "@/lib/sidebarCookie";
+import { TableDensity } from "@/lib/tableDensityCookie";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
@@ -27,6 +28,7 @@ type DashboardClientProps = {
     // Server-resolved, so the role-gated sidebar is right on first paint.
     role?: UserRole;
     sidebarCollapsed?: CollapseState;
+    tableDensity?: TableDensity;
     testData?: {
         workspaces: Workspace[];
         users: userInfo[];
@@ -38,6 +40,7 @@ type DashboardClientProps = {
 const DashboardClient = ({
     role: serverRole,
     sidebarCollapsed,
+    tableDensity,
     testData,
 }: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -235,6 +238,7 @@ const DashboardClient = ({
     return (
         <DashboardShell
             initialCollapsed={sidebarCollapsed}
+            initialDensity={tableDensity}
             sidebar={
                 <Sidebar
                     friends={friends}

@@ -8,7 +8,7 @@
         },
         {
             "type": "paragraph",
-            "text": "**In short:** we only use cookies that are strictly necessary — to sign you in, to keep your session secure, and to remember a display choice you have made yourself. We do not use advertising cookies, analytics cookies, or any form of cross-site tracking. Because every cookie we set is strictly necessary, we are not required to ask for your consent and we do not show a cookie banner."
+            "text": "**In short:** we only use cookies that are strictly necessary. This is to sign you in, to keep your session secure, and to remember display choices you have made yourself. We do not use advertising cookies, analytics cookies, or any form of cross-site tracking. Because every cookie we set is strictly necessary, we are not required to ask for your consent and we do not show a cookie banner."
         },
         {
             "type": "paragraph",
@@ -40,7 +40,7 @@
             "blocks": [
                 {
                     "type": "paragraph",
-                    "text": "We use cookies for two purposes only: to operate the parts of the Services that cannot work without them, and to remember a display choice you have made yourself by clicking a control on the page. In practice this means authentication, security, and the layout of your dashboard."
+                    "text": "We use cookies for two purposes only: to operate the parts of the Services that cannot work without them, and to remember display choices you have made yourself by clicking a control on the page. In practice this means authentication, security, and the layout of your dashboard."
                 },
                 {
                     "type": "paragraph",
@@ -53,7 +53,8 @@
                         "Confirm to our servers that a request genuinely comes from your signed-in account before we return any of your data",
                         "Check that you are a member of a lesson workspace before granting you access to its whiteboard",
                         "Protect the sign-in process against automated abuse, such as bots and credential-stuffing attacks",
-                        "Remember whether you last collapsed or expanded the dashboard sidebar, so your dashboard is drawn the way you left it from the moment the page appears"
+                        "Remember whether you last collapsed or expanded the dashboard sidebar, so your dashboard is drawn the way you left it from the moment the page appears",
+                        "Remember the row height you last chose for the tables on your dashboard, for the same reason"
                     ]
                 },
                 {
@@ -72,7 +73,7 @@
             "blocks": [
                 {
                     "type": "paragraph",
-                    "text": "One cookie is set by Chalkie Chalkie itself. It records a display choice you made, holds no information that identifies you, and is sent only when you are on a dashboard page."
+                    "text": "Two cookies are set by Chalkie Chalkie itself. Each records a display choice you made, holds no information that identifies you, and is sent only when you are on a dashboard page."
                 },
                 {
                     "type": "definitions",
@@ -80,6 +81,10 @@
                         {
                             "term": "chalkie_sidebar",
                             "description": "**Purpose:** remembers whether you last collapsed or expanded the sidebar on your dashboard, so the page is drawn the way you left it rather than shifting into place a moment after it loads. Its value is a single word describing the layout — nothing about you, your account, or your device. **Provider:** Chalkie Chalkie (first-party). **Duration:** persistent; one year from the last time you changed the setting."
+                        },
+                        {
+                            "term": "chalkie_density",
+                            "description": "**Purpose:** remembers the row height you last chose for the tables on your dashboard, so they are drawn at that size rather than resizing a moment after the page loads. Its value is a single word describing the row height — nothing about you, your account, or your device. **Provider:** Chalkie Chalkie (first-party). **Duration:** persistent; one year from the last time you changed the setting."
                         }
                     ]
                 },
@@ -179,7 +184,7 @@
                 },
                 {
                     "type": "paragraph",
-                    "text": "The same exception covers the one cookie we set ourselves. It stores a display preference that exists only because you clicked a control asking for it, it changes nothing but how your own dashboard is drawn, and it reads nothing about you or your device. Cookies used to remember an interface choice made in this way are treated as strictly necessary on that basis. We keep it for a year rather than for a single browsing session so that you need not set it again every time you sign in; if you would rather it were not stored, deleting it in your browser is enough, and the sidebar simply returns to its default."
+                    "text": "The same exception covers the two cookies we set ourselves. Each stores a display preference that exists only because you clicked a control asking for it, neither changes anything but how your own dashboard is drawn, and neither reads anything about you or your device. Cookies used to remember an interface choice made in this way are treated as strictly necessary on that basis. We keep them for a year rather than for a single browsing session so that you need not set them again every time you sign in; if you would rather they were not stored, deleting them in your browser is enough, and your dashboard simply returns to its defaults."
                 },
                 {
                     "type": "paragraph",
@@ -205,7 +210,7 @@
                 },
                 {
                     "type": "paragraph",
-                    "text": "Blocking or deleting our own **chalkie_sidebar** cookie has no such effect. Nothing stops working; your dashboard simply opens with the sidebar expanded again, and you can collapse it as before."
+                    "text": "Blocking or deleting our own **chalkie_sidebar** and **chalkie_density** cookies has no such effect. Nothing stops working; your dashboard simply opens with its default sidebar width and row height again, and you can change either as before."
                 },
                 {
                     "type": "paragraph",

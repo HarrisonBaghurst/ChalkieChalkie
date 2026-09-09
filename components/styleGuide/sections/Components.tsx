@@ -68,7 +68,36 @@ import Stepper from "@/components/ui/Stepper";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
 import TapTooltip from "@/components/TapTooltip";
 import InviteCountdown from "@/components/dashboard/connections/InviteCountdown";
+import DataTable, { DataTableRow } from "@/components/dashboard/DataTable";
+import {
+    DENSITY_LABEL,
+    TABLE_DENSITIES,
+    TableDensity,
+    TableDensityContext,
+} from "@/components/dashboard/tableDensity";
+import { TableColumn } from "@/lib/tableColumns";
 import { Block, Caption, Code, Note, Section } from "../primitives";
+
+type SpecimenColumnKey =
+    | "people"
+    | "header"
+    | "startTime"
+    | "status"
+    | "actions";
+
+const SPECIMEN_COLUMNS = [
+    { key: "people", label: "People", minWidth: 96 },
+    { key: "header", label: "Header", minWidth: 200, pin: "left" },
+    { key: "startTime", label: "Start time", minWidth: 170 },
+    { key: "status", label: "Status", minWidth: 140 },
+    { key: "actions", label: "", minWidth: 56, pin: "right" },
+] as const satisfies readonly TableColumn<SpecimenColumnKey>[];
+
+const SPECIMEN_ROWS = [
+    { header: "Trigonometry", startTime: "Today, 16:00", status: "Open" },
+    { header: "Quadratics", startTime: "Tomorrow, 09:30", status: "Scheduled" },
+    { header: "Vectors", startTime: "Friday, 14:15", status: "Scheduled" },
+];
 
 const STEPS = [
     { id: 1, label: "Basics" },
@@ -92,6 +121,7 @@ const Item = ({
 
 const Components = () => {
     const [step, setStep] = useState(2);
+    const [density, setDensity] = useState<TableDensity>("default");
 
     // Lazy initializer, so re-renders don't restart the ticking specimens.
     const [inviteNow] = useState(() => Date.now());
@@ -553,8 +583,84 @@ const Components = () => {
             </Block>
 
             <Block
+                title="Data table"
+                description="The dashboard and connections tables and both their skeletons render through components/dashboard/DataTable. Columns are data (lib/tableColumns.ts): a pixel minWidth per column sets the width below which the table scrolls sideways, and pin freezes a column to either edge. Header and rows are two tables with one shared colgroup, because an overflow-x container is also a scrollport and a thead inside it could never stick to the page. Row height comes from the density context, so the whole page changes together. Scroll this specimen sideways to see the pins take over."
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                        <span className="text-caption text-foreground-third">
+                            Row height
+                        </span>
+                        <Tabs
+                            value={density}
+                            onValueChange={(value) =>
+                                setDensity(value as TableDensity)
+                            }
+                        >
+                            <TabsList className="w-fit">
+                                {TABLE_DENSITIES.map((option) => (
+                                    <TabsTrigger key={option} value={option}>
+                                        <span className="text-small">
+                                            {DENSITY_LABEL[option]}
+                                        </span>
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+                    </div>
+                    <TableDensityContext.Provider
+                        value={{ density, setDensity }}
+                    >
+                        <div className="max-w-lg">
+                            <DataTable
+                                columns={SPECIMEN_COLUMNS}
+                                sticky={false}
+                            >
+                                {SPECIMEN_ROWS.map((row) => (
+                                    <DataTableRow
+                                        key={row.header}
+                                        columns={SPECIMEN_COLUMNS}
+                                        cells={{
+                                            people: (
+                                                <Avatar className="rounded-md after:rounded-md">
+                                                    <AvatarFallback className="rounded-md bg-foreground-third">
+                                                        {row.header.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                            ),
+                                            header: (
+                                                <span className="block truncate text-foreground-second">
+                                                    {row.header}
+                                                </span>
+                                            ),
+                                            startTime: (
+                                                <span className="whitespace-nowrap text-foreground-second">
+                                                    {row.startTime}
+                                                </span>
+                                            ),
+                                            status: (
+                                                <Badge variant="status">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-foreground-third" />
+                                                    {row.status}
+                                                </Badge>
+                                            ),
+                                            actions: (
+                                                <div className="flex justify-end text-foreground-third">
+                                                    <EllipsisIcon className="size-4" />
+                                                </div>
+                                            ),
+                                        }}
+                                    />
+                                ))}
+                            </DataTable>
+                        </div>
+                    </TableDensityContext.Provider>
+                </div>
+            </Block>
+
+            <Block
                 title="Loading"
-                description="Skeletons for content whose shape is known, the spinner for waits with no shape to imply. Skeleton layouts share their column widths with the real table (lib/dashboardTableColumns.ts) so rows don't shift when data lands."
+                description="Skeletons for content whose shape is known, the spinner for waits with no shape to imply. Skeleton layouts share their column config with the real table (lib/dashboardTableColumns.ts) and render through the same DataTableRow, so rows don't shift when data lands."
             >
                 <div className="flex flex-wrap items-center gap-10">
                     <div className="flex w-64 flex-col gap-3">

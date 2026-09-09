@@ -1,7 +1,14 @@
-// Shared with the loading skeleton so placeholder rows stay aligned.
+import { TableColumn } from "@/lib/tableColumns";
+
+export type ConnectionColumnKey =
+    | "person"
+    | "linked"
+    | "workspaces"
+    | "actions";
+
 export const CONNECTIONS_TABLE_COLUMNS = [
-    { key: "person", label: "Person", width: "w-[45%]" },
-    { key: "linked", label: "Linked", width: "w-[25%]" },
-    { key: "workspaces", label: "Workspaces", width: "w-[20%]" },
-    { key: "actions", label: "", width: "w-[10%]" },
-] as const;
+    { key: "person", label: "Person", minWidth: 280, pin: "left" },
+    { key: "linked", label: "Linked", minWidth: 160 },
+    { key: "workspaces", label: "Workspaces", minWidth: 150 },
+    { key: "actions", label: "", minWidth: 56, pin: "right" },
+] as const satisfies readonly TableColumn<ConnectionColumnKey>[];

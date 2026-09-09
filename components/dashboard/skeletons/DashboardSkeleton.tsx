@@ -1,18 +1,17 @@
-import React from "react";
 import Image from "next/image";
-import { SlidersHorizontalIcon } from "lucide-react";
+import { Rows3Icon, SlidersHorizontalIcon } from "lucide-react";
 import Skeleton from "@/components/ui/Skeleton";
 import { fieldClasses } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import { useSidebarCollapse } from "../sidebarCollapse";
 import { nextCardWidth } from "../Next";
+import DataTable from "../DataTable";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
 
 const PLACEHOLDER_ROWS = 5;
 
-// Mirrors Next.tsx.
 const NextSkeleton = () => {
     const { collapsed } = useSidebarCollapse();
 
@@ -30,8 +29,6 @@ const NextSkeleton = () => {
                 <p className="text-caption font-inter-regular gradient-text">
                     Coming up next
                 </p>
-                {/* Same grid as NextContent — avatar beside the time only on a
-                    phone, sharing its column with every block from lg. */}
                 <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
                     <Skeleton className="w-12 h-12 radius-tag" />
                     <div className="flex flex-col gap-2">
@@ -57,7 +54,6 @@ const NextSkeleton = () => {
     );
 };
 
-// Mirrors WorkspaceLists' control row; only the per-tab counts shimmer.
 const ControlsSkeleton = () => {
     const tabs = ["Upcoming", "Previous", "All"];
 
@@ -110,42 +106,25 @@ const ControlsSkeleton = () => {
                     <div className="control-surface text-foreground-third py-2 px-3 text-small whitespace-nowrap opacity-60">
                         Clear filters
                     </div>
+                    <div className="control-surface px-2.5 py-2 text-small text-foreground-third">
+                        <Rows3Icon className="size-4 align-middle" />
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-// Mirrors WorkspaceTable, down to the border-separate corner handling.
 const TableSkeleton = () => {
     return (
-        <div className="w-full radius-surface border border-foreground-third/15 bg-card-background">
-            <table className="w-full table-fixed border-separate border-spacing-0 [&_tbody_tr:last-child>td]:border-b-0 [&_tbody_tr:last-child>td:first-child]:rounded-bl-[13px] [&_tbody_tr:last-child>td:last-child]:rounded-br-[13px]">
-                <thead>
-                    <tr>
-                        {WORKSPACE_TABLE_COLUMNS.map((col, i) => (
-                            <th
-                                key={col.key}
-                                className={`${col.width} border-b border-foreground-third/15 bg-background-second px-3 py-3 text-left text-caption font-inter-regular text-foreground-third ${
-                                    i === 0 ? "rounded-tl-[13px]" : ""
-                                } ${
-                                    i === WORKSPACE_TABLE_COLUMNS.length - 1
-                                        ? "rounded-tr-[13px]"
-                                        : ""
-                                }`}
-                            >
-                                {col.label}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {Array.from({ length: PLACEHOLDER_ROWS }).map((_, i) => (
-                        <WorkspaceTableRowSkeleton key={i} />
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <DataTable
+            columns={WORKSPACE_TABLE_COLUMNS}
+            toolbar={<ControlsSkeleton />}
+        >
+            {Array.from({ length: PLACEHOLDER_ROWS }).map((_, i) => (
+                <WorkspaceTableRowSkeleton key={i} />
+            ))}
+        </DataTable>
     );
 };
 
@@ -161,9 +140,9 @@ const DashboardSkeleton = () => {
 
             <NextSkeleton />
 
-            <div className="w-full flex flex-col gap-4 h-fit">
-                <ControlsSkeleton />
-                <div className="md:hidden">
+            <div className="w-full min-w-0 h-fit">
+                <div className="flex flex-col gap-4 md:hidden">
+                    <ControlsSkeleton />
                     <MobileListSkeleton rows={PLACEHOLDER_ROWS} showStatus />
                 </div>
                 <div className="hidden md:block">

@@ -1,6 +1,7 @@
 import ConnectionsClient from "@/components/dashboard/connections/ConnectionsClient";
 import { getUserRole } from "@/lib/serverRole";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
+import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
 import { UserRole } from "@/types/userTypes";
 import { auth } from "@clerk/nextjs/server";
 
@@ -21,8 +22,13 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
 const page = async () => {
     const role = await resolveRole();
     const sidebarCollapsed = await readSidebarCookie();
+    const tableDensity = await readTableDensityCookie();
     return (
-        <ConnectionsClient role={role} sidebarCollapsed={sidebarCollapsed} />
+        <ConnectionsClient
+            role={role}
+            sidebarCollapsed={sidebarCollapsed}
+            tableDensity={tableDensity}
+        />
     );
 };
 

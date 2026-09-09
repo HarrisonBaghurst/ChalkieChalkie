@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { CollapseState } from "@/lib/sidebarCookie";
+import { TableDensity } from "@/lib/tableDensityCookie";
 import { LinkRole, LinkSummary } from "@/types/linkTypes";
 import { UserRole } from "@/types/userTypes";
 import DashboardShell from "../DashboardShell";
@@ -18,12 +19,14 @@ type ConnectionsClientProps = {
     // Server-resolved, so the heading doesn't flash before Clerk hydrates.
     role?: UserRole;
     sidebarCollapsed?: CollapseState;
+    tableDensity?: TableDensity;
 };
 
 // No ENVIRONMENT=testing fixture path here — this always hits the live API.
 const ConnectionsClient = ({
     role: serverRole,
     sidebarCollapsed,
+    tableDensity,
 }: ConnectionsClientProps) => {
     const { isLoaded, isSignedIn } = useUser();
     const clientRole = useUserRole();
@@ -107,6 +110,7 @@ const ConnectionsClient = ({
     return (
         <DashboardShell
             initialCollapsed={sidebarCollapsed}
+            initialDensity={tableDensity}
             sidebar={<Sidebar role={serverRole} onLinked={handleLinked} />}
             bottomBar={<TabBar role={serverRole} onLinked={handleLinked} />}
         >
