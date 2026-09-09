@@ -1,6 +1,6 @@
 {
     "title": "Cookie Policy",
-    "lastUpdated": "31 July 2026",
+    "lastUpdated": "9 September 2026",
     "intro": [
         {
             "type": "paragraph",
@@ -8,7 +8,7 @@
         },
         {
             "type": "paragraph",
-            "text": "**In short:** we only use cookies that are strictly necessary to sign you in and keep your session secure. We do not use advertising cookies, analytics cookies, or any form of cross-site tracking. Because every cookie we set is strictly necessary, we are not required to ask for your consent and we do not show a cookie banner."
+            "text": "**In short:** we only use cookies that are strictly necessary — to sign you in, to keep your session secure, and to remember a display choice you have made yourself. We do not use advertising cookies, analytics cookies, or any form of cross-site tracking. Because every cookie we set is strictly necessary, we are not required to ask for your consent and we do not show a cookie banner."
         },
         {
             "type": "paragraph",
@@ -40,7 +40,7 @@
             "blocks": [
                 {
                     "type": "paragraph",
-                    "text": "We use cookies for one purpose only: to operate the parts of the Services that cannot work without them. In practice this means authentication and security."
+                    "text": "We use cookies for two purposes only: to operate the parts of the Services that cannot work without them, and to remember a display choice you have made yourself by clicking a control on the page. In practice this means authentication, security, and the layout of your dashboard."
                 },
                 {
                     "type": "paragraph",
@@ -52,12 +52,13 @@
                         "Sign you in and keep you signed in as you move between pages, so you do not have to re-enter your details on every screen",
                         "Confirm to our servers that a request genuinely comes from your signed-in account before we return any of your data",
                         "Check that you are a member of a lesson workspace before granting you access to its whiteboard",
-                        "Protect the sign-in process against automated abuse, such as bots and credential-stuffing attacks"
+                        "Protect the sign-in process against automated abuse, such as bots and credential-stuffing attacks",
+                        "Remember whether you last collapsed or expanded the dashboard sidebar, so your dashboard is drawn the way you left it from the moment the page appears"
                     ]
                 },
                 {
                     "type": "paragraph",
-                    "text": "Every cookie described in this policy falls into this category. We do not use cookies to build a profile of you, to measure how you use the Services, or to advertise to you anywhere."
+                    "text": "Every cookie described in this policy falls into one of these two categories. We do not use cookies to build a profile of you, to measure how you use the Services, or to advertise to you anywhere."
                 },
                 {
                     "type": "paragraph",
@@ -71,7 +72,20 @@
             "blocks": [
                 {
                     "type": "paragraph",
-                    "text": "The cookies below are set through Clerk, the authentication provider we use to manage sign-in and user accounts. All of them are classed as strictly necessary."
+                    "text": "One cookie is set by Chalkie Chalkie itself. It records a display choice you made, holds no information that identifies you, and is sent only when you are on a dashboard page."
+                },
+                {
+                    "type": "definitions",
+                    "items": [
+                        {
+                            "term": "chalkie_sidebar",
+                            "description": "**Purpose:** remembers whether you last collapsed or expanded the sidebar on your dashboard, so the page is drawn the way you left it rather than shifting into place a moment after it loads. Its value is a single word describing the layout — nothing about you, your account, or your device. **Provider:** Chalkie Chalkie (first-party). **Duration:** persistent; one year from the last time you changed the setting."
+                        }
+                    ]
+                },
+                {
+                    "type": "paragraph",
+                    "text": "The remaining cookies are set through Clerk, the authentication provider we use to manage sign-in and user accounts. All of them are classed as strictly necessary."
                 },
                 {
                     "type": "definitions",
@@ -161,7 +175,11 @@
                 },
                 {
                     "type": "paragraph",
-                    "text": "There is an exception where the storage or access is strictly necessary to provide a service the user has explicitly requested. Keeping you securely signed in to an account you asked us to create falls squarely within that exception, and it is the only purpose for which we set cookies. For that reason we do not ask for your consent to these cookies and we do not display a cookie banner."
+                    "text": "There is an exception where the storage or access is strictly necessary to provide a service the user has explicitly requested. Keeping you securely signed in to an account you asked us to create falls squarely within that exception, and it is the purpose of every cookie in section 3 that is set by Clerk. For that reason we do not ask for your consent to those cookies and we do not display a cookie banner."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "The same exception covers the one cookie we set ourselves. It stores a display preference that exists only because you clicked a control asking for it, it changes nothing but how your own dashboard is drawn, and it reads nothing about you or your device. Cookies used to remember an interface choice made in this way are treated as strictly necessary on that basis. We keep it for a year rather than for a single browsing session so that you need not set it again every time you sign in; if you would rather it were not stored, deleting it in your browser is enough, and the sidebar simply returns to its default."
                 },
                 {
                     "type": "paragraph",
@@ -183,7 +201,11 @@
                 },
                 {
                     "type": "paragraph",
-                    "text": "**Please note:** the cookies described in section 3 are required for authentication. If you block or delete them, you will not be able to sign in to Chalkie Chalkie, and you will be signed out of any lesson workspace you are currently in. The public pages of our website will continue to work normally."
+                    "text": "**Please note:** the Clerk cookies described in section 3 are required for authentication. If you block or delete them, you will not be able to sign in to Chalkie Chalkie, and you will be signed out of any lesson workspace you are currently in. The public pages of our website will continue to work normally."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Blocking or deleting our own **chalkie_sidebar** cookie has no such effect. Nothing stops working; your dashboard simply opens with the sidebar expanded again, and you can collapse it as before."
                 },
                 {
                     "type": "paragraph",

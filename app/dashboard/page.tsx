@@ -3,11 +3,9 @@ import testWorkspaces from "@/data/testWorkspaces.json";
 import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getUserRole } from "@/lib/serverRole";
+import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
 
-// Server-side so the tutor-only Actions are right on first paint. auth() stays
-// outside the try: Next throws from it to force dynamic rendering, and that
-// throw must propagate rather than read as a lookup failure.
 const resolveRole = async (): Promise<UserRole | undefined> => {
     const { userId } = await auth();
     if (!userId) return undefined;
@@ -21,6 +19,7 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
 
 const page = async () => {
     const role = await resolveRole();
+    const sidebarCollapsed = await readSidebarCookie();
 
     if (process.env.ENVIRONMENT === "testing") {
         const limits = limitsForPlan();
@@ -68,8 +67,7 @@ const page = async () => {
                         firstName: c.firstName ?? u.firstName,
                         lastName: c.lastName ?? u.lastName,
                         imageUrl: c.imageUrl ?? u.imageUrl,
-                        email:
-                            c.emailAddresses[0]?.emailAddress ?? u.email,
+                        email: c.emailAddresses[0]?.emailAddress ?? u.email,
                     };
                 });
             } catch (err) {
@@ -80,10 +78,16 @@ const page = async () => {
             }
         }
 
-        return <DashboardClient role={role} testData={{ workspaces, users }} />;
+        return (
+            <DashboardClient
+                role={role}
+                sidebarCollapsed={sidebarCollapsed}
+                testData={{ workspaces, users }}
+            />
+        );
     }
 
-    return <DashboardClient role={role} />;
+    return <DashboardClient role={role} sidebarCollapsed={sidebarCollapsed} />;
 };
 
 export default page;

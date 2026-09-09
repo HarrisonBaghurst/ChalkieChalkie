@@ -12,6 +12,7 @@ import {
     hasActiveDashboardFilters,
 } from "@/lib/dashboardFilters";
 import { isHost } from "@/lib/workspaceHost";
+import { CollapseState } from "@/lib/sidebarCookie";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
@@ -25,6 +26,7 @@ import DashboardSkeleton from "./skeletons/DashboardSkeleton";
 type DashboardClientProps = {
     // Server-resolved, so the role-gated sidebar is right on first paint.
     role?: UserRole;
+    sidebarCollapsed?: CollapseState;
     testData?: {
         workspaces: Workspace[];
         users: userInfo[];
@@ -35,6 +37,7 @@ type DashboardClientProps = {
 // components/Workspaces.tsx; extract a shared API client.
 const DashboardClient = ({
     role: serverRole,
+    sidebarCollapsed,
     testData,
 }: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
@@ -231,6 +234,7 @@ const DashboardClient = ({
 
     return (
         <DashboardShell
+            initialCollapsed={sidebarCollapsed}
             sidebar={
                 <Sidebar
                     friends={friends}

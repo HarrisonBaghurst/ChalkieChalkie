@@ -1,9 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Navbar from "../home/Navbar";
+import { CollapseState, writeSidebarCookie } from "@/lib/sidebarCookie";
+import { byCollapseState, SidebarCollapseContext } from "./sidebarCollapse";
 
 type DashboardShellProps = {
     sidebar: React.ReactNode; // lg and up only
     bottomBar: React.ReactNode; // below lg only; carries the Sidebar's Actions
+    initialCollapsed?: CollapseState;
     children: React.ReactNode;
 };
 
@@ -12,31 +17,52 @@ type DashboardShellProps = {
 const DashboardShell = ({
     sidebar,
     bottomBar,
+    initialCollapsed = null,
     children,
 }: DashboardShellProps) => {
+    const [collapsed, setCollapsed] = useState<CollapseState>(initialCollapsed);
+
+    const toggle = () => {
+        const next =
+            collapsed === null
+                ? window.matchMedia("(min-width: 64rem)").matches
+                : !collapsed;
+        setCollapsed(next);
+        writeSidebarCookie(next);
+    };
+
     return (
-        <div className="dashboard-root flex bg-card-background min-h-dvh">
-            <div className="hidden lg:block">{sidebar}</div>
-            <div className="block lg:hidden">
-                <Navbar />
+        <SidebarCollapseContext.Provider value={{ collapsed, toggle }}>
+            <div className="dashboard-root flex bg-card-background min-h-dvh">
+                <div className="hidden lg:block">{sidebar}</div>
+                <div className="block lg:hidden">
+                    <Navbar />
+                </div>
+                <div
+                    className={
+                        // Per-edge padding, not `p-*`: a shorthand next to
+                        // .pb-safe would leave the winner up to stylesheet order.
+                        // pt clears the fixed Navbar, pb the tab bar.
+                        // rounded-xl, not radius-surface: the tier classes are
+                        // plain CSS, so Tailwind can't build a breakpoint variant.
+                        "w-full min-h-dvh flex flex-col bg-background " +
+                        "px-4 pt-[calc(2.5rem+4svh+2rem)] gap-6 pb-safe [--safe-pb:6rem] " +
+                        "lg:m-2 lg:min-h-[calc(100dvh-1rem)] lg:rounded-xl " +
+                        "lg:px-[2.5dvw] lg:pt-[2.5dvw] lg:gap-[2.5dvw] lg:[--safe-pb:2.5dvw] " +
+                        "lg:transition-[margin-left] " +
+                        byCollapseState(
+                            collapsed,
+                            "lg:ml-17",
+                            "lg:ml-75",
+                            "lg:ml-75",
+                        )
+                    }
+                >
+                    {children}
+                </div>
+                <div className="lg:hidden">{bottomBar}</div>
             </div>
-            <div
-                className={
-                    // Per-edge padding, not `p-*`: a shorthand next to
-                    // .pb-safe would leave the winner up to stylesheet order.
-                    // pt clears the fixed Navbar, pb the tab bar.
-                    // rounded-xl, not radius-surface: the tier classes are
-                    // plain CSS, so Tailwind can't build a breakpoint variant.
-                    "w-full min-h-dvh flex flex-col bg-background " +
-                    "px-4 pt-[calc(2.5rem+4svh+2rem)] gap-6 pb-safe [--safe-pb:6rem] " +
-                    "lg:m-2 lg:ml-75 lg:min-h-[calc(100dvh-1rem)] lg:rounded-xl " +
-                    "lg:px-[2.5dvw] lg:pt-[2.5dvw] lg:gap-[2.5dvw] lg:[--safe-pb:2.5dvw]"
-                }
-            >
-                {children}
-            </div>
-            <div className="lg:hidden">{bottomBar}</div>
-        </div>
+        </SidebarCollapseContext.Provider>
     );
 };
 

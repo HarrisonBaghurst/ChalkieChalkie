@@ -1,8 +1,30 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.1.3",
+    "currentVersion": "0.1.4",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.1.4",
+            "date": "10 September 2026",
+            "changes": [
+                {
+                    "tag": "Added",
+                    "text": "The dashboard sidebar can now be collapsed to a strip of icons using the Collapse button at the foot of it. Hovering an icon names it while collapsed."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Whether the sidebar was left collapsed or expanded is now remembered between visits, and applied before the page is drawn so nothing shifts as it loads."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The [cookie policy](/cookie-policy) now covers the one cookie that remembers the sidebar setting. It holds nothing that identifies you and is only stored once the Collapse button is used."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The navigation bar now uses a frosted background rather than fading into the page behind it, so it stays legible over whatever it covers, and sits closer to the edges on narrow screens."
+                }
+            ]
+        },
         {
             "version": "0.1.3",
             "date": "9 September 2026",

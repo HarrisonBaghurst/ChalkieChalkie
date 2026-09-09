@@ -13,12 +13,10 @@ const Navbar = () => {
     const isAtBrandTarget = pathname === brandHref;
 
     return (
-        // z-40 stays under the z-50 overlay layer, which portals to the body
-        // and has to cover the navbar.
-        <div className="h-fit py-[2svh] px-[6dvw] fixed w-full flex justify-between items-center z-40">
+        <div className="h-fit py-[2svh] px-4 lg:px-[6dvw] fixed w-full flex justify-between items-center z-40">
             <div
                 aria-hidden
-                className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-transparent to-background"
+                className="pointer-events-none absolute inset-0 -z-10 bg-background/80 backdrop-blur-sm border-b md:border-none border-foreground/10"
             />
             <SignedIn>
                 <div className="flex gap-4 items-center">
@@ -44,10 +42,6 @@ const Navbar = () => {
                         </p>
                         <p>Chalkie Chalkie</p>
                     </div>
-                    {/* The dashboard nav pill that used to sit here is gone:
-                        DashboardShell only renders this Navbar below lg, and
-                        below lg the bottom TabBar carries the same two
-                        destinations with role-aware labels. */}
                 </div>
             </SignedIn>
             <SignedOut>

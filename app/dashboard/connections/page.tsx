@@ -1,10 +1,9 @@
 import ConnectionsClient from "@/components/dashboard/connections/ConnectionsClient";
 import { getUserRole } from "@/lib/serverRole";
+import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { UserRole } from "@/types/userTypes";
 import { auth } from "@clerk/nextjs/server";
 
-// Server-side so the heading is right on first paint; see app/dashboard/page.tsx
-// for why auth() stays outside the try.
 const resolveRole = async (): Promise<UserRole | undefined> => {
     const { userId } = await auth();
     if (!userId) return undefined;
@@ -21,7 +20,10 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
 
 const page = async () => {
     const role = await resolveRole();
-    return <ConnectionsClient role={role} />;
+    const sidebarCollapsed = await readSidebarCookie();
+    return (
+        <ConnectionsClient role={role} sidebarCollapsed={sidebarCollapsed} />
+    );
 };
 
 export default page;
