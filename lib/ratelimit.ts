@@ -14,6 +14,7 @@ export const RATE_LIMITS = {
     "realtime-auth:user": { keyBy: "userId", limit: 30, window: "1 m" },
     "realtime-auth:ip": { keyBy: "ip", limit: 100, window: "1 m" },
     contact: { keyBy: "ip", limit: 3, window: "1 h" },
+    "tutor-access": { keyBy: "userId", limit: 2, window: "24 h" },
     cron: { keyBy: "ip", limit: 5, window: "1 m" },
     "workspace:get": { keyBy: "userId", limit: 60, window: "1 m" },
     "workspace:patch": { keyBy: "userId", limit: 20, window: "1 m" },

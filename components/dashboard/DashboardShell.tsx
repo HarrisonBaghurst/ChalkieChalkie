@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Navbar from "../home/Navbar";
+import { cn } from "@/lib/utils";
 import { CollapseState, writeSidebarCookie } from "@/lib/sidebarCookie";
 import {
     TableDensity,
@@ -15,6 +16,7 @@ type DashboardShellProps = {
     bottomBar: React.ReactNode;
     initialCollapsed?: CollapseState;
     initialDensity?: TableDensity;
+    overlay?: React.ReactNode;
     children: React.ReactNode;
 };
 
@@ -25,6 +27,7 @@ const DashboardShell = ({
     bottomBar,
     initialCollapsed = null,
     initialDensity = "default",
+    overlay,
     children,
 }: DashboardShellProps) => {
     const [collapsed, setCollapsed] = useState<CollapseState>(initialCollapsed);
@@ -53,21 +56,24 @@ const DashboardShell = ({
                         <Navbar />
                     </div>
                     <div
-                        className={
-                            "w-full min-w-0 min-h-dvh flex flex-col bg-background " +
-                            "px-4 pt-[calc(2.5rem+4svh+2rem)] gap-6 pb-safe [--safe-pb:6rem] " +
-                            "md:m-2 md:min-h-[calc(100dvh-1rem)] md:rounded-xl " +
-                            "md:px-[2.5dvw] md:pt-[2.5dvw] md:gap-[2.5dvw] md:[--safe-pb:2.5dvw] " +
-                            "md:transition-[margin-left] " +
+                        className={cn(
+                            "w-full min-w-0 min-h-dvh flex flex-col bg-background",
+                            "px-4 pt-[calc(2.5rem+4svh+2rem)] gap-6 pb-safe [--safe-pb:6rem]",
+                            "md:m-2 md:min-h-[calc(100dvh-1rem)] md:rounded-xl",
+                            "md:px-[2.5dvw] md:pt-[2.5dvw] md:gap-[2.5dvw] md:[--safe-pb:2.5dvw]",
+                            "md:transition-[margin-left]",
                             byCollapseState(
                                 collapsed,
                                 "md:ml-17",
                                 "md:ml-75",
                                 "md:ml-17 lg:ml-75",
-                            )
-                        }
+                            ),
+                            overlay &&
+                                "relative overflow-hidden max-h-dvh md:max-h-[calc(100dvh-1rem)]",
+                        )}
                     >
                         {children}
+                        {overlay}
                     </div>
                     <div className="md:hidden">{bottomBar}</div>
                 </div>

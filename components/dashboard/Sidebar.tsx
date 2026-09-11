@@ -7,7 +7,11 @@ import { usePathname } from "next/navigation";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
-import { resolveDashboardAction } from "@/lib/dashboardActions";
+import { useActionHighlight } from "@/hooks/useActionHighlight";
+import {
+    ACTION_HIGHLIGHT_CLASS,
+    resolveDashboardAction,
+} from "@/lib/dashboardActions";
 import {
     byCollapseState,
     CollapseState,
@@ -75,13 +79,15 @@ const railTooltipClass = (collapsed: CollapseState) =>
 const RailTooltip = ({
     label,
     collapsed,
+    open,
     children,
 }: {
     label: string;
     collapsed: CollapseState;
+    open?: boolean;
     children: React.ReactElement;
 }) => (
-    <Tooltip>
+    <Tooltip open={open || undefined}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent side="right" className={railTooltipClass(collapsed)}>
             {label}
@@ -137,6 +143,7 @@ const Sidebar = ({
     const action = roleKnown ? resolveDashboardAction(pathname, role) : null;
     const actionReady =
         action?.id === "create-workspace" ? !!onCreated : !!onLinked;
+    const highlighted = useActionHighlight(action?.id);
 
     const connectionsLabel = role === "student" ? "Tutors" : "Students";
 
@@ -246,7 +253,11 @@ const Sidebar = ({
     const actionControl = !roleKnown ? (
         <Skeleton className="h-9 radius-control" />
     ) : action && actionReady ? (
-        <RailTooltip collapsed={collapsed} label={action.label}>
+        <RailTooltip
+            collapsed={collapsed}
+            label={action.label}
+            open={highlighted}
+        >
             <Button
                 variant="outline"
                 aria-label={action.label}
@@ -258,6 +269,7 @@ const Sidebar = ({
                 className={cn(
                     "gap-3 py-2 text-small",
                     railButtonClass(collapsed),
+                    highlighted && ACTION_HIGHLIGHT_CLASS,
                 )}
             >
                 <Image src={action.icon} alt="" width={20} height={20} />

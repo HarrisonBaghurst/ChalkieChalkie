@@ -44,6 +44,7 @@ type NextProps = {
     workspace: Workspace | null;
     usersMap: Record<string, userInfo>;
     viewerId: string | undefined;
+    paired?: boolean;
 };
 
 const NextContent = ({
@@ -55,55 +56,57 @@ const NextContent = ({
     counterparty: userInfo | null;
     days: number;
 }) => (
-    <div className="flex flex-col gap-6 md:pr-8">
-        <p className="text-caption font-inter-regular gradient-text">
-            Coming up next
-        </p>
-        <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
-            <Avatar className="size-12 rounded-md after:rounded-md">
-                <AvatarImage
-                    src={counterparty?.imageUrl}
-                    alt={`${counterparty?.firstName ?? ""} ${counterparty?.lastName ?? ""}`}
-                    className="rounded-md"
-                />
-                <AvatarFallback className="rounded-md bg-foreground-third" />
-            </Avatar>
-            <div className="flex flex-col gap-2">
-                <p className="text-heading font-inter-bold">
-                    {formatSessionTime(workspace.startTime)}
-                </p>
-                <p className="text-body font-inter-bold text-foreground-second leading-5.5">
-                    {workspace.title}
-                </p>
-            </div>
-            {workspace.description && (
-                <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
-                    <p className="text-caption text-foreground-third">
-                        Description
+    <div className="flex flex-1 flex-col justify-between gap-6 md:pr-8">
+        <div className="flex flex-col gap-6">
+            <p className="text-caption font-inter-regular gradient-text">
+                Coming up next
+            </p>
+            <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
+                <Avatar className="size-12 rounded-md after:rounded-md">
+                    <AvatarImage
+                        src={counterparty?.imageUrl}
+                        alt={`${counterparty?.firstName ?? ""} ${counterparty?.lastName ?? ""}`}
+                        className="rounded-md"
+                    />
+                    <AvatarFallback className="rounded-md bg-foreground-third" />
+                </Avatar>
+                <div className="flex flex-col gap-2">
+                    <p className="text-heading font-inter-bold">
+                        {formatSessionTime(workspace.startTime)}
                     </p>
-                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2 text-justify">
-                        {workspace.description}
+                    <p className="text-body font-inter-bold text-foreground-second leading-5.5">
+                        {workspace.title}
                     </p>
                 </div>
-            )}
-            <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1 md:col-start-2">
-                <Badge>
-                    <TagIcon src="/icons/clock.svg" />
-                    60 mins
-                </Badge>
-                {days > 0 && (
-                    <Badge>
-                        <TagIcon src="/icons/calendar.svg" />
-                        {`${days} day${days !== 1 ? "s" : ""} away`}
-                    </Badge>
+                {workspace.description && (
+                    <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
+                        <p className="text-caption text-foreground-third">
+                            Description
+                        </p>
+                        <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2 text-justify">
+                            {workspace.description}
+                        </p>
+                    </div>
                 )}
             </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+            <Badge>
+                <TagIcon src="/icons/clock.svg" />
+                60 mins
+            </Badge>
+            {days > 0 && (
+                <Badge>
+                    <TagIcon src="/icons/calendar.svg" />
+                    {`${days} day${days !== 1 ? "s" : ""} away`}
+                </Badge>
+            )}
         </div>
     </div>
 );
 
 const CARD_CLASS =
-    "h-fit bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+    "h-fit min-h-50 bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
 
 export const nextCardWidth = (collapsed: CollapseState) =>
     byCollapseState(
@@ -113,7 +116,13 @@ export const nextCardWidth = (collapsed: CollapseState) =>
         "w-full xl:w-1/2 2xl:w-1/3",
     );
 
-const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
+export const dashboardCardRow = (collapsed: CollapseState) =>
+    cn(
+        "flex w-full flex-col items-stretch gap-4 2xl:w-2/3",
+        byCollapseState(collapsed, "lg:flex-row", "xl:flex-row", "xl:flex-row"),
+    );
+
+const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
     const counterparty = workspace
         ? pickCounterparty(workspace, usersMap, viewerId)
         : null;
@@ -121,14 +130,21 @@ const Next = ({ workspace, usersMap, viewerId }: NextProps) => {
     const router = useRouter();
     const now = useNow();
     const { collapsed } = useSidebarCollapse();
-    const width = nextCardWidth(collapsed);
+    const width = paired ? "h-auto flex-1 min-w-0" : nextCardWidth(collapsed);
 
     const days = workspace ? daysUntil(workspace.startTime) : 0;
     const denial = workspace ? joinDenialLabel(workspace, now) : null;
 
     if (!workspace) {
         return (
-            <div className={cn(CARD_CLASS, width, "flex h-50")}>
+            <div
+                className={cn(
+                    CARD_CLASS,
+                    width,
+                    "flex",
+                    paired ? "h-auto min-h-50" : "h-50",
+                )}
+            >
                 <p className="text-caption font-inter-regular gradient-text">
                     Coming up next
                 </p>

@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import SendMessage from "../SendMessage";
+import StepperFormDialog from "../forms/StepperFormDialog";
+import { BUG_REPORT } from "@/lib/forms/bugReport";
 
 const ContactButton = () => {
     const [showSendMessage, setShowSendMessage] = useState(false);
@@ -16,8 +17,8 @@ const ContactButton = () => {
                 Contact Chalkie Chalkie
             </Button>
             {showSendMessage && (
-                <SendMessage
-                    mode="contact"
+                <StepperFormDialog
+                    spec={BUG_REPORT}
                     onClose={() => setShowSendMessage(false)}
                 />
             )}

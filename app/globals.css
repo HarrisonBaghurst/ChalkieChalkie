@@ -377,6 +377,32 @@
             rgba(230, 110, 170, 1) 99%
         );
     }
+    .gradient-ring {
+        position: relative;
+    }
+    .gradient-ring::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        padding: 4px;
+        pointer-events: none;
+        background: linear-gradient(
+            150deg,
+            rgba(219, 193, 90, 1) 0%,
+            rgba(245, 139, 47, 1) 35%,
+            rgba(227, 104, 104, 1) 62%,
+            rgba(230, 110, 170, 1) 99%
+        );
+        -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
     .gradient-text {
         background: linear-gradient(
             150deg,

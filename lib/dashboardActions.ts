@@ -30,6 +30,25 @@ const ADD_TUTOR: DashboardAction = {
     iconDark: "/icons/user-round-plus-dark.svg",
 };
 
+export const ACTION_HIGHLIGHT_PARAM = "highlight";
+
+const ACTION_ID_SET: Record<DashboardActionId, true> = {
+    "create-workspace": true,
+    "add-link": true,
+};
+
+export const parseActionHighlight = (
+    value: string | null,
+): DashboardActionId | null =>
+    value && value in ACTION_ID_SET ? (value as DashboardActionId) : null;
+
+export const actionHighlightHref = (
+    pathname: string,
+    id: DashboardActionId,
+): string => `${pathname}?${ACTION_HIGHLIGHT_PARAM}=${id}`;
+
+export const ACTION_HIGHLIGHT_CLASS = "animate-pulse gradient-ring";
+
 export const resolveDashboardAction = (
     pathname: string,
     role: UserRole,

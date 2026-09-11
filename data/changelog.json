@@ -1,8 +1,34 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.1.4",
+    "currentVersion": "0.1.5",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.1.5",
+            "date": "12 September 2026",
+            "changes": [
+                {
+                    "tag": "Added",
+                    "text": "A getting started checklist now walks you through the three steps before your first lesson. It takes over the page while there is nothing on it yet, and reads differently for a tutor and a student since the two start from different places."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The checklist steps back to a card once a page has something of its own to show - beside the coming up next card on the dashboard, above the table on your tutors or students page - so each page makes room for its own content as soon as it has any. It disappears altogether once your first lesson has started."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Students who have not linked a tutor yet can now request a tutor account from the checklist. The form asks what you teach, roughly how many students you have and where you tutor now; your name, email and account are attached automatically."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The coming up next card now keeps its tags at the foot of the card and holds a minimum height, so it ends level with the checklist beside it rather than the pair finishing at different points."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "The dashboard and your tutors or students page now wait for everything they have asked for before drawing, rather than filling in as each answer arrives. A step you had already completed could briefly show as outstanding while the rest of the page loaded."
+                }
+            ]
+        },
         {
             "version": "0.1.4",
             "date": "10 September 2026",

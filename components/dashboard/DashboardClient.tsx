@@ -15,11 +15,15 @@ import { isHost } from "@/lib/workspaceHost";
 import { CollapseState } from "@/lib/sidebarCookie";
 import { TableDensity } from "@/lib/tableDensityCookie";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
+import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
+import { LinkRole } from "@/types/linkTypes";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
 import Sidebar from "./Sidebar";
 import TabBar from "./mobile/TabBar";
 import DashboardShell from "./DashboardShell";
+import DashboardCardRow from "./DashboardCardRow";
+import GettingStarted, { GettingStartedTakeover } from "./GettingStarted";
 import Next from "./Next";
 import WorkspaceLists from "./WorkspaceLists";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
@@ -84,7 +88,6 @@ const DashboardClient = ({
                 console.error(err);
             }
         };
-        fetchFriends();
 
         const fetchAll = async () => {
             try {
@@ -130,12 +133,18 @@ const DashboardClient = ({
                 setUsersInfo(usersData.users ?? []);
             } catch (err) {
                 console.error(err);
+            }
+        };
+
+        const load = async () => {
+            try {
+                await Promise.all([fetchFriends(), fetchAll()]);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAll();
+        load();
     }, [isLoaded, isSignedIn, role, testData]);
 
     const usersMap = useMemo(
@@ -213,6 +222,21 @@ const DashboardClient = ({
 
     const nextWorkspace = upcomingAll.find((w) => !!w.startTime) ?? null;
 
+    const checklistCounts: ChecklistCounts = {
+        linkCount: friends.length,
+        workspaceCount: workspaces.length,
+        startedCount: previousAll.length,
+    };
+
+    const checklistRole: LinkRole = role === "tutor" ? "tutor" : "student";
+
+    const ready = !loading && isLoaded;
+
+    const presentation =
+        role === "admin"
+            ? "hidden"
+            : resolvePresentation("dashboard", checklistCounts);
+
     const mergeUsers = (incoming: userInfo[]) => {
         setUsersInfo((prev) => {
             const byId = new Map(prev.map((u) => [u.id, u]));
@@ -253,8 +277,17 @@ const DashboardClient = ({
                     role={serverRole}
                 />
             }
+            overlay={
+                ready && presentation === "page" ? (
+                    <GettingStartedTakeover
+                        role={checklistRole}
+                        surface="dashboard"
+                        counts={checklistCounts}
+                    />
+                ) : null
+            }
         >
-            {loading || !isLoaded ? (
+            {!ready ? (
                 <DashboardSkeleton />
             ) : (
                 <>
@@ -266,11 +299,28 @@ const DashboardClient = ({
                             View and update your workspaces
                         </p>
                     </div>
-                    <Next
-                        workspace={nextWorkspace}
-                        usersMap={usersMap}
-                        viewerId={user?.id}
-                    />
+                    {presentation === "card" ? (
+                        <DashboardCardRow>
+                            <Next
+                                workspace={nextWorkspace}
+                                usersMap={usersMap}
+                                viewerId={user?.id}
+                                paired
+                            />
+                            <GettingStarted
+                                role={checklistRole}
+                                surface="dashboard"
+                                presentation="card"
+                                counts={checklistCounts}
+                            />
+                        </DashboardCardRow>
+                    ) : (
+                        <Next
+                            workspace={nextWorkspace}
+                            usersMap={usersMap}
+                            viewerId={user?.id}
+                        />
+                    )}
                     <WorkspaceLists
                         upcoming={upcomingFiltered}
                         previous={previousFiltered}

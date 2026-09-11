@@ -6,11 +6,15 @@ import { toast } from "sonner";
 import { useUserRole } from "@/hooks/useUserRole";
 import { CollapseState } from "@/lib/sidebarCookie";
 import { TableDensity } from "@/lib/tableDensityCookie";
+import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
+import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
+import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
 import { LinkRole, LinkSummary } from "@/types/linkTypes";
 import { UserRole } from "@/types/userTypes";
 import DashboardShell from "../DashboardShell";
 import Sidebar from "../Sidebar";
 import TabBar from "../mobile/TabBar";
+import GettingStarted, { GettingStartedTakeover } from "../GettingStarted";
 import ConnectionsList from "../mobile/ConnectionsList";
 import ConnectionsSkeleton from "../skeletons/ConnectionsSkeleton";
 import ConnectionsTable from "./ConnectionsTable";
@@ -34,6 +38,8 @@ const ConnectionsClient = ({
     const roleKnown = !!serverRole || isLoaded;
 
     const [links, setLinks] = useState<LinkSummary[]>([]);
+    const [workspaceCount, setWorkspaceCount] = useState(0);
+    const [startedCount, setStartedCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -55,12 +61,43 @@ const ConnectionsClient = ({
                 setLinks(data.links ?? []);
             } catch (err) {
                 console.error(err);
+            }
+        };
+
+        const fetchWorkspaceCounts = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_APP_URL}/api/users/workspaces`,
+                    { cache: "no-store" },
+                );
+                if (!res.ok) return;
+
+                const raw: RoomRow[] = await res.json();
+                const workspaces = raw.map(mapRoomRow);
+                const cutoff = Date.now() - DASHBOARD_GRACE_MS;
+
+                setWorkspaceCount(workspaces.length);
+                setStartedCount(
+                    workspaces.filter((w) => {
+                        if (!w.startTime) return false;
+                        const t = new Date(w.startTime).getTime();
+                        return !Number.isNaN(t) && t < cutoff;
+                    }).length,
+                );
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        const load = async () => {
+            try {
+                await Promise.all([fetchLinks(), fetchWorkspaceCounts()]);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchLinks();
+        load();
     }, [isLoaded, isSignedIn]);
 
     const handleLinked = (link: LinkSummary) => {
@@ -107,14 +144,35 @@ const ConnectionsClient = ({
     // than a table they could never populate.
     const isUnsupportedRole = roleKnown && role === "admin";
 
+    const checklistCounts: ChecklistCounts = {
+        linkCount: links.length,
+        workspaceCount,
+        startedCount,
+    };
+
+    const presentation = isUnsupportedRole
+        ? "hidden"
+        : resolvePresentation("connections", checklistCounts);
+
+    const ready = !loading && isLoaded;
+
     return (
         <DashboardShell
             initialCollapsed={sidebarCollapsed}
             initialDensity={tableDensity}
             sidebar={<Sidebar role={serverRole} onLinked={handleLinked} />}
             bottomBar={<TabBar role={serverRole} onLinked={handleLinked} />}
+            overlay={
+                ready && presentation === "page" ? (
+                    <GettingStartedTakeover
+                        role={linkRole}
+                        surface="connections"
+                        counts={checklistCounts}
+                    />
+                ) : null
+            }
         >
-            {loading || !isLoaded ? (
+            {!ready ? (
                 <ConnectionsSkeleton heading={heading} />
             ) : isUnsupportedRole ? (
                 <div className="flex flex-col gap-1">
@@ -136,8 +194,15 @@ const ConnectionsClient = ({
                         </p>
                     </div>
 
-                    {/* Swapped by CSS rather than a media-query hook, same as
-                        the dashboard's list — see WorkspaceLists. */}
+                    {presentation === "card" && (
+                        <GettingStarted
+                            role={linkRole}
+                            surface="connections"
+                            presentation="card"
+                            counts={checklistCounts}
+                        />
+                    )}
+
                     <div className="md:hidden">
                         <ConnectionsList
                             links={links}

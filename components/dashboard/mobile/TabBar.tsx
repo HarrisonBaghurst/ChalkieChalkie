@@ -7,7 +7,11 @@ import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { useUserRole } from "@/hooks/useUserRole";
-import { resolveDashboardAction } from "@/lib/dashboardActions";
+import { useActionHighlight } from "@/hooks/useActionHighlight";
+import {
+    ACTION_HIGHLIGHT_CLASS,
+    resolveDashboardAction,
+} from "@/lib/dashboardActions";
 import { userInfo, UserRole, Workspace } from "@/types/userTypes";
 import { LinkSummary } from "@/types/linkTypes";
 import { Button } from "@/components/ui/button";
@@ -60,6 +64,7 @@ const TabBar = ({
     const action = roleKnown ? resolveDashboardAction(pathname, role) : null;
     const actionReady =
         action?.id === "create-workspace" ? !!onCreated : !!onLinked;
+    const highlighted = useActionHighlight(action?.id);
 
     return (
         <div className="fixed inset-x-0 bottom-0 z-40">
@@ -72,7 +77,10 @@ const TabBar = ({
                                 ? setCreateOpen(true)
                                 : setLinkOpen(true)
                         }
-                        className="size-14 rounded-full shadow-lg shadow-background/60"
+                        className={cn(
+                            "size-14 rounded-full shadow-lg shadow-background/60",
+                            highlighted && ACTION_HIGHLIGHT_CLASS,
+                        )}
                     >
                         <Image
                             src={action.iconDark}

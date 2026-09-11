@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import SendMessage from "../SendMessage";
+import StepperFormDialog from "../forms/StepperFormDialog";
+import { BETA_REQUEST } from "@/lib/forms/betaRequest";
 
 const BetaSignUpButton = () => {
     const [showSendMessage, setShowSendMessage] = useState(false);
@@ -13,8 +14,8 @@ const BetaSignUpButton = () => {
                 Request Beta Access
             </Button>
             {showSendMessage && (
-                <SendMessage
-                    mode="beta"
+                <StepperFormDialog
+                    spec={BETA_REQUEST}
                     onClose={() => setShowSendMessage(false)}
                 />
             )}

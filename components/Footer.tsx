@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import SendMessage from "./SendMessage";
+import StepperFormDialog from "./forms/StepperFormDialog";
+import { BETA_REQUEST } from "@/lib/forms/betaRequest";
 
 const linkClass = "w-fit hover:underline cursor-pointer";
 
@@ -86,8 +87,8 @@ const Footer = () => {
                 <p>Harrison Baghurst Digital</p>
             </div>
             {showSendMessage && (
-                <SendMessage
-                    mode="beta"
+                <StepperFormDialog
+                    spec={BETA_REQUEST}
                     onClose={() => setShowSendMessage(false)}
                 />
             )}
