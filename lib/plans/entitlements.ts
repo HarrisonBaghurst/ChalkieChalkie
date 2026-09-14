@@ -8,20 +8,20 @@ const DAY_MS = 24 * HOUR_MS;
 const PLAN_ENTITLEMENTS: Record<PlanId, PlanEntitlements> = {
     basic: {
         maxWorkspaceMembers: 2,
-        workspacesPerMonth: 20,
-        maxLinkedStudents: 5,
+        workspacesPerMonth: 10,
+        maxLinkedStudents: 3,
         retentionMs: 14 * DAY_MS,
         leadMs: 1 * HOUR_MS,
     },
     plus: {
-        maxWorkspaceMembers: 8,
-        workspacesPerMonth: 100,
-        maxLinkedStudents: 40,
+        maxWorkspaceMembers: 5,
+        workspacesPerMonth: 50,
+        maxLinkedStudents: 25,
         retentionMs: 90 * DAY_MS,
         leadMs: 24 * HOUR_MS,
     },
     professional: {
-        maxWorkspaceMembers: 20,
+        maxWorkspaceMembers: 10,
         workspacesPerMonth: null,
         maxLinkedStudents: null,
         retentionMs: 365 * DAY_MS,
