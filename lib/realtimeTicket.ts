@@ -32,12 +32,16 @@ export async function signTicket(
     userId: string,
     room: string,
     info: UserInfo,
+    host: string,
+    cap: number,
 ): Promise<string> {
     const issued = Math.floor(Date.now() / 1000);
     const claims: TicketClaims = {
         sub: userId,
         room,
         info,
+        host,
+        cap,
         iat: issued,
         exp: issued + TICKET_TTL_SECONDS,
     };

@@ -55,7 +55,7 @@ npm run tail       # live production logs
 
 No test suite exists in this project.
 
-`realtime/package.json` pins **wrangler 4.86** because anything newer requires Node 22 and this machine is on 20. `compatibility_date` in `wrangler.jsonc` is bounded by that binary; raise both together.
+**Run everything on Node 24** — `.nvmrc` at the repo root pins it, so `nvm use` in a fresh shell is enough. `realtime/package.json` is on **wrangler 4.129**, which refuses to start under anything below Node 22; a shell left on Node 20 fails with `Wrangler requires at least Node.js v22.0.0` before `wrangler dev` ever binds :8787. `compatibility_date` in `wrangler.jsonc` is bounded by the wrangler binary; raise both together.
 
 ## Where The Detail Lives
 
@@ -70,6 +70,7 @@ Read the doc that covers what you are about to touch, before touching it.
 | `components/dashboard/`, `app/dashboard/`, `lib/dashboard*.ts`, `lib/tableColumns.ts`, `lib/*Cookie.ts` | [docs/dashboard.md](docs/dashboard.md) |
 | `app/api/`, `proxy.ts`, `app/(home)/`, `app/(legal)/`, route layout or a new page | [docs/routes-api.md](docs/routes-api.md) |
 | Auth, roles, websocket tickets, eviction, workspace open/expiry windows, `lib/roles.ts`, `lib/serverRole.ts`, `lib/realtimeTicket.ts`, `lib/realtimeAdmin.ts`, `lib/workspaceLifecycle.ts`, `lib/links.ts` | [docs/access-control.md](docs/access-control.md) |
+| Paid plans, entitlement values, usage quotas, `lib/plans/`, `lib/serverPlan.ts`, `lib/usage.ts`, `types/planTypes.ts`, `hooks/useEntitlements.tsx` | [docs/plans.md](docs/plans.md) |
 | Deployment, `vercel.json`, `app/api/cron/`, `lib/ratelimit.ts`, `lib/errorResponse.ts`, `data/changelog.json`, version bumps | [docs/ops.md](docs/ops.md) |
 | Adding or changing an environment variable | [docs/environment.md](docs/environment.md) |
 | "Where does this component live?" | [docs/components.md](docs/components.md) |

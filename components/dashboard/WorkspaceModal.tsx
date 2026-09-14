@@ -5,11 +5,12 @@ import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
+import { responseDenialCopy } from "@/lib/planDenialCopy";
 import {
     isStartTimeLocked,
-    limitsForPlan,
     opensWithinLockWindow,
 } from "@/lib/workspaceLifecycle";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
 import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
 import TeamStep from "./workspaceModalSteps/TeamStep";
@@ -110,6 +111,7 @@ const WorkspaceModalContent = ({
     onDeleted,
 }: WorkspaceModalProps) => {
     const { user } = useUser();
+    const { entitlements } = useEntitlements();
     const [step, setStep] = useState(initialStep);
     const [form, setForm] = useState<FormData>(() => initialForm(mode, user));
     const [submitting, setSubmitting] = useState(false);
@@ -143,6 +145,13 @@ const WorkspaceModalContent = ({
             });
 
             if (!res.ok) {
+                const denial = await responseDenialCopy(res);
+                if (denial) {
+                    toast.error(denial.title, {
+                        description: denial.description,
+                    });
+                    return;
+                }
                 toast.error(
                     isCreate
                         ? "Failed to create workspace."
@@ -178,8 +187,9 @@ const WorkspaceModalContent = ({
             );
 
             if (!res.ok) {
-                toast.error("Failed to delete workspace.", {
-                    description: "Please try again.",
+                const denial = await responseDenialCopy(res);
+                toast.error(denial?.title ?? "Failed to delete workspace.", {
+                    description: denial?.description ?? "Please try again.",
                 });
                 return;
             }
@@ -203,7 +213,8 @@ const WorkspaceModalContent = ({
 
     const needsImmediateConfirm =
         !startTimeLocked &&
-        opensWithinLockWindow(form.startTime, limitsForPlan());
+        entitlements !== null &&
+        opensWithinLockWindow(form.startTime, entitlements);
 
     const handleSave = () => {
         if (needsImmediateConfirm && !confirmingImmediate) {
@@ -306,6 +317,7 @@ const WorkspaceModalContent = ({
                         <ScheduleStep
                             value={form.startTime}
                             locked={startTimeLocked}
+                            limits={entitlements}
                             onChange={(startTime) => {
                                 setConfirmingImmediate(false);
                                 setForm((p) => ({ ...p, startTime }));
@@ -316,6 +328,9 @@ const WorkspaceModalContent = ({
                         <TeamStep
                             collaborators={form.collaborators}
                             friends={friends}
+                            maxMembers={
+                                entitlements?.maxWorkspaceMembers ?? null
+                            }
                             onChange={(collaborators) =>
                                 setForm((p) => ({ ...p, collaborators }))
                             }

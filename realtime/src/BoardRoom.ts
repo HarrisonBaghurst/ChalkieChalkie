@@ -1,6 +1,9 @@
 import type { PastedImageMeta } from "@/types/imageTypes";
 import type { Stroke } from "@/types/strokeTypes";
-import { REALTIME_SUBPROTOCOL } from "@/types/realtimeTypes";
+import {
+    REALTIME_SUBPROTOCOL,
+    ROOM_FULL_CLOSE_CODE,
+} from "@/types/realtimeTypes";
 import type {
     ClientMessage,
     Op,
@@ -212,14 +215,41 @@ export class BoardRoom implements DurableObject {
             return new Response("Bad identity", { status: 400 });
         }
 
+        const host = request.headers.get("x-chalkie-host");
+        const cap = Number(request.headers.get("x-chalkie-cap"));
+        if (!host || !Number.isInteger(cap) || cap < 1) {
+            return new Response("Missing room cap", { status: 400 });
+        }
+
         let held = 0;
+        const liveUsers = new Set<string>();
         for (const peer of this.ctx.getWebSockets()) {
             const peerAttachment =
                 peer.deserializeAttachment() as Attachment | null;
-            if (peerAttachment?.userId === userId) held++;
+            if (!peerAttachment) continue;
+            if (peerAttachment.userId === userId) held++;
+            if (peerAttachment.userId !== host) {
+                liveUsers.add(peerAttachment.userId);
+            }
         }
         if (held >= MAX_CONNECTIONS_PER_USER) {
             return new Response("Too many connections", { status: 429 });
+        }
+
+        if (
+            userId !== host &&
+            !liveUsers.has(userId) &&
+            liveUsers.size >= cap - 1
+        ) {
+            const full = new WebSocketPair();
+            const [fullClient, fullServer] = Object.values(full);
+            fullServer.accept();
+            fullServer.close(ROOM_FULL_CLOSE_CODE, "Room is full");
+            return new Response(null, {
+                status: 101,
+                webSocket: fullClient,
+                headers: { "Sec-WebSocket-Protocol": REALTIME_SUBPROTOCOL },
+            });
         }
 
         let connectBucket = this.connectBuckets.get(userId);

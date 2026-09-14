@@ -1,11 +1,19 @@
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import testWorkspaces from "@/data/testWorkspaces.json";
+import { EntitlementsState } from "@/hooks/useEntitlements";
 import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { entitlementsForUser } from "@/lib/serverPlan";
 import { getUserRole } from "@/lib/serverRole";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
-import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
+import { readUsage } from "@/lib/usage";
+import { scheduleWindow } from "@/lib/workspaceLifecycle";
+
+const TEST_LIMITS = {
+    leadMs: 60 * 60 * 1000,
+    retentionMs: 14 * 24 * 60 * 60 * 1000,
+};
 
 const resolveRole = async (): Promise<UserRole | undefined> => {
     const { userId } = await auth();
@@ -18,13 +26,26 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
     }
 };
 
+const resolvePlan = async (): Promise<EntitlementsState> => {
+    const { userId } = await auth();
+    if (!userId) return { entitlements: null, usage: null };
+
+    const [entitlements, usage] = await Promise.all([
+        entitlementsForUser(userId),
+        readUsage(userId),
+    ]);
+
+    return { entitlements, usage };
+};
+
 const page = async () => {
     const role = await resolveRole();
+    const plan = await resolvePlan();
     const sidebarCollapsed = await readSidebarCookie();
     const tableDensity = await readTableDensityCookie();
 
     if (process.env.ENVIRONMENT === "testing") {
-        const limits = limitsForPlan();
+        const limits = TEST_LIMITS;
 
         const upcoming: Workspace[] = testWorkspaces.upcomingLessons.map(
             (lesson) => ({
@@ -83,6 +104,7 @@ const page = async () => {
         return (
             <DashboardClient
                 role={role}
+                plan={plan}
                 sidebarCollapsed={sidebarCollapsed}
                 tableDensity={tableDensity}
                 testData={{ workspaces, users }}
@@ -93,6 +115,7 @@ const page = async () => {
     return (
         <DashboardClient
             role={role}
+            plan={plan}
             sidebarCollapsed={sidebarCollapsed}
             tableDensity={tableDensity}
         />

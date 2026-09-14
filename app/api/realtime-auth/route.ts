@@ -1,5 +1,6 @@
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { signTicket } from "@/lib/realtimeTicket";
+import { entitlementsForUser } from "@/lib/serverPlan";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { boardAccessDenial } from "@/lib/workspaceLifecycle";
 import { auth, currentUser } from "@clerk/nextjs/server";
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     const { data: roomData, error } = await supabaseAdmin
         .from("Room")
-        .select("id, opens_at, expires_at")
+        .select("id, host_id, user_ids, opens_at, expires_at")
         .eq("id", room)
         .contains("user_ids", [userId])
         .single();
@@ -60,12 +61,24 @@ export async function POST(request: NextRequest) {
         p_user_id: userId,
     });
 
-    const ticket = await signTicket(userId, room, {
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        imageUrl: user.imageUrl ?? "",
-        email: user.emailAddresses[0]?.emailAddress ?? "",
-    });
+    const hostEntitlements = await entitlementsForUser(roomData.host_id);
+    const memberCount = ((roomData.user_ids ?? []) as string[]).length;
+    const cap = hostEntitlements
+        ? hostEntitlements.maxWorkspaceMembers
+        : Math.max(memberCount, 1);
+
+    const ticket = await signTicket(
+        userId,
+        room,
+        {
+            firstName: user.firstName ?? "",
+            lastName: user.lastName ?? "",
+            imageUrl: user.imageUrl ?? "",
+            email: user.emailAddresses[0]?.emailAddress ?? "",
+        },
+        roomData.host_id,
+        cap,
+    );
 
     return Response.json({ ticket });
 }

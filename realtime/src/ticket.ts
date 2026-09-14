@@ -65,6 +65,9 @@ export async function verifyTicket(
     if (typeof claims.exp !== "number") return null;
     if (claims.exp * 1000 < Date.now()) return null;
 
+    if (typeof claims.host !== "string" || !claims.host) return null;
+    if (!Number.isInteger(claims.cap) || claims.cap < 1) return null;
+
     // A ticket authorises exactly the room it was minted for, so a member of one
     // room cannot replay their token into another.
     if (claims.room !== room) return null;

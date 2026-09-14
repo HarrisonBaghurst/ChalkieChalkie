@@ -1,24 +1,6 @@
 import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
 import { daysUntil, formatTimeUntil } from "@/lib/textUtils";
-
-const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
-
-export type WorkspacePlan = "free";
-
-export type WorkspaceLimits = {
-    leadMs: number;
-    retentionMs: number;
-};
-
-const PLAN_LIMITS: Record<WorkspacePlan, WorkspaceLimits> = {
-    free: { leadMs: HOUR_MS, retentionMs: 14 * DAY_MS },
-};
-
-const DEFAULT_PLAN: WorkspacePlan = "free";
-
-export const limitsForPlan = (plan?: WorkspacePlan | null): WorkspaceLimits =>
-    PLAN_LIMITS[plan ?? DEFAULT_PLAN] ?? PLAN_LIMITS[DEFAULT_PLAN];
+import { WorkspaceLimits } from "@/types/planTypes";
 
 const parseInstant = (iso: string | null | undefined): number | null => {
     if (!iso) return null;

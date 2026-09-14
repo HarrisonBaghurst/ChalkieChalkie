@@ -2,12 +2,12 @@ import { deleteWorkspaceResources } from "@/lib/deleteWorkspace";
 import { errorResponse } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { evictRoomMembers } from "@/lib/realtimeAdmin";
+import { planDenial, requireEntitlements } from "@/lib/serverPlan";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import {
     isStartTimeLocked,
-    limitsForPlan,
     sameInstant,
     scheduleWindow,
 } from "@/lib/workspaceLifecycle";
@@ -111,6 +111,8 @@ export async function PATCH(
         return new Response("Forbidden", { status: 403 });
     }
 
+    let recomputeWindow = false;
+
     if ("startTime" in body) {
         const unchanged = sameInstant(
             validated.startTime,
@@ -126,10 +128,32 @@ export async function PATCH(
             }
             delete update.start_time;
         } else {
-            const window = scheduleWindow(
-                validated.startTime,
-                limitsForPlan(),
+            recomputeWindow = true;
+        }
+    }
+
+    const nextUserIds = update.user_ids as string[] | undefined;
+
+    if (nextUserIds || recomputeWindow) {
+        const entitlements = await requireEntitlements(userId);
+        if (entitlements instanceof Response) return entitlements;
+
+        if (
+            nextUserIds &&
+            nextUserIds.length > entitlements.maxWorkspaceMembers
+        ) {
+            return planDenial(
+                "members",
+                `Your plan allows ${entitlements.maxWorkspaceMembers} people per workspace, including you`,
+                {
+                    limit: entitlements.maxWorkspaceMembers,
+                    requested: nextUserIds.length,
+                },
             );
+        }
+
+        if (recomputeWindow) {
+            const window = scheduleWindow(validated.startTime, entitlements);
             update.opens_at = window.opensAt;
             update.expires_at = window.expiresAt;
         }
@@ -150,7 +174,6 @@ export async function PATCH(
         return errorResponse("workspace:patch", error, 500, { userId });
     }
 
-    const nextUserIds = update.user_ids as string[] | undefined;
     if (nextUserIds) {
         const removed = ((existingRoom.user_ids ?? []) as string[]).filter(
             (id) => !nextUserIds.includes(id),

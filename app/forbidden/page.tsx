@@ -14,6 +14,10 @@ const COPY: Record<string, { heading: string; detail: string }> = {
         heading: "No longer available",
         detail: "This workspace has passed its retention window and is being removed.",
     },
+    full: {
+        heading: "Workspace is full",
+        detail: "This workspace already has as many people in it as its host's plan allows.",
+    },
 };
 
 const FALLBACK = {

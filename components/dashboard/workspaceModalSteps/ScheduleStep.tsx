@@ -1,18 +1,21 @@
 import React from "react";
 import DateTimePicker from "@/components/DateTimePicker";
 import { formatDate } from "@/lib/textUtils";
-import { limitsForPlan, opensWithinLockWindow } from "@/lib/workspaceLifecycle";
+import { opensWithinLockWindow } from "@/lib/workspaceLifecycle";
+import { WorkspaceLimits } from "@/types/planTypes";
 import ScheduleNotice from "./ScheduleNotice";
 
 type ScheduleStepProps = {
     value: Date | null;
     onChange: (value: Date | null) => void;
+    limits: WorkspaceLimits | null;
     locked?: boolean;
 };
 
 const ScheduleStep = ({
     value,
     onChange,
+    limits,
     locked = false,
 }: ScheduleStepProps) => {
     if (locked) {
@@ -33,7 +36,8 @@ const ScheduleStep = ({
         );
     }
 
-    const opensImmediately = opensWithinLockWindow(value, limitsForPlan());
+    const opensImmediately =
+        limits !== null && opensWithinLockWindow(value, limits);
 
     return (
         <div className="flex flex-col gap-6">

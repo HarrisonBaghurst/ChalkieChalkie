@@ -2,6 +2,7 @@ import { fetchUserProfiles } from "@/lib/clerkUsers";
 import { errorResponse } from "@/lib/errorResponse";
 import { countSharedWorkspaces } from "@/lib/links";
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { entitlementsForUser, planDenial } from "@/lib/serverPlan";
 import { requireLinkRole } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { LinkSummary } from "@/types/linkTypes";
@@ -96,6 +97,35 @@ export async function POST(req: Request) {
                 { error: "You are already linked to this person" },
                 { status: 409 },
             );
+        }
+
+        const tutorEntitlements = await entitlementsForUser(tutorId);
+        if (!tutorEntitlements) {
+            return planDenial(
+                "no-plan",
+                "That tutor does not have an active plan",
+            );
+        }
+
+        if (tutorEntitlements.maxLinkedStudents !== null) {
+            const { count, error: countError } = await supabaseAdmin
+                .from("tutor_links")
+                .select("id", { count: "exact", head: true })
+                .eq("tutor_id", tutorId);
+
+            if (countError) {
+                return errorResponse("links:redeem", countError, 500, {
+                    userId,
+                });
+            }
+
+            if ((count ?? 0) >= tutorEntitlements.maxLinkedStudents) {
+                return planDenial(
+                    "linked-students",
+                    "That tutor has reached the number of linked students their plan allows",
+                    { limit: tutorEntitlements.maxLinkedStudents },
+                );
+            }
         }
 
         // Compare-and-swap so exactly one concurrent redeem wins. Claiming
