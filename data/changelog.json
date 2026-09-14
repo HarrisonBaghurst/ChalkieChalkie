@@ -30,6 +30,10 @@
                 {
                     "tag": "Fixed",
                     "text": "Being turned away for making too many requests in a row now says how long to wait, instead of inviting you to try again straight away."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A tutor can now view their plan teir in the sidebar by the Chalkie Chalkie name."
                 }
             ]
         },
