@@ -3,8 +3,9 @@ import testWorkspaces from "@/data/testWorkspaces.json";
 import { EntitlementsState } from "@/hooks/useEntitlements";
 import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { entitlementsForUser } from "@/lib/serverPlan";
+import { entitlementsForUser, grantedPlanForUser } from "@/lib/serverPlan";
 import { getUserRole } from "@/lib/serverRole";
+import { PlanId } from "@/types/planTypes";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
 import { readUsage } from "@/lib/usage";
@@ -38,9 +39,16 @@ const resolvePlan = async (): Promise<EntitlementsState> => {
     return { entitlements, usage };
 };
 
+const resolvePlanId = async (): Promise<PlanId | null> => {
+    const { userId } = await auth();
+    if (!userId) return null;
+    return grantedPlanForUser(userId);
+};
+
 const page = async () => {
     const role = await resolveRole();
     const plan = await resolvePlan();
+    const planId = await resolvePlanId();
     const sidebarCollapsed = await readSidebarCookie();
     const tableDensity = await readTableDensityCookie();
 
@@ -105,6 +113,7 @@ const page = async () => {
             <DashboardClient
                 role={role}
                 plan={plan}
+                planId={planId}
                 sidebarCollapsed={sidebarCollapsed}
                 tableDensity={tableDensity}
                 testData={{ workspaces, users }}
@@ -116,6 +125,7 @@ const page = async () => {
         <DashboardClient
             role={role}
             plan={plan}
+            planId={planId}
             sidebarCollapsed={sidebarCollapsed}
             tableDensity={tableDensity}
         />

@@ -19,6 +19,8 @@ import {
 } from "./sidebarCollapse";
 import { userInfo, UserRole, Workspace } from "@/types/userTypes";
 import { LinkSummary } from "@/types/linkTypes";
+import { PlanId } from "@/types/planTypes";
+import { PLAN_LABELS } from "@/lib/plans/labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/ui/Skeleton";
@@ -122,6 +124,7 @@ type SidebarProps = {
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
     onLinked?: (link: LinkSummary) => void;
     role?: UserRole;
+    planId?: PlanId | null;
 };
 
 const Sidebar = ({
@@ -129,6 +132,7 @@ const Sidebar = ({
     onCreated,
     onLinked,
     role: serverRole,
+    planId,
 }: SidebarProps) => {
     const { user, isLoaded } = useUser();
     const pathname = usePathname();
@@ -319,7 +323,10 @@ const Sidebar = ({
                         <p className="text-caption text-foreground-second text-nowrap">
                             {user?.firstName ? `${user.firstName}'s` : "Your"}
                         </p>
-                        <p className="text-nowrap">Chalkie Chalkie</p>
+                        <p className="text-nowrap">
+                            Chalkie Chalkie
+                            {planId && ` ${PLAN_LABELS[planId]}`}
+                        </p>
                     </div>
                 </div>
                 <div className="flex flex-col gap-4">

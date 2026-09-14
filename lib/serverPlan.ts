@@ -11,6 +11,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
     EntitlementDenial,
     PlanEntitlements,
+    PlanId,
     UserPlan,
 } from "@/types/planTypes";
 import { cache } from "react";
@@ -49,6 +50,14 @@ export const entitlementsForUser = async (
     const userPlan = await getUserPlan(userId);
     if (!userPlan || !statusGrantsEntitlements(userPlan.status)) return null;
     return entitlementsFor(userPlan.plan);
+};
+
+export const grantedPlanForUser = async (
+    userId: string,
+): Promise<PlanId | null> => {
+    const userPlan = await getUserPlan(userId);
+    if (!userPlan || !statusGrantsEntitlements(userPlan.status)) return null;
+    return userPlan.plan;
 };
 
 export const planDenial = (

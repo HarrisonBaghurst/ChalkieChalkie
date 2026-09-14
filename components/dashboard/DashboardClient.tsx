@@ -17,6 +17,7 @@ import { TableDensity } from "@/lib/tableDensityCookie";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
 import { LinkRole } from "@/types/linkTypes";
+import { PlanId } from "@/types/planTypes";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
     EntitlementsProvider,
@@ -36,6 +37,7 @@ type DashboardClientProps = {
     // Server-resolved, so the role-gated sidebar is right on first paint.
     role?: UserRole;
     plan?: EntitlementsState;
+    planId?: PlanId | null;
     sidebarCollapsed?: CollapseState;
     tableDensity?: TableDensity;
     testData?: {
@@ -51,6 +53,7 @@ const NO_PLAN: EntitlementsState = { entitlements: null, usage: null };
 const DashboardClient = ({
     role: serverRole,
     plan = NO_PLAN,
+    planId,
     sidebarCollapsed,
     tableDensity,
     testData,
@@ -276,6 +279,7 @@ const DashboardClient = ({
                     friends={friends}
                     onCreated={handleCreated}
                     role={serverRole}
+                    planId={planId}
                 />
             }
             bottomBar={
