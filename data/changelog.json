@@ -1,8 +1,38 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.1.5",
+    "currentVersion": "0.2.0",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.2.0",
+            "date": "",
+            "changes": [
+                {
+                    "tag": "Added",
+                    "text": "Accounts now carry a plan, which sets how many people can be in a workspace, how many workspaces you can create in a month, and how many students you can be linked to at once. There is nothing to buy yet - this is the groundwork for it."
+                },
+                {
+                    "tag": "Added",
+                    "text": "The team step of the create and edit workspace window now shows how many people your plan allows against how many you have added. Once you reach it the remaining students are greyed out with a note, rather than letting you pick people the workspace cannot take."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "How long before a lesson a workspace opens, and how long it is kept afterwards before being removed, now follow your plan rather than being the same hour and fortnight for every account. A workspace keeps whichever window it was given when it was created."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A workspace now turns people away once it already holds as many as the plan allows, and tells them why, rather than letting a board quietly fill past its limit. The host always keeps a place, so you can never be shut out of your own lesson."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Reaching one of these limits now says which one. Running out of workspaces for the month names the date your allowance resets, and adding too many people names the number your plan allows, in place of the please try again that every failure used to show."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "Being turned away for making too many requests in a row now says how long to wait, instead of inviting you to try again straight away."
+                }
+            ]
+        },
         {
             "version": "0.1.5",
             "date": "12 September 2026",
