@@ -50,6 +50,42 @@
                 {
                     "tag": "Changed",
                     "text": "Workspace statuses now read Ready in 3 days, then Ready to open, then Open. Nothing opens on a schedule any more, so the old Opens in 3 days was no longer true."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Changing your plan applies to everything on your account rather than only to what you make next. How long before a lesson a workspace opens, and how long it is kept afterwards, are brought into line with your new plan across every workspace you have already scheduled. Moving up lengthens them, moving down shortens them."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Nothing is removed the moment a plan ends or moves down. Anything that would otherwise be past its keeping time is held for thirty days first, so there is room to move back up or save what you need. A workspace already close to its own removal date keeps that date rather than being handed longer than it had."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "A workspace can no longer be opened once the tutor's plan has ended. Students are told that is the reason rather than being turned away without one, and the lesson says so on the dashboard before you try to join it."
+                },
+                {
+                    "tag": "Fixed",
+                    "text": "A lesson already under way is never cut short by a plan ending partway through it. Once the tutor has opened the workspace it stays open until the lesson is over, so nobody is dropped mid-lesson and left unable to get back in."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "A failed payment no longer stops everything on the spot. Your plan keeps working normally while the payment is retried, and access only ends once it has been given up on or the plan cancelled - so one expired card cannot cancel a week of lessons."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Your monthly workspace allowance runs with your billing period rather than the calendar month, so it refills on the day your plan renews. Starting a plan partway through a month used to give you the rest of that month and then a whole fresh allowance a few days later."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Linked students beyond what your plan allows are made inactive rather than removed. They stay on your list marked as inactive, can be swapped for one another from the row menu, and come back by themselves if you move up a plan - so changing plan never breaks a link you would have to rebuild by trading codes again."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A workspace holding more people than your plan allows is now marked on your dashboard, along with how many to remove. Before this it simply turned the extra people away on the day, and which of them got in came down to who opened it first."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Workspaces can now be scheduled no more than ninety days ahead. A start time further out than that is refused when you save it."
                 }
             ]
         },
