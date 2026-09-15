@@ -67,13 +67,13 @@ The numbers do reach the browser — the picker renders `2 / 2` and `ScheduleSte
 
 `ENVIRONMENT=testing` renders the dashboard from `data/testWorkspaces.json` against a fixed `TEST_LIMITS`, not a plan lookup — the test path has no real user to resolve.
 
-### The tier name in the sidebar
+### The tier badge in the sidebar
 
-`Sidebar` renders the tier after the product name — "Chalkie Chalkie **Plus**", the tier in `.gradient-text`. It travels as a `planId` prop, **not through `useEntitlements`**, because `ConnectionsClient` renders the same `Sidebar` and has no `EntitlementsProvider` — a context-based tier would blank out on `/dashboard/connections`. Both pages resolve it, mirroring how `role` already reaches the sidebar.
+`Sidebar` renders the tier as a `highlight` `Badge` inline after the product name — "Chalkie Chalkie `[Plus]`". `highlight` was added to `components/ui/badge.tsx` for this: `#46a2db` text on a `/10` fill behind a `/20` border, and `rounded-full` instead of the tag-tier rounding the other variants carry — a deliberate pill, and the one variant holding a literal colour rather than a semantic token. It travels as a `planId` prop, **not through `useEntitlements`**, because `ConnectionsClient` renders the same `Sidebar` and has no `EntitlementsProvider` — a context-based tier would blank out on `/dashboard/connections`. Both pages resolve it, mirroring how `role` already reaches the sidebar.
 
-- **`grantedPlanForUser` is the resolver**, not `entitlementsForUser` — the latter discards `userPlan.plan` and returns only numbers. It applies the same `statusGrantsEntitlements` filter, so `past_due` and `cancelled` fall back to a bare "Chalkie Chalkie". A gradient tier therefore always means a plan that currently works; it must never sit above a create button that 403s.
+- **`grantedPlanForUser` is the resolver**, not `entitlementsForUser` — the latter discards `userPlan.plan` and returns only numbers. It applies the same `statusGrantsEntitlements` filter, so `past_due` and `cancelled` render no badge at all. A visible badge therefore always means a plan that currently works; it must never sit above a create button that 403s.
 - It shares `getUserPlan`'s React `cache()`, so resolving tier and entitlements on the same render is still one query.
-- `PLAN_LABELS` in `lib/plans/labels.ts` maps `professional` to the short **"Pro"**, keeping a `text-nowrap` line inside a 300px sidebar. That file is deliberately **not** `server-only` — it holds display names, no entitlement values, and the client needs it.
+- `PLAN_LABELS` in `lib/plans/labels.ts` maps `professional` to the short **"Pro"**, keeping the name and badge on one `text-nowrap` line inside a 300px sidebar. That file is deliberately **not** `server-only` — it holds display names, no entitlement values, and the client needs it.
 - Students and admins have no plan row, so the fallback covers them without a role check.
 - The tier is expanded-sidebar only. It sits inside the identity block, which is already hidden on the collapsed rail, and mobile renders `Navbar` instead of `Sidebar`.
 

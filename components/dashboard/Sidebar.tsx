@@ -323,10 +323,14 @@ const Sidebar = ({
                         <p className="text-caption text-foreground-second text-nowrap">
                             {user?.firstName ? `${user.firstName}'s` : "Your"}
                         </p>
-                        <p className="text-nowrap">
-                            Chalkie Chalkie
-                            {planId && ` ${PLAN_LABELS[planId]}`}
-                        </p>
+                        <div className="flex gap-2 items-center">
+                            <p className="text-nowrap">Chalkie Chalkie</p>
+                            {planId && (
+                                <Badge variant="highlight">
+                                    {PLAN_LABELS[planId]}
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <div className="flex flex-col gap-4">
