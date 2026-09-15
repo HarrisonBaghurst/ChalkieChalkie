@@ -8,6 +8,7 @@ export type ChangelogChange = string | { tag: ChangeTag; text: string };
 export interface ChangelogEntry {
     version: string;
     date: string; // human-readable, e.g. "5 September 2026"
+    overview?: string; // optional at-a-glance summary, rendered above the list
     changes: ChangelogChange[];
 }
 
