@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
@@ -15,6 +14,7 @@ import {
 } from "@/lib/dashboardTableColumns";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
+import { useJoinWorkspace } from "@/hooks/useJoinWorkspace";
 import PeopleStack from "./PeopleStack";
 import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
@@ -50,16 +50,19 @@ const WorkspaceTableRow = ({
     onUpdated,
     onDeleted,
 }: WorkspaceTableRowProps) => {
-    const router = useRouter();
     const { user } = useUser();
     const role = useUserRole();
     const now = useNow();
     const [modalStep, setModalStep] = useState<number | null>(null);
 
-    const status = lifecycleStatus(workspace, now);
-    const joinDenial = joinDenialLabel(workspace, now);
+    const viewerIsHost = !!user && isHost(user.id, workspace);
 
-    const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
+    const status = lifecycleStatus(workspace, viewerIsHost, now);
+    const joinDenial = joinDenialLabel(workspace, viewerIsHost, now);
+
+    const { join, dialog } = useJoinWorkspace(workspace, viewerIsHost, now);
+
+    const canManage = role === "tutor" && viewerIsHost;
 
     const canAddFeedback = canManage && bucket === "previous";
 
@@ -79,8 +82,6 @@ const WorkspaceTableRow = ({
             .map((id) => usersMap[id])
             .filter((u): u is userInfo => !!u);
     }, [workspace.host, workspace.collaboratorIds, usersMap]);
-
-    const join = () => router.push(`/board/${workspace.id}`);
 
     const cells: Record<WorkspaceColumnKey, React.ReactNode> = {
         people: (
@@ -158,6 +159,7 @@ const WorkspaceTableRow = ({
                         onDeleted={onDeleted}
                     />
                 )}
+                {dialog}
             </>
         ),
     };

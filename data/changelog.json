@@ -34,6 +34,22 @@
                 {
                     "tag": "Added",
                     "text": "A tutor can now view their plan teir in the sidebar by the Chalkie Chalkie name."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "A workspace's start time no longer freezes the moment its opening window arrives. It stays editable until you open the workspace, or until the start time itself passes. Plans with a longer opening window do not lose editing time because of it."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Opening a workspace now asks the tutor first, so you know the start time is about to be locked before it happens."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Students now wait until their tutor opens the workspace rather than entering an empty board early, and are told that is what they are waiting for."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Workspace statuses now read Ready in 3 days, then Ready to open, then Open. Nothing opens on a schedule any more, so the old Opens in 3 days was no longer true."
                 }
             ]
         },

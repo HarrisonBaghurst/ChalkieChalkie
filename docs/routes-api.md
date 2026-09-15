@@ -12,7 +12,7 @@
 - `app/forbidden/` — Shown when a user fails workspace access (403 from realtime-auth)
 - `app/not-found.tsx` — 404, also what unauthorised style-guide requests render
 - `app/api/` — Backend routes:
-    - `realtime-auth` — issues a 60-second HMAC ticket after the membership check **and the access-window check** (see Workspace Lifecycle below), and is the only writer of `Room.last_activity_at` besides workspace-create
+    - `realtime-auth` — issues a 60-second HMAC ticket after the membership check **and the access-window check** (see Workspace Lifecycle below), and is the only writer of `Room.last_activity_at` besides workspace-create, and of `Room.opened_at`
     - `workspaces` (+ `[workspaceId]`, `[workspaceId]/images`, `[workspaceId]/images/[imageId]`, `[workspaceId]/images/reserve`) — workspace CRUD, pasted-image upload/delete, the authorising image-serve redirect, and the PDF page-quota reservation; workspace-body validation in `workspaces/_shared.ts`, and the id/membership guards the three image routes share in `images/_shared.ts`
     - `users/batch`, `users/friends`, `users/workspaces` — user lookups; `friends` returns the caller's linked tutor-student counterparties (see below), not a general user search
     - `links` (+ `[linkId]`, `invites`, `redeem`) — tutor↔student linking: list/unlink, generate/read/revoke an invite code, redeem a code; shared validation in `_shared.ts`

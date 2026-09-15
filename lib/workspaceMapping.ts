@@ -9,6 +9,7 @@ export type RoomRow = {
     start_time: string;
     opens_at?: string | null;
     expires_at?: string | null;
+    opened_at?: string | null;
     last_activity_at?: string;
     lastActivity?: string;
     feedback?: string | null;
@@ -23,6 +24,7 @@ export const mapRoomRow = (raw: RoomRow): Workspace => ({
     startTime: raw.start_time,
     opensAt: raw.opens_at ?? null,
     expiresAt: raw.expires_at ?? null,
+    openedAt: raw.opened_at ?? null,
     lastActivity: raw.last_activity_at ?? raw.lastActivity ?? "",
     feedback: raw.feedback ?? undefined,
 });

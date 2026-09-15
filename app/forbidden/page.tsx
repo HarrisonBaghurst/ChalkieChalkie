@@ -6,6 +6,10 @@ const COPY: Record<string, { heading: string; detail: string }> = {
         heading: "Not open yet",
         detail: "This workspace opens shortly before the lesson starts.",
     },
+    "awaiting-host": {
+        heading: "Not started yet",
+        detail: "This workspace opens when your tutor starts the lesson.",
+    },
     unscheduled: {
         heading: "No start time",
         detail: "This workspace can't be opened until its host schedules it.",

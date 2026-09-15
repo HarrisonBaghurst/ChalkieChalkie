@@ -7,9 +7,9 @@ import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
 import {
-    isStartTimeLocked,
     sameInstant,
     scheduleWindow,
+    startTimeLockReason,
 } from "@/lib/workspaceLifecycle";
 import {
     validateWorkspaceBody,
@@ -119,10 +119,15 @@ export async function PATCH(
             existingRoom.start_time,
         );
 
-        if (isStartTimeLocked(existingRoom.opens_at)) {
+        const lockReason = startTimeLockReason({
+            startTime: existingRoom.start_time,
+            openedAt: existingRoom.opened_at,
+        });
+
+        if (lockReason) {
             if (!unchanged) {
-                return new Response(
-                    "Start time is locked once the workspace has opened",
+                return Response.json(
+                    { reason: `start-time-${lockReason}` },
                     { status: 409 },
                 );
             }

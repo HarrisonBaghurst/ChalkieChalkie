@@ -1,14 +1,15 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
 import { formatSessionTime, daysUntil } from "@/lib/textUtils";
 import { pickCounterparty } from "@/lib/dashboardCounterparty";
+import { isHost } from "@/lib/workspaceHost";
 import { joinDenialLabel } from "@/lib/workspaceLifecycle";
 import { useNow } from "@/hooks/useNow";
+import { useJoinWorkspace } from "@/hooks/useJoinWorkspace";
 import {
     Tooltip,
     TooltipContent,
@@ -127,13 +128,18 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
         ? pickCounterparty(workspace, usersMap, viewerId)
         : null;
 
-    const router = useRouter();
     const now = useNow();
     const { collapsed } = useSidebarCollapse();
     const width = paired ? "h-auto flex-1 min-w-0" : nextCardWidth(collapsed);
 
+    const viewerIsHost =
+        !!workspace && !!viewerId && isHost(viewerId, workspace);
+    const { join, dialog } = useJoinWorkspace(workspace, viewerIsHost, now);
+
     const days = workspace ? daysUntil(workspace.startTime) : 0;
-    const denial = workspace ? joinDenialLabel(workspace, now) : null;
+    const denial = workspace
+        ? joinDenialLabel(workspace, viewerIsHost, now)
+        : null;
 
     if (!workspace) {
         return (
@@ -171,7 +177,7 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
                     <button
                         type="button"
                         disabled={!!denial}
-                        onClick={() => router.push(`/board/${workspace.id}`)}
+                        onClick={join}
                         className={cn(
                             CARD_CLASS,
                             width,
@@ -201,6 +207,8 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
                     {denial ?? "Join workspace"}
                 </TooltipContent>
             </Tooltip>
+
+            {dialog}
         </>
     );
 };

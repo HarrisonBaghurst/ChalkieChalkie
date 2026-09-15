@@ -48,6 +48,18 @@ export const planDenialCopy = (body: DenialBody): DenialCopy | null => {
                         ? `Your plan allows ${body.limit} people per workspace, including you.`
                         : "Your plan allows fewer people per workspace than this.",
             };
+        case "start-time-opened":
+            return {
+                title: "Start time locked",
+                description:
+                    "This workspace has been opened, so its start time can no longer be changed.",
+            };
+        case "start-time-started":
+            return {
+                title: "Start time locked",
+                description:
+                    "This lesson's start time has passed, so it can no longer be changed.",
+            };
         case "linked-students":
             return {
                 title: "Linked student limit reached",
@@ -75,7 +87,7 @@ export const responseDenialCopy = async (
         };
     }
 
-    if (res.status !== 403) return null;
+    if (res.status !== 403 && res.status !== 409) return null;
 
     try {
         return planDenialCopy((await res.json()) as DenialBody);

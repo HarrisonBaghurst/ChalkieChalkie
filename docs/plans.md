@@ -42,6 +42,7 @@ PlanEntitlements = {
 | `retentionMs` / `leadMs` | `scheduleWindow`, at create and PATCH | — |
 | live member count | `realtime/src/BoardRoom.ts` | close code 4004 |
 
+- **`leadMs` sets how early a host *may* open a workspace, and nothing else.** It used to drive the start-time lock as well, which made a longer lead read as a downgrade — three days of frozen start time on Professional against one hour on Basic. The lock now hangs off `opened_at`; see [docs/access-control.md](access-control.md). Keep any future window variable on the access side of that line.
 - **PATCH resolves entitlements lazily**, only when `collaborators` changes or an unlocked `startTime` needs the window recomputed. A host whose plan has lapsed can still write feedback on a past lesson — the same care that `sameInstant` exists for.
 - **The quota claims before the insert and releases on failure.** The counter is the authority, so it must claim before the work it authorises, exactly like the invite compare-and-swap in `links/redeem`. Worst case is one lost workspace on a Supabase error; the alternative is a cap two concurrent requests walk straight through.
 - **The links cap is the tutor's, whoever redeems.** It is checked inside the read-only block *before* the CAS claim, so a capped redeem never burns the other side's code. Two concurrent redeems can overshoot by one; `links:redeem` at 5 per 10 minutes makes that acceptable, and a trigger would be the fix if it ever isn't.

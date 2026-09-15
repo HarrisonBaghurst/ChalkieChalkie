@@ -1,3 +1,4 @@
+import { reportError } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { signTicket } from "@/lib/realtimeTicket";
 import { entitlementsForUser } from "@/lib/serverPlan";
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const { data: roomData, error } = await supabaseAdmin
         .from("Room")
-        .select("id, host_id, user_ids, opens_at, expires_at")
+        .select("id, host_id, user_ids, opens_at, expires_at, opened_at")
         .eq("id", room)
         .contains("user_ids", [userId])
         .single();
@@ -45,7 +46,16 @@ export async function POST(request: NextRequest) {
         return new Response("Forbidden", { status: 403 });
     }
 
-    const denial = boardAccessDenial(roomData.opens_at, roomData.expires_at);
+    const viewerIsHost = roomData.host_id === userId;
+
+    const denial = boardAccessDenial(
+        {
+            opensAt: roomData.opens_at,
+            expiresAt: roomData.expires_at,
+            openedAt: roomData.opened_at,
+        },
+        viewerIsHost,
+    );
     if (denial) {
         return Response.json({ reason: denial }, { status: 403 });
     }
@@ -53,6 +63,17 @@ export async function POST(request: NextRequest) {
     const user = await currentUser();
     if (!user) {
         return new Response("Unauthorised", { status: 401 });
+    }
+
+    if (viewerIsHost && !roomData.opened_at) {
+        const { error: openError } = await supabaseAdmin
+            .from("Room")
+            .update({ opened_at: new Date().toISOString() })
+            .eq("id", room)
+            .is("opened_at", null);
+        if (openError) {
+            await reportError("workspace:open", openError, undefined, userId);
+        }
     }
 
     await supabaseAdmin.rpc("upsert_room", {

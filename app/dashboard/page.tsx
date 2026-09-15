@@ -64,6 +64,7 @@ const page = async () => {
                 collaboratorIds: lesson.collaboratorIds,
                 startTime: lesson.startTime,
                 ...scheduleWindow(lesson.startTime, limits),
+                openedAt: null,
                 lastActivity: lesson.lastActivity,
             }),
         );
@@ -75,6 +76,7 @@ const page = async () => {
             collaboratorIds: lesson.collaboratorIds,
             startTime: lesson.startTime,
             ...scheduleWindow(lesson.startTime, limits),
+            openedAt: lesson.startTime,
             lastActivity: lesson.lastActivity,
             feedback: lesson.feedback,
         }));

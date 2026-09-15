@@ -6,10 +6,7 @@ import { toast } from "sonner";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { responseDenialCopy } from "@/lib/planDenialCopy";
-import {
-    isStartTimeLocked,
-    opensWithinLockWindow,
-} from "@/lib/workspaceLifecycle";
+import { startTimeLockReason } from "@/lib/workspaceLifecycle";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
 import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
@@ -116,7 +113,6 @@ const WorkspaceModalContent = ({
     const [form, setForm] = useState<FormData>(() => initialForm(mode, user));
     const [submitting, setSubmitting] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
-    const [confirmingImmediate, setConfirmingImmediate] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const handleSubmit = async () => {
@@ -208,21 +204,8 @@ const WorkspaceModalContent = ({
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
 
-    const startTimeLocked =
-        mode.kind === "edit" && isStartTimeLocked(mode.workspace.opensAt);
-
-    const needsImmediateConfirm =
-        !startTimeLocked &&
-        entitlements !== null &&
-        opensWithinLockWindow(form.startTime, entitlements);
-
-    const handleSave = () => {
-        if (needsImmediateConfirm && !confirmingImmediate) {
-            setConfirmingImmediate(true);
-            return;
-        }
-        handleSubmit();
-    };
+    const lockReason =
+        mode.kind === "edit" ? startTimeLockReason(mode.workspace) : null;
 
     return (
         <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -316,12 +299,11 @@ const WorkspaceModalContent = ({
                     {step === 2 && (
                         <ScheduleStep
                             value={form.startTime}
-                            locked={startTimeLocked}
+                            lockReason={lockReason}
                             limits={entitlements}
-                            onChange={(startTime) => {
-                                setConfirmingImmediate(false);
-                                setForm((p) => ({ ...p, startTime }));
-                            }}
+                            onChange={(startTime) =>
+                                setForm((p) => ({ ...p, startTime }))
+                            }
                         />
                     )}
                     {step === 3 && (
@@ -363,41 +345,13 @@ const WorkspaceModalContent = ({
                         Back
                     </Button>
                     {isFinalStep ? (
-                        confirmingImmediate ? (
-                            <div className="flex items-center gap-1 text-caption">
-                                <span className="text-foreground-third">
-                                    Opens now, time locked?
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="font-inter-bold"
-                                >
-                                    {submitting ? "Saving..." : "Confirm"}
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                        setConfirmingImmediate(false)
-                                    }
-                                    disabled={submitting}
-                                    className="text-foreground-third hover:text-foreground"
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        ) : (
-                            <Button onClick={handleSave} disabled={submitting}>
-                                {submitting
-                                    ? "Saving..."
-                                    : mode.kind === "create"
-                                      ? "Create"
-                                      : "Save"}
-                            </Button>
-                        )
+                        <Button onClick={handleSubmit} disabled={submitting}>
+                            {submitting
+                                ? "Saving..."
+                                : mode.kind === "create"
+                                  ? "Create"
+                                  : "Save"}
+                        </Button>
                     ) : (
                         <Button
                             onClick={() =>

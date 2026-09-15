@@ -33,32 +33,53 @@ export const scheduleWindow = (
     };
 };
 
-export type AccessDenial = "unscheduled" | "not-open" | "expired";
+export type LifecycleFields = {
+    startTime: string | null;
+    opensAt: string | null;
+    expiresAt: string | null;
+    openedAt: string | null;
+};
+
+export type AccessDenial =
+    | "unscheduled"
+    | "not-open"
+    | "expired"
+    | "awaiting-host";
 
 export const boardAccessDenial = (
-    opensAt: string | null,
-    expiresAt: string | null,
+    workspace: Pick<LifecycleFields, "opensAt" | "expiresAt" | "openedAt">,
+    viewerIsHost: boolean,
     now: number = Date.now(),
 ): AccessDenial | null => {
-    const opens = parseInstant(opensAt);
+    const opens = parseInstant(workspace.opensAt);
     if (opens === null) return "unscheduled";
     if (now < opens) return "not-open";
 
-    const expires = parseInstant(expiresAt);
+    const expires = parseInstant(workspace.expiresAt);
     if (expires !== null && now >= expires) return "expired";
+
+    if (!viewerIsHost && !workspace.openedAt) return "awaiting-host";
 
     return null;
 };
 
-export const isStartTimeLocked = (
-    opensAt: string | null | undefined,
+export type StartTimeLockReason = "opened" | "started";
+
+export const startTimeLockReason = (
+    workspace: Pick<LifecycleFields, "startTime" | "openedAt">,
     now: number = Date.now(),
-): boolean => {
-    const opens = parseInstant(opensAt);
-    return opens !== null && now >= opens;
+): StartTimeLockReason | null => {
+    if (workspace.openedAt) return "opened";
+    const start = parseInstant(workspace.startTime);
+    return start !== null && now >= start ? "started" : null;
 };
 
-export const opensWithinLockWindow = (
+export const isStartTimeLocked = (
+    workspace: Pick<LifecycleFields, "startTime" | "openedAt">,
+    now: number = Date.now(),
+): boolean => startTimeLockReason(workspace, now) !== null;
+
+export const opensImmediately = (
     startTime: Date | null,
     limits: WorkspaceLimits,
     now: number = Date.now(),
@@ -68,15 +89,10 @@ export const opensWithinLockWindow = (
 export type LifecyclePhase =
     | "unscheduled"
     | "scheduled"
+    | "ready"
     | "open"
     | "past"
     | "expired";
-
-export type LifecycleFields = {
-    startTime: string | null;
-    opensAt: string | null;
-    expiresAt: string | null;
-};
 
 export const lifecyclePhase = (
     workspace: LifecycleFields,
@@ -93,7 +109,7 @@ export const lifecyclePhase = (
     const start = parseInstant(workspace.startTime);
     if (start !== null && now >= start + DASHBOARD_GRACE_MS) return "past";
 
-    return "open";
+    return workspace.openedAt ? "open" : "ready";
 };
 
 export type LifecycleStatus = {
@@ -108,8 +124,12 @@ const deletionLabel = (expiresAt: string | null): string => {
     return `Deletes in ${days} day${days !== 1 ? "s" : ""}`;
 };
 
+const availabilityLabel = (opensAt: string | null, now: number): string =>
+    `Ready ${formatTimeUntil(opensAt ?? "", now)}`;
+
 export const lifecycleStatus = (
     workspace: LifecycleFields,
+    viewerIsHost: boolean,
     now: number = Date.now(),
 ): LifecycleStatus => {
     const phase = lifecyclePhase(workspace, now);
@@ -124,11 +144,23 @@ export const lifecycleStatus = (
         case "scheduled":
             return {
                 phase,
-                label: `Opens ${formatTimeUntil(workspace.opensAt ?? "", now)}`,
+                label: availabilityLabel(workspace.opensAt, now),
                 dotClass: "bg-amber-400",
             };
+        case "ready":
+            return viewerIsHost
+                ? {
+                      phase,
+                      label: "Ready to open",
+                      dotClass: "bg-green-500",
+                  }
+                : {
+                      phase,
+                      label: "Waiting for tutor",
+                      dotClass: "bg-amber-400",
+                  };
         case "open":
-            return { phase, label: "Ready", dotClass: "bg-green-500" };
+            return { phase, label: "Open", dotClass: "bg-green-500" };
         case "past": {
             const days = workspace.expiresAt
                 ? daysUntil(workspace.expiresAt)
@@ -151,13 +183,16 @@ export const lifecycleStatus = (
 
 export const joinDenialLabel = (
     workspace: LifecycleFields,
+    viewerIsHost: boolean,
     now: number = Date.now(),
 ): string | null => {
     switch (lifecyclePhase(workspace, now)) {
         case "unscheduled":
             return "Set a start time to open";
         case "scheduled":
-            return `Opens ${formatTimeUntil(workspace.opensAt ?? "", now)}`;
+            return availabilityLabel(workspace.opensAt, now);
+        case "ready":
+            return viewerIsHost ? null : "Waiting for your tutor";
         case "expired":
             return "No longer available";
         default:

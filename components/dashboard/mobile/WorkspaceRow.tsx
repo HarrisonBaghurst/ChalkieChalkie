@@ -41,8 +41,10 @@ const WorkspaceRow = ({
     const [detailOpen, setDetailOpen] = useState(false);
     const [modalStep, setModalStep] = useState<number | null>(null);
 
+    const viewerIsHost = !!user && isHost(user.id, workspace);
+
     // Mirrors the API route guard.
-    const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
+    const canManage = role === "tutor" && viewerIsHost;
 
     const canAddFeedback = canManage && bucket === "previous";
 
@@ -63,7 +65,7 @@ const WorkspaceRow = ({
         [workspace, usersMap, user?.id],
     );
 
-    const status = lifecycleStatus(workspace, now);
+    const status = lifecycleStatus(workspace, viewerIsHost, now);
 
     return (
         <>
