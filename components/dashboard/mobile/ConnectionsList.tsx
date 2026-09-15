@@ -8,9 +8,15 @@ type ConnectionsListProps = {
     links: LinkSummary[];
     role: LinkRole;
     onRemove: (linkId: string) => void;
+    onToggleActive?: (linkId: string, active: boolean) => void;
 };
 
-const ConnectionsList = ({ links, role, onRemove }: ConnectionsListProps) => {
+const ConnectionsList = ({
+    links,
+    role,
+    onRemove,
+    onToggleActive,
+}: ConnectionsListProps) => {
     const emptyLabel =
         role === "tutor"
             ? "No students yet. Share a code or enter one from a student."
@@ -28,6 +34,7 @@ const ConnectionsList = ({ links, role, onRemove }: ConnectionsListProps) => {
                         key={link.linkId}
                         link={link}
                         onRemove={onRemove}
+                        onToggleActive={onToggleActive}
                     />
                 ))
             )}

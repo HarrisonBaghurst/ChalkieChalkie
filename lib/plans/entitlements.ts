@@ -17,14 +17,14 @@ const PLAN_ENTITLEMENTS: Record<PlanId, PlanEntitlements> = {
         maxWorkspaceMembers: 5,
         workspacesPerMonth: 50,
         maxLinkedStudents: 25,
-        retentionMs: 90 * DAY_MS,
+        retentionMs: 30 * DAY_MS,
         leadMs: 24 * HOUR_MS,
     },
     professional: {
         maxWorkspaceMembers: 10,
         workspacesPerMonth: null,
         maxLinkedStudents: null,
-        retentionMs: 365 * DAY_MS,
+        retentionMs: 90 * DAY_MS,
         leadMs: 72 * HOUR_MS,
     },
 };
@@ -32,9 +32,12 @@ const PLAN_ENTITLEMENTS: Record<PlanId, PlanEntitlements> = {
 const GRANTING_STATUSES: Record<PlanStatus, boolean> = {
     active: true,
     trialing: true,
-    past_due: false,
+    past_due: true,
+    unpaid: false,
     cancelled: false,
 };
+
+export const RETENTION_FLOOR_MS = 30 * DAY_MS;
 
 export const PLAN_IDS = Object.keys(PLAN_ENTITLEMENTS) as PlanId[];
 

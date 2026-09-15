@@ -13,6 +13,7 @@ import {
     WorkspaceColumnKey,
 } from "@/lib/dashboardTableColumns";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { useNow } from "@/hooks/useNow";
 import { useJoinWorkspace } from "@/hooks/useJoinWorkspace";
 import PeopleStack from "./PeopleStack";
@@ -52,6 +53,7 @@ const WorkspaceTableRow = ({
 }: WorkspaceTableRowProps) => {
     const { user } = useUser();
     const role = useUserRole();
+    const { entitlements } = useEntitlements();
     const now = useNow();
     const [modalStep, setModalStep] = useState<number | null>(null);
 
@@ -65,6 +67,14 @@ const WorkspaceTableRow = ({
     const canManage = role === "tutor" && viewerIsHost;
 
     const canAddFeedback = canManage && bucket === "previous";
+
+    const memberCap = entitlements?.maxWorkspaceMembers ?? null;
+    const memberCount = (workspace.collaboratorIds ?? []).length;
+    const overCap =
+        canManage &&
+        bucket === "upcoming" &&
+        memberCap !== null &&
+        memberCount > memberCap;
 
     const people = useMemo<userInfo[]>(
         () => pickCounterparties(workspace, usersMap, user?.id),
@@ -85,11 +95,27 @@ const WorkspaceTableRow = ({
 
     const cells: Record<WorkspaceColumnKey, React.ReactNode> = {
         people: (
-            <PeopleStack
-                people={people}
-                participants={collaborators}
-                hostId={workspace.host}
-            />
+            <div className="flex items-center gap-2">
+                <PeopleStack
+                    people={people}
+                    participants={collaborators}
+                    hostId={workspace.host}
+                />
+                {overCap && (
+                    <TapTooltip
+                        content={
+                            <div className="w-56 whitespace-normal">
+                                This workspace has {memberCount} people but your
+                                plan allows {memberCap}. Remove{" "}
+                                {memberCount - (memberCap ?? 0)} before the
+                                lesson, or only some will get in.
+                            </div>
+                        }
+                    >
+                        <Badge variant="destructive">Over limit</Badge>
+                    </TapTooltip>
+                )}
+            </div>
         ),
         header: workspace.title ? (
             truncated(workspace.title)

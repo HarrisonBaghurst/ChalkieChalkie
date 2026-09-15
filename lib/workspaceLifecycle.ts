@@ -13,6 +13,16 @@ export const sameInstant = (
     b: string | null | undefined,
 ): boolean => parseInstant(a) === parseInstant(b);
 
+export const MAX_SCHEDULE_AHEAD_MS = 90 * 24 * 60 * 60 * 1000;
+
+export const beyondScheduleHorizon = (
+    startTime: string | null,
+    now: number = Date.now(),
+): boolean => {
+    const start = parseInstant(startTime);
+    return start !== null && start > now + MAX_SCHEDULE_AHEAD_MS;
+};
+
 export type ScheduleWindow = {
     opensAt: string | null;
     expiresAt: string;
@@ -38,7 +48,14 @@ export type LifecycleFields = {
     opensAt: string | null;
     expiresAt: string | null;
     openedAt: string | null;
+    hostHasPlan?: boolean;
 };
+
+const planLapsed = (
+    workspace: Pick<LifecycleFields, "hostHasPlan" | "startTime" | "openedAt">,
+    now: number = Date.now(),
+): boolean =>
+    workspace.hostHasPlan === false && !lessonInFlight(workspace, now);
 
 export type AccessDenial =
     | "unscheduled"
@@ -61,6 +78,16 @@ export const boardAccessDenial = (
     if (!viewerIsHost && !workspace.openedAt) return "awaiting-host";
 
     return null;
+};
+
+export const lessonInFlight = (
+    workspace: Pick<LifecycleFields, "startTime" | "openedAt">,
+    now: number = Date.now(),
+): boolean => {
+    if (!workspace.openedAt) return false;
+    const start = parseInstant(workspace.startTime);
+    if (start === null) return false;
+    return now < start + DASHBOARD_GRACE_MS;
 };
 
 export type StartTimeLockReason = "opened" | "started";
@@ -134,6 +161,14 @@ export const lifecycleStatus = (
 ): LifecycleStatus => {
     const phase = lifecyclePhase(workspace, now);
 
+    if (phase !== "expired" && phase !== "past" && planLapsed(workspace, now)) {
+        return {
+            phase,
+            label: viewerIsHost ? "Plan ended" : "Tutor's plan ended",
+            dotClass: "bg-destructive",
+        };
+    }
+
     switch (phase) {
         case "unscheduled":
             return {
@@ -186,7 +221,15 @@ export const joinDenialLabel = (
     viewerIsHost: boolean,
     now: number = Date.now(),
 ): string | null => {
-    switch (lifecyclePhase(workspace, now)) {
+    const phase = lifecyclePhase(workspace, now);
+
+    if (phase !== "expired" && planLapsed(workspace, now)) {
+        return viewerIsHost
+            ? "Your plan has ended"
+            : "Your tutor's plan has ended";
+    }
+
+    switch (phase) {
         case "unscheduled":
             return "Set a start time to open";
         case "scheduled":

@@ -3,12 +3,16 @@ import testWorkspaces from "@/data/testWorkspaces.json";
 import { EntitlementsState } from "@/hooks/useEntitlements";
 import { UserRole, Workspace, userInfo } from "@/types/userTypes";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { entitlementsForUser, grantedPlanForUser } from "@/lib/serverPlan";
+import {
+    entitlementsForUser,
+    getUserPlan,
+    grantedPlanForUser,
+} from "@/lib/serverPlan";
 import { getUserRole } from "@/lib/serverRole";
 import { PlanId } from "@/types/planTypes";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
-import { readUsage } from "@/lib/usage";
+import { readUsage, usagePeriod } from "@/lib/usage";
 import { scheduleWindow } from "@/lib/workspaceLifecycle";
 
 const TEST_LIMITS = {
@@ -31,12 +35,15 @@ const resolvePlan = async (): Promise<EntitlementsState> => {
     const { userId } = await auth();
     if (!userId) return { entitlements: null, usage: null };
 
-    const [entitlements, usage] = await Promise.all([
+    const [entitlements, userPlan] = await Promise.all([
         entitlementsForUser(userId),
-        readUsage(userId),
+        getUserPlan(userId),
     ]);
 
-    return { entitlements, usage };
+    return {
+        entitlements,
+        usage: await readUsage(userId, usagePeriod(userPlan)),
+    };
 };
 
 const resolvePlanId = async (): Promise<PlanId | null> => {

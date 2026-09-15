@@ -22,6 +22,10 @@ const COPY: Record<string, { heading: string; detail: string }> = {
         heading: "Workspace is full",
         detail: "This workspace already has as many people in it as its host's plan allows.",
     },
+    "host-no-plan": {
+        heading: "Unavailable",
+        detail: "Your tutor's plan has ended, so their workspaces can't be opened.",
+    },
 };
 
 const FALLBACK = {

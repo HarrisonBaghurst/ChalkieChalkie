@@ -28,5 +28,6 @@ export type Workspace = {
     opensAt: string | null;
     expiresAt: string | null;
     openedAt: string | null;
+    hostHasPlan?: boolean;
     feedback?: string;
 };

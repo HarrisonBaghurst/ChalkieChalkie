@@ -7,6 +7,7 @@ export async function listLinksFor(userId: string): Promise<TutorLinkRow[]> {
         .from("tutor_links")
         .select("*")
         .or(`tutor_id.eq.${userId},student_id.eq.${userId}`)
+        .order("deactivated_at", { ascending: true, nullsFirst: true })
         .order("created_at", { ascending: false });
 
     if (error) throw error;

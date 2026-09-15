@@ -111,7 +111,8 @@ export async function POST(req: Request) {
             const { count, error: countError } = await supabaseAdmin
                 .from("tutor_links")
                 .select("id", { count: "exact", head: true })
-                .eq("tutor_id", tutorId);
+                .eq("tutor_id", tutorId)
+                .is("deactivated_at", null);
 
             if (countError) {
                 return errorResponse("links:redeem", countError, 500, {
@@ -217,6 +218,7 @@ export async function POST(req: Request) {
             counterparty: counterparty[0],
             createdAt,
             sharedWorkspaces: counts[invite.issuer_id] ?? 0,
+            active: true,
         };
 
         return NextResponse.json({ link });

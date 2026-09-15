@@ -1,3 +1,10 @@
+import {
+    MAX_SCHEDULE_AHEAD_MS,
+    beyondScheduleHorizon,
+} from "@/lib/workspaceLifecycle";
+
+const SCHEDULE_HORIZON_DAYS = MAX_SCHEDULE_AHEAD_MS / (24 * 60 * 60 * 1000);
+
 const MAX_TITLE_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
 const MAX_FEEDBACK_LENGTH = 2000;
@@ -57,6 +64,16 @@ export function validateWorkspaceBody(
             Number.isNaN(new Date(startTime).getTime())
         ) {
             return new Response("Invalid startTime", { status: 400 });
+        }
+        if (beyondScheduleHorizon(startTime)) {
+            return Response.json(
+                {
+                    error: `Workspaces can be scheduled up to ${SCHEDULE_HORIZON_DAYS} days ahead`,
+                    reason: "horizon",
+                    limitDays: SCHEDULE_HORIZON_DAYS,
+                },
+                { status: 400 },
+            );
         }
     }
 

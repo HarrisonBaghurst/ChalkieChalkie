@@ -3,7 +3,7 @@ import { enforceRateLimit } from "@/lib/ratelimit";
 import { signTicket } from "@/lib/realtimeTicket";
 import { entitlementsForUser } from "@/lib/serverPlan";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { boardAccessDenial } from "@/lib/workspaceLifecycle";
+import { boardAccessDenial, lessonInFlight } from "@/lib/workspaceLifecycle";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 
@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
 
     const { data: roomData, error } = await supabaseAdmin
         .from("Room")
-        .select("id, host_id, user_ids, opens_at, expires_at, opened_at")
+        .select(
+            "id, host_id, user_ids, start_time, opens_at, expires_at, opened_at",
+        )
         .eq("id", room)
         .contains("user_ids", [userId])
         .single();
@@ -58,6 +60,18 @@ export async function POST(request: NextRequest) {
     );
     if (denial) {
         return Response.json({ reason: denial }, { status: 403 });
+    }
+
+    const hostEntitlements = await entitlementsForUser(roomData.host_id);
+
+    if (
+        !hostEntitlements &&
+        !lessonInFlight({
+            startTime: roomData.start_time,
+            openedAt: roomData.opened_at,
+        })
+    ) {
+        return Response.json({ reason: "host-no-plan" }, { status: 403 });
     }
 
     const user = await currentUser();
@@ -82,7 +96,6 @@ export async function POST(request: NextRequest) {
         p_user_id: userId,
     });
 
-    const hostEntitlements = await entitlementsForUser(roomData.host_id);
     const memberCount = ((roomData.user_ids ?? []) as string[]).length;
     const cap = hostEntitlements
         ? hostEntitlements.maxWorkspaceMembers

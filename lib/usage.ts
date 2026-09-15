@@ -2,19 +2,47 @@ import "server-only";
 
 import { reportError } from "@/lib/errorResponse";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { PlanUsage, UsageMetric } from "@/types/planTypes";
+import {
+    PlanUsage,
+    UsageMetric,
+    UsagePeriod,
+    UserPlan,
+} from "@/types/planTypes";
 
 export const WORKSPACES_CREATED: UsageMetric = "workspaces_created";
 
-export const periodStart = (now: Date = new Date()): string => {
-    const month = String(now.getUTCMonth() + 1).padStart(2, "0");
-    return `${now.getUTCFullYear()}-${month}-01`;
+const parseInstant = (iso: string | null | undefined): Date | null => {
+    if (!iso) return null;
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? null : date;
 };
 
-export const periodEnd = (now: Date = new Date()): string =>
-    new Date(
+const utcDate = (date: Date): string => {
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    return `${date.getUTCFullYear()}-${month}-${day}`;
+};
+
+const calendarMonth = (now: Date): UsagePeriod => ({
+    start: `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`,
+    end: new Date(
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
-    ).toISOString();
+    ).toISOString(),
+});
+
+export const usagePeriod = (
+    userPlan: UserPlan | null,
+    now: Date = new Date(),
+): UsagePeriod => {
+    const start = parseInstant(userPlan?.currentPeriodStart);
+    const end = parseInstant(userPlan?.currentPeriodEnd);
+
+    if (!start || !end || end.getTime() <= start.getTime()) {
+        return calendarMonth(now);
+    }
+
+    return { start: utcDate(start), end: end.toISOString() };
+};
 
 export type QuotaClaim =
     | { allowed: true; used: number }
@@ -24,11 +52,11 @@ export const claimUsage = async (
     userId: string,
     metric: UsageMetric,
     limit: number | null,
-    now: Date = new Date(),
+    period: UsagePeriod,
 ): Promise<QuotaClaim> => {
     const { data, error } = await supabaseAdmin.rpc("increment_usage", {
         p_user_id: userId,
-        p_period_start: periodStart(now),
+        p_period_start: period.start,
         p_metric: metric,
         p_limit: limit,
     });
@@ -49,11 +77,11 @@ export const claimUsage = async (
 export const releaseUsage = async (
     userId: string,
     metric: UsageMetric,
-    now: Date = new Date(),
+    period: UsagePeriod,
 ): Promise<void> => {
     const { error } = await supabaseAdmin.rpc("release_usage", {
         p_user_id: userId,
-        p_period_start: periodStart(now),
+        p_period_start: period.start,
         p_metric: metric,
     });
 
@@ -62,15 +90,13 @@ export const releaseUsage = async (
 
 export const readUsage = async (
     userId: string,
-    now: Date = new Date(),
+    period: UsagePeriod,
 ): Promise<PlanUsage> => {
-    const start = periodStart(now);
-
     const { data, error } = await supabaseAdmin
         .from("usage_counters")
         .select("count")
         .eq("user_id", userId)
-        .eq("period_start", start)
+        .eq("period_start", period.start)
         .eq("metric", WORKSPACES_CREATED)
         .maybeSingle();
 
@@ -78,7 +104,7 @@ export const readUsage = async (
 
     return {
         workspacesThisMonth: data?.count ?? 0,
-        periodStart: start,
-        periodEnd: periodEnd(now),
+        periodStart: period.start,
+        periodEnd: period.end,
     };
 };

@@ -15,13 +15,19 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 type ConnectionRowProps = {
     link: LinkSummary;
     onRemove: (linkId: string) => void;
+    onToggleActive?: (linkId: string, active: boolean) => void;
 };
 
-const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
+const ConnectionRow = ({
+    link,
+    onRemove,
+    onToggleActive,
+}: ConnectionRowProps) => {
     const [open, setOpen] = useState(false);
     const { counterparty } = link;
     const fullName = `${counterparty.firstName} ${counterparty.lastName}`.trim();
@@ -51,6 +57,7 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
                         {counterparty.email}
                     </span>
                 </div>
+                {!link.active && <Badge>Inactive</Badge>}
                 <ChevronRightIcon className="size-4 shrink-0 text-foreground-third" />
             </button>
 
@@ -88,6 +95,18 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
                     </SheetBody>
 
                     <SheetFooter>
+                        {onToggleActive && (
+                            <Button
+                                variant="secondary"
+                                size="lg"
+                                onClick={() => {
+                                    setOpen(false);
+                                    onToggleActive(link.linkId, !link.active);
+                                }}
+                            >
+                                {link.active ? "Deactivate" : "Reactivate"}
+                            </Button>
+                        )}
                         <Button
                             variant="destructive"
                             size="lg"

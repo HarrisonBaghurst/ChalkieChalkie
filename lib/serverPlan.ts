@@ -20,7 +20,9 @@ export const getUserPlan = cache(
     async (userId: string): Promise<UserPlan | null> => {
         const { data, error } = await supabaseAdmin
             .from("user_plans")
-            .select("plan, status, trial_ends_at, current_period_end")
+            .select(
+                "plan, status, trial_ends_at, current_period_start, current_period_end",
+            )
             .eq("user_id", userId)
             .maybeSingle();
 
@@ -39,6 +41,7 @@ export const getUserPlan = cache(
             plan,
             status,
             trialEndsAt: data.trial_ends_at,
+            currentPeriodStart: data.current_period_start,
             currentPeriodEnd: data.current_period_end,
         };
     },

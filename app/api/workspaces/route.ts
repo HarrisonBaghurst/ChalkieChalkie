@@ -1,12 +1,12 @@
 import { enforceRateLimit } from "@/lib/ratelimit";
-import { planDenial, requireEntitlements } from "@/lib/serverPlan";
+import { getUserPlan, planDenial, requireEntitlements } from "@/lib/serverPlan";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
     WORKSPACES_CREATED,
     claimUsage,
-    periodEnd,
     releaseUsage,
+    usagePeriod,
 } from "@/lib/usage";
 import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
@@ -53,20 +53,23 @@ export async function POST(req: Request) {
         );
     }
 
+    const period = usagePeriod(await getUserPlan(userId));
+
     const claim = await claimUsage(
         userId,
         WORKSPACES_CREATED,
         entitlements.workspacesPerMonth,
+        period,
     );
 
     if (!claim.allowed) {
         return planDenial(
             "quota",
-            "You have used every workspace your plan allows this month",
+            "You have used every workspace your plan allows this period",
             {
                 limit: entitlements.workspacesPerMonth,
                 used: claim.used,
-                resetsAt: periodEnd(),
+                resetsAt: period.end,
             },
         );
     }
@@ -91,7 +94,7 @@ export async function POST(req: Request) {
         .single();
 
     if (error) {
-        await releaseUsage(userId, WORKSPACES_CREATED);
+        await releaseUsage(userId, WORKSPACES_CREATED, period);
         // TODO: centralise via errorResponse helper
         console.error("[workspace:create] Supabase error:", error);
         if ((error as { code?: string }).code === "23505") {

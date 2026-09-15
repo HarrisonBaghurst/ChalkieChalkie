@@ -9,12 +9,14 @@ type ConnectionsTableProps = {
     links: LinkSummary[];
     role: LinkRole;
     onRemove: (linkId: string) => void;
+    onToggleActive?: (linkId: string, active: boolean) => void;
 };
 
 const ConnectionsTable = ({
     links,
     role,
     onRemove,
+    onToggleActive,
 }: ConnectionsTableProps) => {
     const emptyLabel =
         role === "tutor"
@@ -28,6 +30,7 @@ const ConnectionsTable = ({
                     key={link.linkId}
                     link={link}
                     onRemove={onRemove}
+                    onToggleActive={onToggleActive}
                 />
             ))}
         </DataTable>

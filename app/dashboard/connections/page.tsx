@@ -1,5 +1,5 @@
 import ConnectionsClient from "@/components/dashboard/connections/ConnectionsClient";
-import { grantedPlanForUser } from "@/lib/serverPlan";
+import { entitlementsForUser, grantedPlanForUser } from "@/lib/serverPlan";
 import { getUserRole } from "@/lib/serverRole";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
@@ -27,15 +27,23 @@ const resolvePlanId = async (): Promise<PlanId | null> => {
     return grantedPlanForUser(userId);
 };
 
+const resolveLinkedStudentsLimit = async (): Promise<number | null> => {
+    const { userId } = await auth();
+    if (!userId) return null;
+    return (await entitlementsForUser(userId))?.maxLinkedStudents ?? null;
+};
+
 const page = async () => {
     const role = await resolveRole();
     const planId = await resolvePlanId();
+    const linkedStudentsLimit = await resolveLinkedStudentsLimit();
     const sidebarCollapsed = await readSidebarCookie();
     const tableDensity = await readTableDensityCookie();
     return (
         <ConnectionsClient
             role={role}
             planId={planId}
+            linkedStudentsLimit={linkedStudentsLimit}
             sidebarCollapsed={sidebarCollapsed}
             tableDensity={tableDensity}
         />

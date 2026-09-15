@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
 import { DataTableRow } from "@/components/dashboard/DataTable";
 import { formatRelativeTime } from "@/lib/textUtils";
@@ -14,9 +15,14 @@ import { LinkSummary } from "@/types/linkTypes";
 type ConnectionRowProps = {
     link: LinkSummary;
     onRemove: (linkId: string) => void;
+    onToggleActive?: (linkId: string, active: boolean) => void;
 };
 
-const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
+const ConnectionRow = ({
+    link,
+    onRemove,
+    onToggleActive,
+}: ConnectionRowProps) => {
     const { counterparty } = link;
     const fullName =
         `${counterparty.firstName} ${counterparty.lastName}`.trim();
@@ -42,6 +48,7 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
                         {counterparty.email}
                     </span>
                 </div>
+                {!link.active && <Badge>Inactive</Badge>}
             </div>
         ),
         linked: (
@@ -58,6 +65,17 @@ const ConnectionRow = ({ link, onRemove }: ConnectionRowProps) => {
         actions: (
             <RowActionsMenu
                 actions={[
+                    ...(onToggleActive
+                        ? [
+                              {
+                                  label: link.active
+                                      ? "Deactivate"
+                                      : "Reactivate",
+                                  onSelect: () =>
+                                      onToggleActive(link.linkId, !link.active),
+                              },
+                          ]
+                        : []),
                     {
                         label: "Remove link",
                         variant: "destructive",

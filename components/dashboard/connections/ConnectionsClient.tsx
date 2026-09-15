@@ -24,6 +24,7 @@ type ConnectionsClientProps = {
     // Server-resolved, so the heading doesn't flash before Clerk hydrates.
     role?: UserRole;
     planId?: PlanId | null;
+    linkedStudentsLimit?: number | null;
     sidebarCollapsed?: CollapseState;
     tableDensity?: TableDensity;
 };
@@ -32,6 +33,7 @@ type ConnectionsClientProps = {
 const ConnectionsClient = ({
     role: serverRole,
     planId,
+    linkedStudentsLimit,
     sidebarCollapsed,
     tableDensity,
 }: ConnectionsClientProps) => {
@@ -134,7 +136,49 @@ const ConnectionsClient = ({
         }
     };
 
+    const handleToggleActive = async (linkId: string, active: boolean) => {
+        const previous = links;
+        setLinks((prev) =>
+            prev.map((l) => (l.linkId === linkId ? { ...l, active } : l)),
+        );
+
+        try {
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL}/api/links/${linkId}`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ active }),
+                },
+            );
+            if (!res.ok) {
+                setLinks(previous);
+                const body = await res.json().catch(() => null);
+                toast.error(
+                    body?.error ?? "Failed to update this connection.",
+                );
+                return;
+            }
+            toast.success(
+                active
+                    ? "Connection reactivated."
+                    : "Connection deactivated.",
+            );
+        } catch (err) {
+            console.error(err);
+            setLinks(previous);
+            toast.error("Something went wrong.");
+        }
+    };
+
     const linkRole: LinkRole = role === "tutor" ? "tutor" : "student";
+
+    const inactiveCount = links.filter((l) => !l.active).length;
+    const showCapNotice =
+        role === "tutor" &&
+        inactiveCount > 0 &&
+        linkedStudentsLimit !== null &&
+        linkedStudentsLimit !== undefined;
 
     const heading =
         role === "tutor"
@@ -212,11 +256,33 @@ const ConnectionsClient = ({
                         />
                     )}
 
+                    {showCapNotice && (
+                        <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
+                            <p className="text-small font-inter-bold text-foreground">
+                                {inactiveCount} connection
+                                {inactiveCount === 1 ? " is" : "s are"} inactive
+                            </p>
+                            <p className="text-caption text-foreground-second">
+                                Your plan covers {linkedStudentsLimit} linked
+                                student
+                                {linkedStudentsLimit === 1 ? "" : "s"}. Inactive
+                                students stay on this list but can&apos;t join
+                                new workspaces. Remove a student to reactivate
+                                another, or upgrade to keep them all.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="md:hidden">
                         <ConnectionsList
                             links={links}
                             role={linkRole}
                             onRemove={handleRemove}
+                            onToggleActive={
+                                role === "tutor"
+                                    ? handleToggleActive
+                                    : undefined
+                            }
                         />
                     </div>
                     <div className="hidden md:block">
@@ -224,6 +290,11 @@ const ConnectionsClient = ({
                             links={links}
                             role={linkRole}
                             onRemove={handleRemove}
+                            onToggleActive={
+                                role === "tutor"
+                                    ? handleToggleActive
+                                    : undefined
+                            }
                         />
                     </div>
                 </>
