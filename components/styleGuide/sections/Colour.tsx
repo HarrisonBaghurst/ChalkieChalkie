@@ -223,7 +223,7 @@ const Colour = () => (
 
         <Block
             title="Per-user identity colours"
-            description="USER_COLOUR_PALETTE in lib/userColour.ts — 12 colours, one per hue at an even 30° rotation in OKLCH, each at 85% of its in-gamut chroma and gamut-fitted to sRGB. Lightness varies per hue rather than sitting flat, which is what keeps neighbouring hues apart: the closest pair is ΔE 0.135, against 0.050 for the flat 48-colour set this replaced. The person's lower-cased email is hashed to a fixed index, falling back to the Clerk userId when no email is available, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
+            description="USER_COLOUR_PALETTE in lib/userColour.ts — 48 colours, 12 hues across four lightness and chroma steps, generated in OKLCH and gamut-fitted to sRGB. The person's lower-cased email is hashed to a fixed index, falling back to the Clerk userId when no email is available, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
         >
             <div className="flex flex-col gap-3">
                 <Grid cols={6}>
@@ -232,20 +232,32 @@ const Colour = () => (
                     ))}
                 </Grid>
                 <Note>
-                    Every entry sits between 5.5:1 and 12:1 against{" "}
-                    <Code>--background</Code>, which is why initials are always
-                    drawn in <Code>--brand-foreground</Code> and never
-                    conditionally lightened. The band is deliberately narrow at
-                    both ends: the floor holds the contrast, and the ceiling
-                    stops a hue being driven so light it washes out beside the
-                    others.
+                    Every entry clears 4.5:1 against <Code>--background</Code>,
+                    which is why initials are always drawn in{" "}
+                    <Code>--brand-foreground</Code> and never conditionally
+                    lightened. The band was chosen to hold that floor — move it
+                    lighter or darker and the contrast breaks.
+                </Note>
+                <Note tone="dead">
+                    The array is deliberately not in hue order. The hash adds
+                    each character code in turn, so two ids sharing a long
+                    prefix and differing only near the end land a short distance
+                    apart in the array — in gradient order that handed them
+                    near-identical colours. The order above is solved so that
+                    any two entries within three positions of each other differ
+                    by at least ΔE 0.141, against 0.050 for the hue-sorted
+                    original. Re-sorting this array by hue undoes that.
                 </Note>
                 <Note tone="dead">
                     The array length is load-bearing:{" "}
                     <Code>getUserColour</Code> is <Code>hash % length</Code>, so
                     adding or removing an entry reshuffles every existing
                     user&apos;s colour. Changing a hex in place is safe;
-                    changing the count is not.
+                    changing the count is not. The hash is FNV-1a plus the
+                    murmur3 <Code>fmix32</Code> finaliser — the finaliser is
+                    what makes the low bits usable, and{" "}
+                    <Code>hash % length</Code> reads exactly those. Do not
+                    replace it with a plain multiply-and-add.
                 </Note>
             </div>
         </Block>
