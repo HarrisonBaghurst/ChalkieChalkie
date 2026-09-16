@@ -104,6 +104,8 @@ The write-time member cap only binds when a workspace is written. A downgrade le
 
 Entitlements are resolved server-side in `app/dashboard/page.tsx` and passed to `DashboardClient`, which publishes them through `hooks/useEntitlements.tsx`. A context rather than props because `WorkspaceModal` is rendered from four places (`Sidebar`, `TabBar`, `WorkspaceTableRow`, `mobile/WorkspaceRow`).
 
+`EntitlementsState` carries three things: `entitlements`, `usage` (the `workspaces_created` counter for the current period) and `linkedStudents` (the active `tutor_links` count, resolved by `countActiveStudentLinks` and only when entitlements exist). The dashboard's usage card is the first consumer of the latter two — see [docs/dashboard.md](dashboard.md) for when it renders and why it never counts `friends.length`.
+
 The numbers do reach the browser — the picker renders `2 / 2` and `ScheduleStep` needs `leadMs` for its opens-immediately notice. **That is display, not authority**: editing them in devtools achieves nothing, because create, PATCH and redeem all re-check. What must never reach the client is the *table* of all three tiers.
 
 `ENVIRONMENT=testing` renders the dashboard from `data/testWorkspaces.json` against a fixed `TEST_LIMITS`, not a plan lookup — the test path has no real user to resolve.

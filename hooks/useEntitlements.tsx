@@ -6,9 +6,14 @@ import { ReactNode, createContext, useContext } from "react";
 export type EntitlementsState = {
     entitlements: PlanEntitlements | null;
     usage: PlanUsage | null;
+    linkedStudents: number | null;
 };
 
-const EMPTY: EntitlementsState = { entitlements: null, usage: null };
+const EMPTY: EntitlementsState = {
+    entitlements: null,
+    usage: null,
+    linkedStudents: null,
+};
 
 const EntitlementsContext = createContext<EntitlementsState>(EMPTY);
 

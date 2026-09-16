@@ -14,6 +14,19 @@ export async function listLinksFor(userId: string): Promise<TutorLinkRow[]> {
     return data ?? [];
 }
 
+export async function countActiveStudentLinks(
+    tutorId: string,
+): Promise<number> {
+    const { count, error } = await supabaseAdmin
+        .from("tutor_links")
+        .select("id", { count: "exact", head: true })
+        .eq("tutor_id", tutorId)
+        .is("deactivated_at", null);
+
+    if (error) throw error;
+    return count ?? 0;
+}
+
 export const counterpartyIdOf = (row: TutorLinkRow, userId: string): string =>
     row.tutor_id === userId ? row.student_id : row.tutor_id;
 

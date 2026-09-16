@@ -9,6 +9,8 @@ import {
     grantedPlanForUser,
 } from "@/lib/serverPlan";
 import { getUserRole } from "@/lib/serverRole";
+import { countActiveStudentLinks } from "@/lib/links";
+import { reportError } from "@/lib/errorResponse";
 import { PlanId } from "@/types/planTypes";
 import { readSidebarCookie } from "@/lib/serverSidebarCookie";
 import { readTableDensityCookie } from "@/lib/serverTableDensityCookie";
@@ -31,19 +33,33 @@ const resolveRole = async (): Promise<UserRole | undefined> => {
     }
 };
 
+const resolveLinkedStudents = async (
+    userId: string,
+): Promise<number | null> => {
+    try {
+        return await countActiveStudentLinks(userId);
+    } catch (err) {
+        await reportError("dashboard:linked-students", err, undefined, userId);
+        return null;
+    }
+};
+
 const resolvePlan = async (): Promise<EntitlementsState> => {
     const { userId } = await auth();
-    if (!userId) return { entitlements: null, usage: null };
+    if (!userId)
+        return { entitlements: null, usage: null, linkedStudents: null };
 
     const [entitlements, userPlan] = await Promise.all([
         entitlementsForUser(userId),
         getUserPlan(userId),
     ]);
 
-    return {
-        entitlements,
-        usage: await readUsage(userId, usagePeriod(userPlan)),
-    };
+    const [usage, linkedStudents] = await Promise.all([
+        readUsage(userId, usagePeriod(userPlan)),
+        entitlements ? resolveLinkedStudents(userId) : null,
+    ]);
+
+    return { entitlements, usage, linkedStudents };
 };
 
 const resolvePlanId = async (): Promise<PlanId | null> => {

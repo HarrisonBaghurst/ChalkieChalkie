@@ -12,7 +12,7 @@ export type DenialCopy = {
     description: string;
 };
 
-const resetLabel = (resetsAt?: string): string => {
+export const resetLabel = (resetsAt?: string): string => {
     if (!resetsAt) return "at the start of next month";
     const date = new Date(resetsAt);
     if (Number.isNaN(date.getTime())) return "at the start of next month";

@@ -25,7 +25,7 @@ type GettingStartedProps = {
     counts: ChecklistCounts;
 };
 
-const PANEL_CLASS =
+export const PANEL_CLASS =
     "bg-card-background border border-foreground-third/15 p-5 radius-surface flex flex-col gap-6";
 
 const ChecklistItem = ({

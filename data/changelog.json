@@ -87,6 +87,14 @@
                 {
                     "tag": "Changed",
                     "text": "Workspaces can now be scheduled no more than ninety days ahead. A start time further out than that is refused when you save it."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Tutors now have a plan card at the top of the dashboard showing how many workspaces they have made this billing period and how many students they have linked, each against what the plan allows, with the date the workspace allowance refills. Underneath it names how many people a lesson can hold and how long boards are kept. Reaching either limit is marked on the card rather than only being found out when something is refused."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The plan card takes the place the getting started checklist had, and only once the checklist has gone - so the two are never shown together. There is nothing to report before a first lesson has run, and nothing left to teach after it."
                 }
             ]
         },
