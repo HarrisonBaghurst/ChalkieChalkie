@@ -1,10 +1,12 @@
 import React, { useMemo } from "react";
 import CollaboratorCard from "./CollaboratorCard";
+import { cn } from "@/lib/utils";
 import { userInfo } from "@/types/userTypes";
 
 type CollaboratorsPickerProps = {
     collaborators: userInfo[];
     friends: userInfo[];
+    maxMembers?: number | null;
     onChange: (collaborators: userInfo[]) => void;
 };
 
@@ -17,6 +19,7 @@ const rowClasses =
 const CollaboratorsPicker = ({
     collaborators,
     friends,
+    maxMembers = null,
     onChange,
 }: CollaboratorsPickerProps) => {
     const availableFriends = useMemo(
@@ -27,8 +30,13 @@ const CollaboratorsPicker = ({
         [friends, collaborators],
     );
 
-    const addCollaborator = (user: userInfo) =>
+    const atCapacity =
+        maxMembers !== null && collaborators.length >= maxMembers;
+
+    const addCollaborator = (user: userInfo) => {
+        if (atCapacity) return;
         onChange([...collaborators, user]);
+    };
 
     const removeCollaborator = (user: userInfo) =>
         onChange(collaborators.filter((c) => c.email !== user.email));
@@ -43,6 +51,8 @@ const CollaboratorsPicker = ({
                     className="text-caption text-foreground-third"
                 >
                     COLLABORATORS
+                    {maxMembers !== null &&
+                        ` ${collaborators.length} / ${maxMembers}`}
                 </div>
                 <div
                     role="group"
@@ -112,13 +122,24 @@ const CollaboratorsPicker = ({
                                 : "All of your students are already in this workspace."}
                         </div>
                     )}
+                    {atCapacity && availableFriends.length > 0 && (
+                        <div className="p-2 pb-3 text-small text-foreground-third">
+                            Your plan allows {maxMembers} people per workspace.
+                            Remove someone to add another.
+                        </div>
+                    )}
                     {availableFriends.map((friend) => (
                         <button
                             key={friend.email}
                             type="button"
                             onClick={() => addCollaborator(friend)}
+                            disabled={atCapacity}
                             aria-label={`Add ${friend.firstName} ${friend.lastName} to this workspace`}
-                            className={rowClasses}
+                            className={cn(
+                                rowClasses,
+                                atCapacity &&
+                                    "opacity-50 cursor-not-allowed hover:bg-transparent",
+                            )}
                         >
                             <CollaboratorCard
                                 image={friend.imageUrl}

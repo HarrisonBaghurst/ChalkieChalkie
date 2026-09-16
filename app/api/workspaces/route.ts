@@ -1,9 +1,16 @@
 import { enforceRateLimit } from "@/lib/ratelimit";
+import { getUserPlan, planDenial, requireEntitlements } from "@/lib/serverPlan";
 import { requireTutor } from "@/lib/serverRole";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import {
+    WORKSPACES_CREATED,
+    claimUsage,
+    releaseUsage,
+    usagePeriod,
+} from "@/lib/usage";
 import { auth } from "@clerk/nextjs/server";
 import { randomUUID } from "crypto";
-import { limitsForPlan, scheduleWindow } from "@/lib/workspaceLifecycle";
+import { scheduleWindow } from "@/lib/workspaceLifecycle";
 import { validateWorkspaceBody, type WorkspaceBody } from "./_shared";
 
 export async function POST(req: Request) {
@@ -15,6 +22,9 @@ export async function POST(req: Request) {
 
     const forbidden = await requireTutor(userId);
     if (forbidden) return forbidden;
+
+    const entitlements = await requireEntitlements(userId);
+    if (entitlements instanceof Response) return entitlements;
 
     let body: WorkspaceBody;
     try {
@@ -32,7 +42,39 @@ export async function POST(req: Request) {
         new Set([userId, ...validated.collaborators]),
     );
 
-    const window = scheduleWindow(validated.startTime, limitsForPlan());
+    if (userIds.length > entitlements.maxWorkspaceMembers) {
+        return planDenial(
+            "members",
+            `Your plan allows ${entitlements.maxWorkspaceMembers} people per workspace, including you`,
+            {
+                limit: entitlements.maxWorkspaceMembers,
+                requested: userIds.length,
+            },
+        );
+    }
+
+    const period = usagePeriod(await getUserPlan(userId));
+
+    const claim = await claimUsage(
+        userId,
+        WORKSPACES_CREATED,
+        entitlements.workspacesPerMonth,
+        period,
+    );
+
+    if (!claim.allowed) {
+        return planDenial(
+            "quota",
+            "You have used every workspace your plan allows this period",
+            {
+                limit: entitlements.workspacesPerMonth,
+                used: claim.used,
+                resetsAt: period.end,
+            },
+        );
+    }
+
+    const window = scheduleWindow(validated.startTime, entitlements);
 
     const { data, error } = await supabaseAdmin
         .from("Room")
@@ -52,6 +94,7 @@ export async function POST(req: Request) {
         .single();
 
     if (error) {
+        await releaseUsage(userId, WORKSPACES_CREATED, period);
         // TODO: centralise via errorResponse helper
         console.error("[workspace:create] Supabase error:", error);
         if ((error as { code?: string }).code === "23505") {

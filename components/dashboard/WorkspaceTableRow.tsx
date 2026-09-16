@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,9 @@ import {
     WorkspaceColumnKey,
 } from "@/lib/dashboardTableColumns";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { useNow } from "@/hooks/useNow";
+import { useJoinWorkspace } from "@/hooks/useJoinWorkspace";
 import PeopleStack from "./PeopleStack";
 import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
@@ -50,18 +51,30 @@ const WorkspaceTableRow = ({
     onUpdated,
     onDeleted,
 }: WorkspaceTableRowProps) => {
-    const router = useRouter();
     const { user } = useUser();
     const role = useUserRole();
+    const { entitlements } = useEntitlements();
     const now = useNow();
     const [modalStep, setModalStep] = useState<number | null>(null);
 
-    const status = lifecycleStatus(workspace, now);
-    const joinDenial = joinDenialLabel(workspace, now);
+    const viewerIsHost = !!user && isHost(user.id, workspace);
 
-    const canManage = role === "tutor" && !!user && isHost(user.id, workspace);
+    const status = lifecycleStatus(workspace, viewerIsHost, now);
+    const joinDenial = joinDenialLabel(workspace, viewerIsHost, now);
+
+    const { join, dialog } = useJoinWorkspace(workspace, viewerIsHost, now);
+
+    const canManage = role === "tutor" && viewerIsHost;
 
     const canAddFeedback = canManage && bucket === "previous";
+
+    const memberCap = entitlements?.maxWorkspaceMembers ?? null;
+    const memberCount = (workspace.collaboratorIds ?? []).length;
+    const overCap =
+        canManage &&
+        bucket === "upcoming" &&
+        memberCap !== null &&
+        memberCount > memberCap;
 
     const people = useMemo<userInfo[]>(
         () => pickCounterparties(workspace, usersMap, user?.id),
@@ -80,15 +93,29 @@ const WorkspaceTableRow = ({
             .filter((u): u is userInfo => !!u);
     }, [workspace.host, workspace.collaboratorIds, usersMap]);
 
-    const join = () => router.push(`/board/${workspace.id}`);
-
     const cells: Record<WorkspaceColumnKey, React.ReactNode> = {
         people: (
-            <PeopleStack
-                people={people}
-                participants={collaborators}
-                hostId={workspace.host}
-            />
+            <div className="flex items-center gap-2">
+                <PeopleStack
+                    people={people}
+                    participants={collaborators}
+                    hostId={workspace.host}
+                />
+                {overCap && (
+                    <TapTooltip
+                        content={
+                            <div className="w-56 whitespace-normal">
+                                This workspace has {memberCount} people but your
+                                plan allows {memberCap}. Remove{" "}
+                                {memberCount - (memberCap ?? 0)} before the
+                                lesson, or only some will get in.
+                            </div>
+                        }
+                    >
+                        <Badge variant="destructive">Over limit</Badge>
+                    </TapTooltip>
+                )}
+            </div>
         ),
         header: workspace.title ? (
             truncated(workspace.title)
@@ -158,6 +185,7 @@ const WorkspaceTableRow = ({
                         onDeleted={onDeleted}
                     />
                 )}
+                {dialog}
             </>
         ),
     };

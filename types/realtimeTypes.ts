@@ -4,6 +4,8 @@ import { Point, Stroke } from "@/types/strokeTypes";
 
 export const REALTIME_SUBPROTOCOL = "chalkie.v1";
 
+export const ROOM_FULL_CLOSE_CODE = 4004;
+
 export type UserInfo = {
     firstName: string;
     lastName: string;
@@ -15,6 +17,8 @@ export type TicketClaims = {
     sub: string;
     room: string;
     info: UserInfo;
+    host: string;
+    cap: number;
     iat: number;
     exp: number;
 };

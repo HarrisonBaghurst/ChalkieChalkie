@@ -1,7 +1,9 @@
+import { reportError } from "@/lib/errorResponse";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { signTicket } from "@/lib/realtimeTicket";
+import { entitlementsForUser } from "@/lib/serverPlan";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { boardAccessDenial } from "@/lib/workspaceLifecycle";
+import { boardAccessDenial, lessonInFlight } from "@/lib/workspaceLifecycle";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextRequest } from "next/server";
 
@@ -35,7 +37,9 @@ export async function POST(request: NextRequest) {
 
     const { data: roomData, error } = await supabaseAdmin
         .from("Room")
-        .select("id, opens_at, expires_at")
+        .select(
+            "id, host_id, user_ids, start_time, opens_at, expires_at, opened_at",
+        )
         .eq("id", room)
         .contains("user_ids", [userId])
         .single();
@@ -44,14 +48,46 @@ export async function POST(request: NextRequest) {
         return new Response("Forbidden", { status: 403 });
     }
 
-    const denial = boardAccessDenial(roomData.opens_at, roomData.expires_at);
+    const viewerIsHost = roomData.host_id === userId;
+
+    const denial = boardAccessDenial(
+        {
+            opensAt: roomData.opens_at,
+            expiresAt: roomData.expires_at,
+            openedAt: roomData.opened_at,
+        },
+        viewerIsHost,
+    );
     if (denial) {
         return Response.json({ reason: denial }, { status: 403 });
+    }
+
+    const hostEntitlements = await entitlementsForUser(roomData.host_id);
+
+    if (
+        !hostEntitlements &&
+        !lessonInFlight({
+            startTime: roomData.start_time,
+            openedAt: roomData.opened_at,
+        })
+    ) {
+        return Response.json({ reason: "host-no-plan" }, { status: 403 });
     }
 
     const user = await currentUser();
     if (!user) {
         return new Response("Unauthorised", { status: 401 });
+    }
+
+    if (viewerIsHost && !roomData.opened_at) {
+        const { error: openError } = await supabaseAdmin
+            .from("Room")
+            .update({ opened_at: new Date().toISOString() })
+            .eq("id", room)
+            .is("opened_at", null);
+        if (openError) {
+            await reportError("workspace:open", openError, undefined, userId);
+        }
     }
 
     await supabaseAdmin.rpc("upsert_room", {
@@ -60,12 +96,23 @@ export async function POST(request: NextRequest) {
         p_user_id: userId,
     });
 
-    const ticket = await signTicket(userId, room, {
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        imageUrl: user.imageUrl ?? "",
-        email: user.emailAddresses[0]?.emailAddress ?? "",
-    });
+    const memberCount = ((roomData.user_ids ?? []) as string[]).length;
+    const cap = hostEntitlements
+        ? hostEntitlements.maxWorkspaceMembers
+        : Math.max(memberCount, 1);
+
+    const ticket = await signTicket(
+        userId,
+        room,
+        {
+            firstName: user.firstName ?? "",
+            lastName: user.lastName ?? "",
+            imageUrl: user.imageUrl ?? "",
+            email: user.emailAddresses[0]?.emailAddress ?? "",
+        },
+        roomData.host_id,
+        cap,
+    );
 
     return Response.json({ ticket });
 }

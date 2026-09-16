@@ -7,6 +7,7 @@ import {
     PeerState,
     Presence,
     REALTIME_SUBPROTOCOL,
+    ROOM_FULL_CLOSE_CODE,
     ServerMessage,
     UserInfo,
 } from "@/types/realtimeTypes";
@@ -203,9 +204,14 @@ export class RealtimeRoom {
             this.receive(JSON.parse(event.data) as ServerMessage);
         };
 
-        socket.onclose = () => {
+        socket.onclose = (event) => {
             this.stopKeepalive();
             if (this.socket === socket) this.socket = null;
+            if (event.code === ROOM_FULL_CLOSE_CODE) {
+                this.closed = true;
+                this.onAuthFailure(403, "full");
+                return;
+            }
             this.scheduleReconnect();
         };
 

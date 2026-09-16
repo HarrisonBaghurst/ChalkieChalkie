@@ -48,6 +48,7 @@ export async function GET(req: Request) {
                     counterparty,
                     createdAt: row.created_at,
                     sharedWorkspaces: counts[counterpartyId] ?? 0,
+                    active: !row.deactivated_at,
                 };
             })
             .filter((l): l is LinkSummary => l !== null);

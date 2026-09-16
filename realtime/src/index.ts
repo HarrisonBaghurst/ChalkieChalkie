@@ -61,6 +61,8 @@ export default {
             headers.delete("Sec-WebSocket-Protocol");
             headers.set("x-chalkie-user", claims.sub);
             headers.set("x-chalkie-info", JSON.stringify(claims.info));
+            headers.set("x-chalkie-host", claims.host);
+            headers.set("x-chalkie-cap", String(claims.cap));
 
             // Returned as-is. The DO sets the subprotocol header on its own 101,
             // because re-wrapping an upgrade response invalidates it.

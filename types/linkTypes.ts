@@ -10,6 +10,7 @@ export type TutorLinkRow = {
     student_id: string;
     created_at: string;
     created_by: string;
+    deactivated_at: string | null;
 };
 
 export type LinkInviteRow = {
@@ -34,4 +35,5 @@ export type LinkSummary = {
     counterparty: userInfo;
     createdAt: string;
     sharedWorkspaces: number;
+    active: boolean;
 };

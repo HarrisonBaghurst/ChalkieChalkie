@@ -58,6 +58,11 @@ const ChangelogDocument = ({
                                     {entry.date}
                                 </p>
                             </div>
+                            {entry.overview && (
+                                <p className="text-body text-foreground border-foreground-third/25 border-l-2 pl-4">
+                                    {renderInline(entry.overview, contactEmail)}
+                                </p>
+                            )}
                             <ul className="text-body text-foreground-second flex list-outside list-disc flex-col gap-2 pl-5">
                                 {entry.changes.map((change, i) => (
                                     <Change

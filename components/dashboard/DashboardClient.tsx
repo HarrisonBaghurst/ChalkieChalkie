@@ -17,7 +17,12 @@ import { TableDensity } from "@/lib/tableDensityCookie";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
 import { LinkRole } from "@/types/linkTypes";
+import { PlanId } from "@/types/planTypes";
 import { useUserRole } from "@/hooks/useUserRole";
+import {
+    EntitlementsProvider,
+    type EntitlementsState,
+} from "@/hooks/useEntitlements";
 import { useNow } from "@/hooks/useNow";
 import Sidebar from "./Sidebar";
 import TabBar from "./mobile/TabBar";
@@ -25,12 +30,15 @@ import DashboardShell from "./DashboardShell";
 import DashboardCardRow from "./DashboardCardRow";
 import GettingStarted, { GettingStartedTakeover } from "./GettingStarted";
 import Next from "./Next";
+import Usage from "./Usage";
 import WorkspaceLists from "./WorkspaceLists";
 import DashboardSkeleton from "./skeletons/DashboardSkeleton";
 
 type DashboardClientProps = {
     // Server-resolved, so the role-gated sidebar is right on first paint.
     role?: UserRole;
+    plan?: EntitlementsState;
+    planId?: PlanId | null;
     sidebarCollapsed?: CollapseState;
     tableDensity?: TableDensity;
     testData?: {
@@ -39,10 +47,18 @@ type DashboardClientProps = {
     };
 };
 
+const NO_PLAN: EntitlementsState = {
+    entitlements: null,
+    usage: null,
+    linkedStudents: null,
+};
+
 // TODO(refactor): duplicates the fetching and snake_case mapping in
 // components/Workspaces.tsx; extract a shared API client.
 const DashboardClient = ({
     role: serverRole,
+    plan = NO_PLAN,
+    planId,
     sidebarCollapsed,
     tableDensity,
     testData,
@@ -237,6 +253,23 @@ const DashboardClient = ({
             ? "hidden"
             : resolvePresentation("dashboard", checklistCounts);
 
+    const companion =
+        presentation === "card" ? (
+            <GettingStarted
+                role={checklistRole}
+                surface="dashboard"
+                presentation="card"
+                counts={checklistCounts}
+            />
+        ) : presentation === "hidden" && plan.entitlements ? (
+            <Usage
+                entitlements={plan.entitlements}
+                usage={plan.usage}
+                linkedStudents={plan.linkedStudents}
+                planId={planId}
+            />
+        ) : null;
+
     const mergeUsers = (incoming: userInfo[]) => {
         setUsersInfo((prev) => {
             const byId = new Map(prev.map((u) => [u.id, u]));
@@ -259,7 +292,7 @@ const DashboardClient = ({
         setWorkspaces((prev) => prev.filter((w) => w.id !== id));
     };
 
-    return (
+    const shell = (
         <DashboardShell
             initialCollapsed={sidebarCollapsed}
             initialDensity={tableDensity}
@@ -268,6 +301,7 @@ const DashboardClient = ({
                     friends={friends}
                     onCreated={handleCreated}
                     role={serverRole}
+                    planId={planId}
                 />
             }
             bottomBar={
@@ -299,7 +333,7 @@ const DashboardClient = ({
                             View and update your workspaces
                         </p>
                     </div>
-                    {presentation === "card" ? (
+                    {companion ? (
                         <DashboardCardRow>
                             <Next
                                 workspace={nextWorkspace}
@@ -307,12 +341,7 @@ const DashboardClient = ({
                                 viewerId={user?.id}
                                 paired
                             />
-                            <GettingStarted
-                                role={checklistRole}
-                                surface="dashboard"
-                                presentation="card"
-                                counts={checklistCounts}
-                            />
+                            {companion}
                         </DashboardCardRow>
                     ) : (
                         <Next
@@ -345,6 +374,8 @@ const DashboardClient = ({
             )}
         </DashboardShell>
     );
+
+    return <EntitlementsProvider value={plan}>{shell}</EntitlementsProvider>;
 };
 
 export default DashboardClient;

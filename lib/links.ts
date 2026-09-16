@@ -7,10 +7,24 @@ export async function listLinksFor(userId: string): Promise<TutorLinkRow[]> {
         .from("tutor_links")
         .select("*")
         .or(`tutor_id.eq.${userId},student_id.eq.${userId}`)
+        .order("deactivated_at", { ascending: true, nullsFirst: true })
         .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data ?? [];
+}
+
+export async function countActiveStudentLinks(
+    tutorId: string,
+): Promise<number> {
+    const { count, error } = await supabaseAdmin
+        .from("tutor_links")
+        .select("id", { count: "exact", head: true })
+        .eq("tutor_id", tutorId)
+        .is("deactivated_at", null);
+
+    if (error) throw error;
+    return count ?? 0;
 }
 
 export const counterpartyIdOf = (row: TutorLinkRow, userId: string): string =>

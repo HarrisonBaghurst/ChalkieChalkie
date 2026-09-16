@@ -5,11 +5,9 @@ import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { userInfo, Workspace } from "@/types/userTypes";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
-import {
-    isStartTimeLocked,
-    limitsForPlan,
-    opensWithinLockWindow,
-} from "@/lib/workspaceLifecycle";
+import { responseDenialCopy } from "@/lib/planDenialCopy";
+import { startTimeLockReason } from "@/lib/workspaceLifecycle";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import BasicsStep from "./workspaceModalSteps/BasicsStep";
 import ScheduleStep from "./workspaceModalSteps/ScheduleStep";
 import TeamStep from "./workspaceModalSteps/TeamStep";
@@ -110,11 +108,11 @@ const WorkspaceModalContent = ({
     onDeleted,
 }: WorkspaceModalProps) => {
     const { user } = useUser();
+    const { entitlements } = useEntitlements();
     const [step, setStep] = useState(initialStep);
     const [form, setForm] = useState<FormData>(() => initialForm(mode, user));
     const [submitting, setSubmitting] = useState(false);
     const [confirmingDelete, setConfirmingDelete] = useState(false);
-    const [confirmingImmediate, setConfirmingImmediate] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const handleSubmit = async () => {
@@ -143,6 +141,13 @@ const WorkspaceModalContent = ({
             });
 
             if (!res.ok) {
+                const denial = await responseDenialCopy(res);
+                if (denial) {
+                    toast.error(denial.title, {
+                        description: denial.description,
+                    });
+                    return;
+                }
                 toast.error(
                     isCreate
                         ? "Failed to create workspace."
@@ -178,8 +183,9 @@ const WorkspaceModalContent = ({
             );
 
             if (!res.ok) {
-                toast.error("Failed to delete workspace.", {
-                    description: "Please try again.",
+                const denial = await responseDenialCopy(res);
+                toast.error(denial?.title ?? "Failed to delete workspace.", {
+                    description: denial?.description ?? "Please try again.",
                 });
                 return;
             }
@@ -198,20 +204,8 @@ const WorkspaceModalContent = ({
     const isFinalStep = step === STEPS.length;
     const isFirstStep = step === 1;
 
-    const startTimeLocked =
-        mode.kind === "edit" && isStartTimeLocked(mode.workspace.opensAt);
-
-    const needsImmediateConfirm =
-        !startTimeLocked &&
-        opensWithinLockWindow(form.startTime, limitsForPlan());
-
-    const handleSave = () => {
-        if (needsImmediateConfirm && !confirmingImmediate) {
-            setConfirmingImmediate(true);
-            return;
-        }
-        handleSubmit();
-    };
+    const lockReason =
+        mode.kind === "edit" ? startTimeLockReason(mode.workspace) : null;
 
     return (
         <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -305,17 +299,20 @@ const WorkspaceModalContent = ({
                     {step === 2 && (
                         <ScheduleStep
                             value={form.startTime}
-                            locked={startTimeLocked}
-                            onChange={(startTime) => {
-                                setConfirmingImmediate(false);
-                                setForm((p) => ({ ...p, startTime }));
-                            }}
+                            lockReason={lockReason}
+                            limits={entitlements}
+                            onChange={(startTime) =>
+                                setForm((p) => ({ ...p, startTime }))
+                            }
                         />
                     )}
                     {step === 3 && (
                         <TeamStep
                             collaborators={form.collaborators}
                             friends={friends}
+                            maxMembers={
+                                entitlements?.maxWorkspaceMembers ?? null
+                            }
                             onChange={(collaborators) =>
                                 setForm((p) => ({ ...p, collaborators }))
                             }
@@ -348,41 +345,13 @@ const WorkspaceModalContent = ({
                         Back
                     </Button>
                     {isFinalStep ? (
-                        confirmingImmediate ? (
-                            <div className="flex items-center gap-1 text-caption">
-                                <span className="text-foreground-third">
-                                    Opens now, time locked?
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="font-inter-bold"
-                                >
-                                    {submitting ? "Saving..." : "Confirm"}
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                        setConfirmingImmediate(false)
-                                    }
-                                    disabled={submitting}
-                                    className="text-foreground-third hover:text-foreground"
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
-                        ) : (
-                            <Button onClick={handleSave} disabled={submitting}>
-                                {submitting
-                                    ? "Saving..."
-                                    : mode.kind === "create"
-                                      ? "Create"
-                                      : "Save"}
-                            </Button>
-                        )
+                        <Button onClick={handleSubmit} disabled={submitting}>
+                            {submitting
+                                ? "Saving..."
+                                : mode.kind === "create"
+                                  ? "Create"
+                                  : "Save"}
+                        </Button>
                     ) : (
                         <Button
                             onClick={() =>
