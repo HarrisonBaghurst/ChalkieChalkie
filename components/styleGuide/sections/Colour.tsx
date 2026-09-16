@@ -223,7 +223,7 @@ const Colour = () => (
 
         <Block
             title="Per-user identity colours"
-            description="USER_COLOUR_PALETTE in lib/userColour.ts — 48 colours, 12 hues across four lightness and chroma steps, generated in OKLCH and gamut-fitted to sRGB. A Clerk userId is hashed to a fixed index, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
+            description="USER_COLOUR_PALETTE in lib/userColour.ts — 12 colours, one per hue at an even 30° rotation in OKLCH, each at 85% of its in-gamut chroma and gamut-fitted to sRGB. Lightness varies per hue rather than sitting flat, which is what keeps neighbouring hues apart: the closest pair is ΔE 0.135, against 0.050 for the flat 48-colour set this replaced. A Clerk userId is hashed to a fixed index, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
         >
             <div className="flex flex-col gap-3">
                 <Grid cols={6}>
@@ -232,11 +232,13 @@ const Colour = () => (
                     ))}
                 </Grid>
                 <Note>
-                    Every entry clears 4.5:1 against <Code>--background</Code>,
-                    which is why initials are always drawn in{" "}
-                    <Code>--brand-foreground</Code> and never conditionally
-                    lightened. The band was chosen to hold that floor — move it
-                    lighter or darker and the contrast breaks.
+                    Every entry sits between 5.5:1 and 12:1 against{" "}
+                    <Code>--background</Code>, which is why initials are always
+                    drawn in <Code>--brand-foreground</Code> and never
+                    conditionally lightened. The band is deliberately narrow at
+                    both ends: the floor holds the contrast, and the ceiling
+                    stops a hue being driven so light it washes out beside the
+                    others.
                 </Note>
                 <Note tone="dead">
                     The array length is load-bearing:{" "}
