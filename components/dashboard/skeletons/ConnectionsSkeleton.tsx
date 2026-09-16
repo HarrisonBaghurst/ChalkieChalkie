@@ -32,18 +32,9 @@ const ConnectionRowSkeleton = () => (
     <DataTableRow columns={CONNECTIONS_TABLE_COLUMNS} cells={cells} />
 );
 
-type ConnectionsSkeletonProps = {
-    heading: string;
-};
-
-const ConnectionsSkeleton = ({ heading }: ConnectionsSkeletonProps) => {
+const ConnectionsSkeleton = () => {
     return (
         <>
-            <div className="flex items-center justify-between">
-                <p className="text-heading font-inter-bold">{heading}</p>
-                <Skeleton className="hidden h-9 w-36 radius-control md:block" />
-            </div>
-
             <div className="md:hidden">
                 <MobileListSkeleton rows={PLACEHOLDER_ROWS} />
             </div>

@@ -294,6 +294,7 @@ const DashboardClient = ({
 
     const shell = (
         <DashboardShell
+            crumbs={[{ label: "Dashboard" }]}
             initialCollapsed={sidebarCollapsed}
             initialDensity={tableDensity}
             sidebar={
@@ -324,14 +325,6 @@ const DashboardClient = ({
                 <DashboardSkeleton />
             ) : (
                 <>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-heading font-inter-bold">
-                            Your Dashboard
-                        </p>
-                        <p className="text-foreground-second">
-                            View and update your workspaces
-                        </p>
-                    </div>
                     {companion ? (
                         <DashboardCardRow>
                             <Next

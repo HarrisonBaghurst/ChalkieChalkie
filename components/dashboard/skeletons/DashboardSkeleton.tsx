@@ -133,13 +133,6 @@ const TableSkeleton = () => {
 const DashboardSkeleton = () => {
     return (
         <>
-            <div className="flex flex-col gap-1">
-                <p className="text-heading font-inter-bold">Your Dashboard</p>
-                <p className="text-foreground-second">
-                    View and update your workspaces
-                </p>
-            </div>
-
             <NextSkeleton />
 
             <div className="w-full min-w-0 h-fit">

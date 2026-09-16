@@ -1,5 +1,21 @@
 # Dashboard
 
+## Page Crumbs
+
+Dashboard pages are named by a crumb trail, not a heading. `components/dashboard/PageCrumbs.tsx` renders it and `DashboardShell` takes a required `crumbs` prop:
+
+| | trail |
+| --- | --- |
+| `/dashboard` | `Chalkie Chalkie / Dashboard` |
+| `/dashboard/connections` | `Chalkie Chalkie / Dashboard / Students` (or `Tutors`, or `Connections` for admins) |
+
+- **The shell prepends `ROOT_CRUMB`; pages pass only their own crumbs.** The brand root is exported from `PageCrumbs.tsx` and added in the shell, so it cannot drift between the two pages or be forgotten on a third. It links to `/`, which the sidebar identity block does not — the sidebar's own route home is the separate Return Home row at its foot.
+- **The shell owns it, so no page draws its own title.** The crumbs sit above `{children}` inside the shell, which stays mounted across the skeleton-to-loaded swap — the trail never flickers or shifts, and both skeletons dropped the duplicate header they used to carry. `ConnectionsSkeleton` lost its `heading` prop with it. Do not reintroduce a per-page title: four copies of one header (two pages, two skeletons) is what this replaced.
+- **Small on purpose.** `text-caption`, ancestors in `text-foreground-third`, last crumb bold in `text-foreground-second` with `aria-current="page"`. The `Sidebar` bolds and inverts the active nav item and the `TabBar` bolds the active label, so the trail is a locator against all that, not the page's headline.
+- **It sits above the takeover scrim.** `GettingStartedTakeover` is `absolute inset-0 z-30 bg-background/80` across the whole content column, so without a stacking context of its own the trail is dimmed to illegible exactly when a page is empty — and connections resolves to `page` whenever `linkCount` is 0, which is most of a new tutor's first session. `relative z-40` on the shell's call keeps it crisp and clickable, matching the `Sidebar` and `TabBar`, which sit outside the column and were never dimmed.
+- The `-mb-3 md:-mb-[1.25dvw]` sits on the shell's call too, not in the component: it halves the shell's own `gap-6` / `md:gap-[2.5dvw]` so an 11px line doesn't float a full gap above the first card. Outside the shell (the style guide specimen) the component carries no spacing of its own.
+- The trail scrolls away with the `Next` card; only the table's toolbar and header pin. See the Data Table section.
+
 ## Dashboard Actions
 
 The dashboard offers **at most one action per page**, derived from route × role in `lib/dashboardActions.ts` and rendered by the `Sidebar`'s Actions section at `md+` and the `TabBar`'s floating button below it.
@@ -105,6 +121,6 @@ Both `md+` tables — the dashboard's and `/dashboard/connections`' — and both
 - **The header and the rows are two separate `<table>`s.** An element with `overflow-x: auto` also computes `overflow-y: auto` and so becomes a scrollport, and `position: sticky` resolves against the nearest scrollport — a `<thead>` inside the horizontally-scrolling wrapper could therefore only ever stick to that wrapper, which has no vertical scroll, and would ride off the top of the page. They stay aligned because both are `table-fixed` with the same derived `<colgroup>` and the same `min-width`; `sync()` mirrors the body's `scrollLeft` onto the header on every scroll. Do not merge them back.
 - **Widths are minimums, not percentages.** `<col>` widths are percentages of each column's `minWidth` (or `grow`), and the table carries `min-width: Σ minWidth`. Above that total the columns share the surplus in proportion; below it each sits at its minimum and the body wrapper scrolls. `table-fixed` is what keeps `truncate` working in either regime.
 - **`pin` freezes a column to an edge** — `left` for the workspace title and the connection's person, `right` for the row menu, so a row stays identifiable and its actions stay reachable at any scroll position. Pinned cells carry an opaque background and an edge shadow gated on `data-scroll-start` / `data-scroll-end`, which `sync()` writes straight to the DOM rather than through state so a long table doesn't re-render per scroll frame.
-- **The sticky block holds the toolbar too.** `WorkspaceControls` is passed in as `toolbar` and pins with the header as one unit; only the page title and the `Next` card scroll away. Its `-mt-[2.5dvw] pt-[2.5dvw]` pair is an opaque band, not spacing — it stops rows appearing above the pinned header at the shell's own top inset while adding no height in normal flow. `sticky={false}` exists only for the style guide, outside the shell whose inset the band assumes.
+- **The sticky block holds the toolbar too.** `WorkspaceControls` is passed in as `toolbar` and pins with the header as one unit; only the crumb trail and the `Next` card scroll away. Its `-mt-[2.5dvw] pt-[2.5dvw]` pair is an opaque band, not spacing — it stops rows appearing above the pinned header at the shell's own top inset while adding no height in normal flow. `sticky={false}` exists only for the style guide, outside the shell whose inset the band assumes.
 - **Row height is the density context** (`components/dashboard/tableDensity.ts`), vertical padding only: horizontal padding would move the scroll threshold per mode. The cookie pair mirrors the sidebar's exactly and is read server-side by both route pages, so the first paint is already right. The `DensityMenu` trigger only exists on `/dashboard` because connections has no toolbar, but the value applies to both tables — it belongs in Settings once that exists.
 - Overlays are safe inside the scroll wrapper: `DropdownMenuContent` and `TooltipContent` both portal.

@@ -26,6 +26,10 @@ components/
          │                  takes an `overlay` slot rendered inside that column
            ├─ Sidebar.tsx      ← identity, Menu, then a one-button Actions section (see Dashboard
            │                     Actions below); mounts whichever modal that action needs
+           ├─ PageCrumbs.tsx   ← the small crumb trail naming the page, from the shell's
+           │                     required `crumbs` prop; also exports ROOT_CRUMB, the
+           │                     brand root the shell prepends. No page draws its own
+           │                     heading (see Page Crumbs in Dashboard)
            ├─ cardSurface.ts   ← PANEL_SURFACE / ACTIVE_SURFACE, the two dashboard card
            │                     fills. Lives apart from both callers because
            │                     GettingStarted already imports from Next

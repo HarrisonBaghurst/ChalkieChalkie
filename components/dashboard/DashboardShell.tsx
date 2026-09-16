@@ -10,10 +10,12 @@ import {
 } from "@/lib/tableDensityCookie";
 import { byCollapseState, SidebarCollapseContext } from "./sidebarCollapse";
 import { TableDensityContext } from "./tableDensity";
+import PageCrumbs, { Crumb, ROOT_CRUMB } from "./PageCrumbs";
 
 type DashboardShellProps = {
     sidebar: React.ReactNode;
     bottomBar: React.ReactNode;
+    crumbs: Crumb[];
     initialCollapsed?: CollapseState;
     initialDensity?: TableDensity;
     overlay?: React.ReactNode;
@@ -25,6 +27,7 @@ type DashboardShellProps = {
 const DashboardShell = ({
     sidebar,
     bottomBar,
+    crumbs,
     initialCollapsed = null,
     initialDensity = "default",
     overlay,
@@ -72,6 +75,10 @@ const DashboardShell = ({
                                 "relative overflow-hidden max-h-dvh md:max-h-[calc(100dvh-1rem)]",
                         )}
                     >
+                        <PageCrumbs
+                            crumbs={[ROOT_CRUMB, ...crumbs]}
+                            className="relative z-40 -mb-3 md:-mb-[1.25dvw]"
+                        />
                         {children}
                         {overlay}
                     </div>

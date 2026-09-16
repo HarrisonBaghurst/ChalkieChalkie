@@ -62,6 +62,14 @@
                 {
                     "tag": "Removed",
                     "text": "The warm glow behind the picture on the home page has gone. It was the largest thing the page loaded and it arrived before anything else, so the home page now opens noticeably faster on a slow connection."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The large heading at the top of the dashboard and of your students or tutors page has been replaced by a small trail reading Chalkie Chalkie / Dashboard, or Chalkie Chalkie / Dashboard / Students. It says where you are without taking the top of the page to do it, and every step before the one you are on can be clicked to go back."
+                },
+                {
+                    "tag": "Removed",
+                    "text": "The line of description that sat under each of those headings has gone with them. The sidebar and the tabs along the bottom of a phone already mark which page you are on, so the page no longer repeats it back to you in the largest text on screen."
                 }
             ]
         },

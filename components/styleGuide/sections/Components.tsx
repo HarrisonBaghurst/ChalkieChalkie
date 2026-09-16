@@ -64,6 +64,7 @@ import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
 import TapTooltip from "@/components/TapTooltip";
 import InviteCountdown from "@/components/dashboard/connections/InviteCountdown";
 import DataTable, { DataTableRow } from "@/components/dashboard/DataTable";
+import PageCrumbs, { ROOT_CRUMB } from "@/components/dashboard/PageCrumbs";
 import {
     DENSITY_LABEL,
     TABLE_DENSITIES,
@@ -605,6 +606,28 @@ const Components = () => {
                                 ).toISOString()}
                             />
                         </div>
+                    </Item>
+                </div>
+            </Block>
+
+            <Block
+                title="Page crumbs"
+                description="Every dashboard page is named by a crumb trail rather than a heading (components/dashboard/PageCrumbs). DashboardShell renders it above the content column and prepends ROOT_CRUMB itself, so pages pass only their own crumbs and the brand root can't drift between them. It survives the skeleton-to-loaded swap, so no page draws its own title. Ancestors are links in foreground-third; the last crumb is bold, unlinked and carries aria-current. The sidebar and TabBar already bold the active route, so this is a locator, not navigation — keep it at text-caption and never promote it to a heading."
+            >
+                <div className="flex flex-col gap-8">
+                    <Item label="root + page">
+                        <PageCrumbs
+                            crumbs={[ROOT_CRUMB, { label: "Dashboard" }]}
+                        />
+                    </Item>
+                    <Item label="nested">
+                        <PageCrumbs
+                            crumbs={[
+                                ROOT_CRUMB,
+                                { label: "Dashboard", href: "/dashboard" },
+                                { label: "Students" },
+                            ]}
+                        />
                     </Item>
                 </div>
             </Block>

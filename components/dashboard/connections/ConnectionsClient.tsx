@@ -179,9 +179,9 @@ const ConnectionsClient = ({
 
     const heading =
         role === "tutor"
-            ? "Your Students"
+            ? "Students"
             : role === "student"
-              ? "Your Tutors"
+              ? "Tutors"
               : "Connections";
 
     // The API 403s admins from every /api/links route, so show a panel rather
@@ -202,6 +202,10 @@ const ConnectionsClient = ({
 
     return (
         <DashboardShell
+            crumbs={[
+                { label: "Dashboard", href: "/dashboard" },
+                { label: heading },
+            ]}
             initialCollapsed={sidebarCollapsed}
             initialDensity={tableDensity}
             sidebar={
@@ -219,27 +223,15 @@ const ConnectionsClient = ({
             }
         >
             {!ready ? (
-                <ConnectionsSkeleton heading={heading} />
+                <ConnectionsSkeleton />
             ) : isUnsupportedRole ? (
-                <div className="flex flex-col gap-1">
-                    <p className="text-heading font-inter-bold">Connections</p>
-                    <p className="text-foreground-second">
+                <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
+                    <p className="text-small text-foreground-second">
                         Connections are for tutors and students.
                     </p>
                 </div>
             ) : (
                 <>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-heading font-inter-bold">
-                            {heading}
-                        </p>
-                        <p className="text-foreground-second">
-                            {role === "tutor"
-                                ? "The students you're linked to."
-                                : "The tutors you're linked to."}
-                        </p>
-                    </div>
-
                     {presentation === "card" && (
                         <GettingStarted
                             role={linkRole}
