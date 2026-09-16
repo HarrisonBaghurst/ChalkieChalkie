@@ -15,10 +15,16 @@ export const USER_COLOUR_PALETTE = [
     "#f8b1d1",
 ];
 
-export function getUserColour(id: string): string {
+export type ColourIdentity = {
+    id: string;
+    email?: string | null;
+};
+
+export function getUserColour(person: ColourIdentity): string {
+    const key = (person.email ?? "").trim().toLowerCase() || person.id;
     let hash = 0;
-    for (let i = 0; i < id.length; i++) {
-        hash = (hash * 1471 + id.charCodeAt(i)) | 0;
+    for (let i = 0; i < key.length; i++) {
+        hash = (hash * 1471 + key.charCodeAt(i)) | 0;
     }
     const index = Math.abs(hash) % USER_COLOUR_PALETTE.length;
     return USER_COLOUR_PALETTE[index];

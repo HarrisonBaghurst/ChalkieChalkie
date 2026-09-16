@@ -6,6 +6,7 @@ export type AvatarPerson = {
     id: string;
     firstName?: string | null;
     lastName?: string | null;
+    email?: string | null;
 };
 
 interface UserAvatarProps {
@@ -37,7 +38,7 @@ const UserAvatar = ({
                     "font-inter-bold text-brand-foreground",
                     shape === "tag" && "radius-tag",
                 )}
-                style={{ backgroundColor: getUserColour(user.id) }}
+                style={{ backgroundColor: getUserColour(user) }}
             >
                 {getUserInitials(user.firstName, user.lastName)}
             </AvatarFallback>

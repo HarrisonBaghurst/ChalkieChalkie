@@ -137,7 +137,7 @@ const ParticipantRoster = () => {
                                     className="ml-auto w-2.5 h-2.5 radius-tag shrink-0"
                                     style={{
                                         backgroundColor: online
-                                            ? getUserColour(m.id)
+                                            ? getUserColour(m)
                                             : "var(--foreground-third)",
                                     }}
                                 />

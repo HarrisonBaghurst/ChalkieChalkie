@@ -16,6 +16,7 @@ type HostInfo = {
     id: string;
     firstName: string | null;
     lastName: string | null;
+    email: string | null;
 };
 
 const MAX_TITLE_LENGTH = 100;

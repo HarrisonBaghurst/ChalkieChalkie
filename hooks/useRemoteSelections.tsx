@@ -15,7 +15,7 @@ export const useRemoteSelections = (
         const lockedStrokeIds = new Set<string>();
         const lockedImageIds = new Set<string>();
 
-        for (const { connectionId, id, presence } of others) {
+        for (const { connectionId, id, presence, info } of others) {
             const selection = presence?.selection;
             if (!selection) continue;
 
@@ -26,7 +26,7 @@ export const useRemoteSelections = (
 
             selections.push({
                 connectionId,
-                colour: getUserColour(id),
+                colour: getUserColour({ id, email: info?.email }),
                 bounds: selection.bounds,
             });
         }

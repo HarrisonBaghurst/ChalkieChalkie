@@ -223,7 +223,7 @@ const Colour = () => (
 
         <Block
             title="Per-user identity colours"
-            description="USER_COLOUR_PALETTE in lib/userColour.ts — 12 colours, one per hue at an even 30° rotation in OKLCH, each at 85% of its in-gamut chroma and gamut-fitted to sRGB. Lightness varies per hue rather than sitting flat, which is what keeps neighbouring hues apart: the closest pair is ΔE 0.135, against 0.050 for the flat 48-colour set this replaced. A Clerk userId is hashed to a fixed index, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
+            description="USER_COLOUR_PALETTE in lib/userColour.ts — 12 colours, one per hue at an even 30° rotation in OKLCH, each at 85% of its in-gamut chroma and gamut-fitted to sRGB. Lightness varies per hue rather than sitting flat, which is what keeps neighbouring hues apart: the closest pair is ΔE 0.135, against 0.050 for the flat 48-colour set this replaced. The person's lower-cased email is hashed to a fixed index, falling back to the Clerk userId when no email is available, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
         >
             <div className="flex flex-col gap-3">
                 <Grid cols={6}>

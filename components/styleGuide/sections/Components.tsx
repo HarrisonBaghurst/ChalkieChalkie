@@ -74,11 +74,30 @@ import { TableColumn } from "@/lib/tableColumns";
 import { Block, Caption, Code, Note, Section } from "../primitives";
 
 const SPECIMEN_PEOPLE = [
-    { id: "user_2aHb91Qk", firstName: "Harrison", lastName: "Baghurst" },
-    { id: "user_5Kd02Wzt", firstName: "Amara", lastName: "Sowande" },
-    { id: "user_9Pm74Lyx", firstName: "Jonah", lastName: "Tregarth" },
-    { id: "user_3Rc68Vbn", firstName: "Mira", lastName: "Rasmussen" },
-    { id: "user_7Yt15Xqd", firstName: "Elif", lastName: "Karadag" },
+    {
+        id: "user_5Kd02Wzt",
+        firstName: "Amara",
+        lastName: "Sowande",
+        email: "amara.sowande@example.com",
+    },
+    {
+        id: "user_9Pm74Lyx",
+        firstName: "Jonah",
+        lastName: "Tregarth",
+        email: "jonah.tregarth@example.com",
+    },
+    {
+        id: "user_3Rc68Vbn",
+        firstName: "Mira",
+        lastName: "Rasmussen",
+        email: "mira.rasmussen@example.com",
+    },
+    {
+        id: "user_7Yt15Xqd",
+        firstName: "Elif",
+        lastName: "Karadag",
+        email: "elif.karadag@example.com",
+    },
 ];
 
 type SpecimenColumnKey =
@@ -366,8 +385,8 @@ const Components = () => {
                             <DialogHeader>
                                 <DialogTitle>Delete workspace</DialogTitle>
                                 <DialogDescription>
-                                    This removes the board, its strokes and every
-                                    pasted image. It cannot be undone.
+                                    This removes the board, its strokes and
+                                    every pasted image. It cannot be undone.
                                 </DialogDescription>
                             </DialogHeader>
                             <DialogFooter showCloseButton>
@@ -411,7 +430,9 @@ const Components = () => {
 
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="secondary">Hover for tooltip</Button>
+                            <Button variant="secondary">
+                                Hover for tooltip
+                            </Button>
                         </TooltipTrigger>
                         <TooltipContent>Inverted, caption-sized</TooltipContent>
                     </Tooltip>
@@ -447,7 +468,8 @@ const Components = () => {
                         variant="outline"
                         onClick={() =>
                             toast.success("Workspace saved", {
-                                description: "Everyone in the room was updated.",
+                                description:
+                                    "Everyone in the room was updated.",
                             })
                         }
                     >
@@ -457,12 +479,11 @@ const Components = () => {
                 <Note tone="rule">
                     <Code>Tooltip</Code> opens on hover and focus only, so its
                     content is unreachable on a touch screen. When the tooltip
-                    is the only way to read something —{" "}
-                    <Code>PeopleStack</Code>, a truncated table cell — use{" "}
-                    <Code>TapTooltip</Code> instead: same look, but a tap opens
-                    it and a tap away closes it. Decorative labels naming an
-                    action the trigger already performs can stay on{" "}
-                    <Code>Tooltip</Code>.
+                    is the only way to read something — <Code>PeopleStack</Code>
+                    , a truncated table cell — use <Code>TapTooltip</Code>{" "}
+                    instead: same look, but a tap opens it and a tap away closes
+                    it. Decorative labels naming an action the trigger already
+                    performs can stay on <Code>Tooltip</Code>.
                 </Note>
                 <Note tone="rule">
                     <Code>Sheet</Code> is Dialog anchored to an edge —{" "}
@@ -509,7 +530,7 @@ const Components = () => {
 
             <Block
                 title="Identity"
-                description="UserAvatar is the only way to draw a person. It takes { id, firstName, lastName } and fills itself from USER_COLOUR_PALETTE, hashed on the Clerk userId — the same colour the person's cursor, name pill and selection outline use on the board. There is no image variant: initials on the hashed colour is the avatar. Tag-shaped by default; pass shape=&quot;circle&quot; for the round form."
+                description='UserAvatar is the only way to draw a person. It takes { id, firstName, lastName, email } and fills itself from USER_COLOUR_PALETTE, hashed on the lower-cased email and falling back to the Clerk userId when there is none — the same colour the person&apos;s cursor, name pill and selection outline use on the board. Always pass the email: it is optional on the type so a caller that omits it still compiles, but that person then hashes by id and gets a different colour here than on the board. There is no image variant: initials on the hashed colour is the avatar. Tag-shaped by default; pass shape="circle" for the round form.'
             >
                 <div className="flex flex-wrap items-center gap-8">
                     <Item label="sm / default / lg">
@@ -518,14 +539,12 @@ const Components = () => {
                                 <UserAvatar
                                     key={person.id}
                                     user={person}
-                                    size={
-                                        (["sm", "default", "lg"] as const)[i]
-                                    }
+                                    size={(["sm", "default", "lg"] as const)[i]}
                                 />
                             ))}
                         </div>
                     </Item>
-                    <Item label="shape=&quot;circle&quot;">
+                    <Item label='shape="circle"'>
                         <div className="flex items-center gap-3">
                             {SPECIMEN_PEOPLE.slice(0, 3).map((person) => (
                                 <UserAvatar
@@ -539,10 +558,7 @@ const Components = () => {
                     <Item label="distinct by colour">
                         <div className="flex items-center gap-2">
                             {SPECIMEN_PEOPLE.map((person) => (
-                                <UserAvatar
-                                    key={person.id}
-                                    user={person}
-                                />
+                                <UserAvatar key={person.id} user={person} />
                             ))}
                         </div>
                     </Item>
@@ -637,6 +653,7 @@ const Components = () => {
                                                     user={{
                                                         id: row.header,
                                                         firstName: row.header,
+                                                        email: `${row.header.toLowerCase()}@example.com`,
                                                     }}
                                                 />
                                             ),

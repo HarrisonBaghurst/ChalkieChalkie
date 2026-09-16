@@ -77,7 +77,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
     return (
         <>
             {others.map(({ connectionId, id, presence, info }) => {
-                const colour = getUserColour(id);
+                const colour = getUserColour({ id, email: info?.email });
                 const name = getFullName(info ?? {});
 
                 if (presence?.selection) {

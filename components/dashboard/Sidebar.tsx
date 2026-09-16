@@ -298,7 +298,14 @@ const Sidebar = ({
                     {isLoaded && user ? (
                         <div className="relative size-10 shrink-0">
                             <UserAvatar
-                                user={user}
+                                user={{
+                                    id: user.id,
+                                    firstName: user.firstName,
+                                    lastName: user.lastName,
+                                    email:
+                                        user.primaryEmailAddress
+                                            ?.emailAddress ?? null,
+                                }}
                                 size="lg"
                                 className="absolute inset-0 size-10"
                             />
