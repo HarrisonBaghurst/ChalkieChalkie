@@ -43,7 +43,7 @@ PlanEntitlements = {
 | `maxLinkedStudents` | `app/api/links/redeem/route.ts`, `links/[linkId]` PATCH | 403 `{ reason: "linked-students" }` |
 | `retentionMs` / `leadMs` | `scheduleWindow`, at create and PATCH, and `reconcilePlanChange` | — |
 | any granting plan | `app/api/realtime-auth/route.ts` | 403 `{ reason: "host-no-plan" }` |
-| `MAX_SCHEDULE_AHEAD_MS` | `validateWorkspaceBody` | 400 `{ reason: "horizon" }` |
+| `MAX_SCHEDULE_AHEAD_MS` | `validateWorkspaceBody`, and the `ScheduleStep` picker cap | 400 `{ reason: "horizon" }` |
 | live member count | `realtime/src/BoardRoom.ts` | close code 4004 |
 
 - **`leadMs` sets how early a host *may* open a workspace, and nothing else.** It used to drive the start-time lock as well, which made a longer lead read as a downgrade — three days of frozen start time on Professional against one hour on Basic. The lock now hangs off `opened_at`; see [docs/access-control.md](access-control.md). Keep any future window variable on the access side of that line.

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import DateTimePicker from "@/components/DateTimePicker";
 import { formatDate } from "@/lib/textUtils";
 import {
     opensImmediately,
+    scheduleHorizon,
     type StartTimeLockReason,
 } from "@/lib/workspaceLifecycle";
 import { WorkspaceLimits } from "@/types/planTypes";
@@ -26,6 +27,8 @@ const ScheduleStep = ({
     limits,
     lockReason = null,
 }: ScheduleStepProps) => {
+    const horizon = useMemo(() => scheduleHorizon(), []);
+
     if (lockReason) {
         return (
             <div className="flex flex-col gap-6">
@@ -47,7 +50,11 @@ const ScheduleStep = ({
     return (
         <div className="flex flex-col gap-6">
             <div className="text-caption text-foreground-third">Start time</div>
-            <DateTimePicker value={value} onChange={onChange} />
+            <DateTimePicker
+                value={value}
+                onChange={onChange}
+                maxDate={horizon}
+            />
             {!value && (
                 <ScheduleNotice>
                     A workspace with no start time cannot be opened, and will be

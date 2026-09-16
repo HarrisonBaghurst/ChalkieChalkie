@@ -13,7 +13,13 @@ export const sameInstant = (
     b: string | null | undefined,
 ): boolean => parseInstant(a) === parseInstant(b);
 
-export const MAX_SCHEDULE_AHEAD_MS = 90 * 24 * 60 * 60 * 1000;
+export const MAX_SCHEDULE_AHEAD_DAYS = 90;
+
+export const MAX_SCHEDULE_AHEAD_MS =
+    MAX_SCHEDULE_AHEAD_DAYS * 24 * 60 * 60 * 1000;
+
+export const scheduleHorizon = (now: number = Date.now()): Date =>
+    new Date(now + MAX_SCHEDULE_AHEAD_MS);
 
 export const beyondScheduleHorizon = (
     startTime: string | null,

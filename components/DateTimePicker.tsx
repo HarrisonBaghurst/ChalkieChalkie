@@ -16,9 +16,14 @@ const QUARTER_HOURS = ["00", "15", "30", "45"];
 type DateTimePickerProps = {
     value: Date | null;
     onChange: (value: Date | null) => void;
+    maxDate?: Date | null;
 };
 
-const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
+const DateTimePicker = ({
+    value,
+    onChange,
+    maxDate = null,
+}: DateTimePickerProps) => {
     const [day, setDay] = useState<Date | undefined>(value ?? undefined);
     const [hour, setHour] = useState<string | null>(
         value ? pad(value.getHours()) : null,
@@ -80,6 +85,8 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                 selected={day}
                 onSelect={handleDaySelect}
                 defaultMonth={day ?? new Date()}
+                disabled={maxDate ? { after: maxDate } : undefined}
+                endMonth={maxDate ?? undefined}
             />
             <div className="flex flex-col gap-2">
                 <div className="text-caption text-foreground-third">Time</div>

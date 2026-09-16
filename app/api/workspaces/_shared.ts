@@ -1,9 +1,7 @@
 import {
-    MAX_SCHEDULE_AHEAD_MS,
+    MAX_SCHEDULE_AHEAD_DAYS,
     beyondScheduleHorizon,
 } from "@/lib/workspaceLifecycle";
-
-const SCHEDULE_HORIZON_DAYS = MAX_SCHEDULE_AHEAD_MS / (24 * 60 * 60 * 1000);
 
 const MAX_TITLE_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -68,9 +66,9 @@ export function validateWorkspaceBody(
         if (beyondScheduleHorizon(startTime)) {
             return Response.json(
                 {
-                    error: `Workspaces can be scheduled up to ${SCHEDULE_HORIZON_DAYS} days ahead`,
+                    error: `Workspaces can be scheduled up to ${MAX_SCHEDULE_AHEAD_DAYS} days ahead`,
                     reason: "horizon",
-                    limitDays: SCHEDULE_HORIZON_DAYS,
+                    limitDays: MAX_SCHEDULE_AHEAD_DAYS,
                 },
                 { status: 400 },
             );

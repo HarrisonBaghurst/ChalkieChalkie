@@ -56,6 +56,10 @@
                     "text": "The collaborators heading in that window now reads Collaborators · 2/5, with the count set off by a dot and dimmed behind the word, in the same shape as the participants list inside a lesson, rather than the number being run on to the end of the heading."
                 },
                 {
+                    "tag": "Fixed",
+                    "text": "The calendar in that window now stops at ninety days ahead. The months past it can no longer be paged to and the days in them can no longer be picked, so a lesson can no longer be dated that far out and then turned down with an unhelpful please try again once you save it."
+                },
+                {
                     "tag": "Removed",
                     "text": "The warm glow behind the picture on the home page has gone. It was the largest thing the page loaded and it arrived before anything else, so the home page now opens noticeably faster on a slow connection."
                 }
