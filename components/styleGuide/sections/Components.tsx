@@ -237,7 +237,7 @@ const Components = () => {
 
             <Block
                 title="Badge"
-                description="Small non-interactive labels. default is the filled info tag; status is the bare variant that supplies its own coloured dot as a child; highlight is the pill, the only variant that rounds full."
+                description="Small non-interactive labels. default is the filled info tag; status is the bare variant that supplies its own coloured dot as a child; highlight is the solid brand fill, the only variant that fills with a chromatic colour rather than tinting one."
             >
                 <div className="flex flex-wrap items-center gap-4">
                     <Item label="default">
