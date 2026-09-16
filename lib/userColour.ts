@@ -18,7 +18,7 @@ export const USER_COLOUR_PALETTE = [
 export function getUserColour(id: string): string {
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
-        hash = (hash * 31 + id.charCodeAt(i)) | 0;
+        hash = (hash * 1471 + id.charCodeAt(i)) | 0;
     }
     const index = Math.abs(hash) % USER_COLOUR_PALETTE.length;
     return USER_COLOUR_PALETTE[index];
