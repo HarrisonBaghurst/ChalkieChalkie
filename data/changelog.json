@@ -41,6 +41,10 @@
                 },
                 {
                     "tag": "Changed",
+                    "text": "The length and countdown tags at the bottom of the coming up next card now sit in line with the lesson time, title and description above them rather than under the initials, so everything the card tells you reads down a single edge."
+                },
+                {
+                    "tag": "Changed",
                     "text": "Your plan tag now appears on the plan card at the top of the dashboard only, rather than there and beside the Chalkie Chalkie name in the sidebar. The tier is named once, on the card that already reports what it allows."
                 },
                 {

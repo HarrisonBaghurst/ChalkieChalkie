@@ -58,52 +58,44 @@ const NextContent = ({
     counterparty: userInfo | null;
     days: number;
 }) => (
-    <div className="flex flex-1 flex-col justify-between gap-6 md:pr-8">
-        <div className="flex flex-col gap-6">
-            <p className="text-caption font-inter-regular">
-                Coming up next
-            </p>
-            <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
-                {counterparty ? (
-                    <UserAvatar
-                        user={counterparty}
-                        size="lg"
-                        className="size-12"
-                    />
-                ) : (
-                    <div className="size-12 radius-tag bg-foreground-third/40" />
-                )}
-                <div className="flex flex-col gap-2">
-                    <p className="text-heading font-inter-bold">
-                        {formatSessionTime(workspace.startTime)}
+    <div className="flex flex-1 flex-col gap-6 md:pr-8">
+        <p className="text-caption font-inter-regular">Coming up next</p>
+        <div className="grid flex-1 grid-cols-[auto_1fr] grid-rows-[auto_1fr_auto] items-start gap-x-5 gap-y-6">
+            {counterparty ? (
+                <UserAvatar user={counterparty} size="lg" className="size-12" />
+            ) : (
+                <div className="size-12 radius-tag bg-foreground-third/40" />
+            )}
+            <div className="flex flex-col gap-2">
+                <p className="text-heading font-inter-bold">
+                    {formatSessionTime(workspace.startTime)}
+                </p>
+                <p className="text-body font-inter-bold text-foreground-second leading-5.5">
+                    {workspace.title}
+                </p>
+            </div>
+            {workspace.description && (
+                <div className="col-span-2 row-start-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
+                    <p className="text-caption text-foreground-third">
+                        Description
                     </p>
-                    <p className="text-body font-inter-bold text-foreground-second leading-5.5">
-                        {workspace.title}
+                    <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2 text-justify">
+                        {workspace.description}
                     </p>
                 </div>
-                {workspace.description && (
-                    <div className="col-span-2 flex flex-col gap-1 md:col-span-1 md:col-start-2">
-                        <p className="text-caption text-foreground-third">
-                            Description
-                        </p>
-                        <p className="text-small text-foreground-second leading-5 max-h-15 overflow-y-auto pr-2 text-justify">
-                            {workspace.description}
-                        </p>
-                    </div>
+            )}
+            <div className="col-span-2 row-start-3 flex flex-wrap gap-2 md:col-span-1 md:col-start-2">
+                <Badge>
+                    <TagIcon src="/icons/clock.svg" />
+                    60 mins
+                </Badge>
+                {days > 0 && (
+                    <Badge>
+                        <TagIcon src="/icons/calendar.svg" />
+                        {`${days} day${days !== 1 ? "s" : ""} away`}
+                    </Badge>
                 )}
             </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-            <Badge>
-                <TagIcon src="/icons/clock.svg" />
-                60 mins
-            </Badge>
-            {days > 0 && (
-                <Badge>
-                    <TagIcon src="/icons/calendar.svg" />
-                    {`${days} day${days !== 1 ? "s" : ""} away`}
-                </Badge>
-            )}
         </div>
     </div>
 );
