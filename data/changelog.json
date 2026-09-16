@@ -48,6 +48,14 @@
                     "text": "Your plan tag now appears on the plan card at the top of the dashboard only, rather than there and beside the Chalkie Chalkie name in the sidebar. The tier is named once, on the card that already reports what it allows."
                 },
                 {
+                    "tag": "Changed",
+                    "text": "The headings inside the create and edit workspace window - title, description, start time, collaborators, friends and feedback, along with the time label on the date picker - are now written as ordinary words rather than in full capitals, so they read as quiet labels for what sits beneath them."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The collaborators heading in that window now reads Collaborators · 2/5, with the count set off by a dot and dimmed behind the word, in the same shape as the participants list inside a lesson, rather than the number being run on to the end of the heading."
+                },
+                {
                     "tag": "Removed",
                     "text": "The warm glow behind the picture on the home page has gone. It was the largest thing the page loaded and it arrived before anything else, so the home page now opens noticeably faster on a slow connection."
                 }

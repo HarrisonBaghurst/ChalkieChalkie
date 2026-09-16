@@ -48,11 +48,14 @@ const CollaboratorsPicker = ({
             <div className="flex flex-col gap-2">
                 <div
                     id="collaborators-label"
-                    className="text-caption text-foreground-third"
+                    className="text-caption text-foreground"
                 >
                     Collaborators
-                    {maxMembers !== null &&
-                        ` ${collaborators.length} / ${maxMembers}`}
+                    <span className="text-foreground-third">
+                        {" · "}
+                        {collaborators.length}
+                        {maxMembers !== null && `/${maxMembers}`}
+                    </span>
                 </div>
                 <div
                     role="group"
@@ -61,9 +64,7 @@ const CollaboratorsPicker = ({
                 >
                     {collaborators.map((collaborator, i) => {
                         const name = `${collaborator.firstName} ${collaborator.lastName}`;
-                        const card = (
-                            <CollaboratorCard user={collaborator} />
-                        );
+                        const card = <CollaboratorCard user={collaborator} />;
 
                         const isOwner = i === 0;
                         if (isOwner) {
