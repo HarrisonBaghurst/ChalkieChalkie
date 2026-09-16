@@ -82,7 +82,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
                 defaultMonth={day ?? new Date()}
             />
             <div className="flex flex-col gap-2">
-                <div className="text-caption text-foreground-third">TIME</div>
+                <div className="text-caption text-foreground-third">Time</div>
                 <div className="flex items-center gap-2">
                     <Select value={hour ?? ""} onValueChange={handleHourChange}>
                         <SelectTrigger className="w-full" aria-label="Hour">

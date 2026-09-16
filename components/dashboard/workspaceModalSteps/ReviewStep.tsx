@@ -37,21 +37,21 @@ const ReviewStep = ({
 }: ReviewStepProps) => {
     return (
         <div className="flex flex-col gap-5">
-            <Row label="TITLE">
+            <Row label="Title">
                 {title.trim() ? (
                     title
                 ) : (
                     <Placeholder text="Untitled workspace" />
                 )}
             </Row>
-            <Row label="DESCRIPTION">
+            <Row label="Description">
                 {description.trim() ? (
                     description
                 ) : (
                     <Placeholder text="No description" />
                 )}
             </Row>
-            <Row label="START TIME">
+            <Row label="Start time">
                 {startTime ? (
                     formatDate(startTime)
                 ) : (
@@ -64,7 +64,7 @@ const ReviewStep = ({
                     deleted tonight.
                 </ScheduleNotice>
             )}
-            <Row label="COLLABORATORS">
+            <Row label="Collaborators">
                 {collaborators.length > 0 ? (
                     <div className="flex flex-col gap-1">
                         {collaborators.map((c, i) => (
@@ -82,7 +82,7 @@ const ReviewStep = ({
                     <Placeholder text="No collaborators added" />
                 )}
             </Row>
-            <Row label="FEEDBACK">
+            <Row label="Feedback">
                 {feedback.trim() ? (
                     <div className="whitespace-pre-wrap">{feedback}</div>
                 ) : (

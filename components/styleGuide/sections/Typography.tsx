@@ -1,6 +1,13 @@
 "use client";
 
-import { Block, Code, Note, Section, TypeSpecimen } from "../primitives";
+import {
+    Block,
+    Caption,
+    Code,
+    Note,
+    Section,
+    TypeSpecimen,
+} from "../primitives";
 
 const Typography = () => (
     <Section
@@ -81,6 +88,41 @@ const Typography = () => (
                         font.
                     </p>
                 </div>
+            </div>
+        </Block>
+
+        <Block
+            title="Casing"
+            description="Every string the user reads is sentence case — first word capitalised, everything after it lower unless it is a proper noun or an acronym. Nothing on the site is fully uppercase."
+        >
+            <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-1">
+                    <Caption>Start time</Caption>
+                    <p className="text-small text-foreground">
+                        Tuesday, 16:30
+                    </p>
+                </div>
+                <Note>
+                    This is a copy rule, not a class rule: write the string in
+                    sentence case rather than reaching for{" "}
+                    <Code>uppercase</Code> or <Code>toUpperCase()</Code>. It
+                    covers page and section headings, modal and card titles,
+                    the <Code>text-caption text-foreground-third</Code>{" "}
+                    micro-labels above fields, buttons, tabs, table headers,
+                    tags, toasts and empty states. Several micro-labels are also
+                    the <Code>aria-labelledby</Code> target for the group they
+                    sit above, so a capped one becomes the accessible name a
+                    screen reader spells out letter by letter.
+                </Note>
+                <Note>
+                    Two exemptions, both functional. The capped disclaimer
+                    clauses in <Code>data/policies/terms-of-service.json</Code>{" "}
+                    stay capped — that is the conventional conspicuousness
+                    signal for a warranty or liability clause. Invite codes are
+                    minted uppercase in <Code>lib/inviteCode.ts</Code>, so the
+                    entry field in <Code>LinkCodeDialog</Code> keeps its{" "}
+                    <Code>uppercase</Code> class as input normalisation.
+                </Note>
             </div>
         </Block>
 

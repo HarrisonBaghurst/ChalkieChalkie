@@ -30,7 +30,7 @@ const ScheduleStep = ({
         return (
             <div className="flex flex-col gap-6">
                 <div className="text-caption text-foreground-third">
-                    START TIME
+                    Start time
                 </div>
                 <p className="text-small">
                     {value ? formatDate(value) : "Not set"}
@@ -46,7 +46,7 @@ const ScheduleStep = ({
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="text-caption text-foreground-third">START TIME</div>
+            <div className="text-caption text-foreground-third">Start time</div>
             <DateTimePicker value={value} onChange={onChange} />
             {!value && (
                 <ScheduleNotice>

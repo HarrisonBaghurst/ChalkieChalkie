@@ -50,7 +50,7 @@ const CollaboratorsPicker = ({
                     id="collaborators-label"
                     className="text-caption text-foreground-third"
                 >
-                    COLLABORATORS
+                    Collaborators
                     {maxMembers !== null &&
                         ` ${collaborators.length} / ${maxMembers}`}
                 </div>
@@ -98,7 +98,7 @@ const CollaboratorsPicker = ({
                     id="friends-label"
                     className="text-caption text-foreground-third"
                 >
-                    FRIENDS
+                    Friends
                 </div>
                 <div
                     role="group"
