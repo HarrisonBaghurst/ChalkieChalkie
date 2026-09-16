@@ -21,7 +21,7 @@ const StyleGuide = () => (
                 <span className="text-caption text-foreground-third">
                     Internal · admin only
                 </span>
-                <h1 className="text-display gradient-text w-fit">
+                <h1 className="text-display text-brand w-fit">
                     Style guide
                 </h1>
                 <p className="text-body text-foreground-second max-w-3xl">

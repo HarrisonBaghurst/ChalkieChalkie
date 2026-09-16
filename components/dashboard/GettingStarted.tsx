@@ -16,6 +16,7 @@ import {
 } from "@/lib/gettingStarted";
 import { LinkRole } from "@/types/linkTypes";
 import { useSidebarCollapse } from "./sidebarCollapse";
+import { PANEL_SURFACE } from "./cardSurface";
 import { nextCardWidth } from "./Next";
 
 type GettingStartedProps = {
@@ -25,8 +26,7 @@ type GettingStartedProps = {
     counts: ChecklistCounts;
 };
 
-export const PANEL_CLASS =
-    "bg-card-background border border-foreground-third/15 p-5 radius-surface flex flex-col gap-6";
+export const PANEL_CLASS = cn(PANEL_SURFACE, "flex flex-col gap-6");
 
 const ChecklistItem = ({
     row,

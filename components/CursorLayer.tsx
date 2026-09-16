@@ -1,8 +1,7 @@
 import { useOthers } from "@/hooks/realtime/hooks";
 import { RefObject, useEffect, useRef } from "react";
-import Image from "next/image";
 import { CanvasState } from "@/types/canvasStateTypes";
-import { getUserColour } from "@/lib/userColour";
+import { getFullName, getUserColour } from "@/lib/userColour";
 import { cn } from "@/lib/utils";
 
 const SELECTION_LABEL_GAP = 6;
@@ -14,27 +13,20 @@ interface CursorLayerProps {
 const UserPill = ({
     colour,
     name,
-    imageUrl,
     className,
 }: {
     colour: string;
     name: string;
-    imageUrl?: string;
     className?: string;
 }) => (
     <div
         className={cn(
-            "flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full whitespace-nowrap",
+            "flex items-center px-2.5 py-1 rounded-full whitespace-nowrap",
             className,
         )}
         style={{ backgroundColor: colour }}
     >
-        {imageUrl ? (
-            <div className="relative w-5 h-5 rounded-full overflow-hidden shrink-0">
-                <Image src={imageUrl} alt={name} fill sizes="20px" />
-            </div>
-        ) : null}
-        <span className="text-caption font-medium text-white">
+        <span className="text-caption font-inter-bold text-brand-foreground">
             {name || "Anonymous"}
         </span>
     </div>
@@ -86,9 +78,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
         <>
             {others.map(({ connectionId, id, presence, info }) => {
                 const colour = getUserColour(id);
-                const name = `${info?.firstName ?? ""} ${
-                    info?.lastName ?? ""
-                }`.trim();
+                const name = getFullName(info ?? {});
 
                 if (presence?.selection) {
                     const { x, y } = presence.selection.bounds;
@@ -113,7 +103,6 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
                             <UserPill
                                 colour={colour}
                                 name={name}
-                                imageUrl={info?.imageUrl}
                             />
                         </div>
                     );
@@ -153,7 +142,6 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
                         <UserPill
                             colour={colour}
                             name={name}
-                            imageUrl={info?.imageUrl}
                             className="absolute left-4 top-4"
                         />
                     </div>

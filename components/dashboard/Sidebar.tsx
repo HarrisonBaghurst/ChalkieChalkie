@@ -19,11 +19,10 @@ import {
 } from "./sidebarCollapse";
 import { userInfo, UserRole, Workspace } from "@/types/userTypes";
 import { LinkSummary } from "@/types/linkTypes";
-import { PlanId } from "@/types/planTypes";
-import { PLAN_LABELS } from "@/lib/plans/labels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/ui/Skeleton";
+import UserAvatar from "@/components/UserAvatar";
 import {
     Tooltip,
     TooltipContent,
@@ -124,7 +123,6 @@ type SidebarProps = {
     onCreated?: (workspace: Workspace, collaborators: userInfo[]) => void;
     onLinked?: (link: LinkSummary) => void;
     role?: UserRole;
-    planId?: PlanId | null;
 };
 
 const Sidebar = ({
@@ -132,7 +130,6 @@ const Sidebar = ({
     onCreated,
     onLinked,
     role: serverRole,
-    planId,
 }: SidebarProps) => {
     const { user, isLoaded } = useUser();
     const pathname = usePathname();
@@ -298,14 +295,23 @@ const Sidebar = ({
                         railIdentityClass(collapsed),
                     )}
                 >
-                    {isLoaded ? (
-                        <UserButton
-                            appearance={{
-                                elements: {
-                                    avatarBox: "!w-10 !h-10 !rounded-sm",
-                                },
-                            }}
-                        />
+                    {isLoaded && user ? (
+                        <div className="relative size-10 shrink-0">
+                            <UserAvatar
+                                user={user}
+                                size="lg"
+                                className="absolute inset-0 size-10"
+                            />
+                            <UserButton
+                                appearance={{
+                                    elements: {
+                                        rootBox: "absolute inset-0 z-10",
+                                        avatarBox:
+                                            "!w-10 !h-10 !rounded-sm opacity-0",
+                                    },
+                                }}
+                            />
+                        </div>
                     ) : (
                         <Skeleton className="w-10 h-10 rounded-sm" />
                     )}
@@ -325,11 +331,6 @@ const Sidebar = ({
                         </p>
                         <div className="flex gap-2 items-center">
                             <p className="text-nowrap">Chalkie Chalkie</p>
-                            {planId && (
-                                <Badge variant="highlight">
-                                    {PLAN_LABELS[planId]}
-                                </Badge>
-                            )}
                         </div>
                     </div>
                 </div>

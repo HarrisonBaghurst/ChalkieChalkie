@@ -6,14 +6,12 @@
             "id": "example-user-1",
             "firstName": "Eleanor",
             "lastName": "Greene",
-            "imageUrl": "",
             "email": "eleanor.greene@example.com"
         },
         {
             "id": "example-user-2",
             "firstName": "Alex",
             "lastName": "Carter",
-            "imageUrl": "",
             "email": "alex.carter@example.com"
         }
     ],

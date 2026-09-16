@@ -11,7 +11,7 @@ import { pickCounterparty } from "@/lib/dashboardCounterparty";
 import { lifecycleStatus } from "@/lib/workspaceLifecycle";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNow } from "@/hooks/useNow";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 import type { WorkspaceBucket } from "../WorkspaceTableRow";
 import WorkspaceModal, { FEEDBACK_STEP } from "../WorkspaceModal";
 import WorkspaceDetailSheet from "./WorkspaceDetailSheet";
@@ -74,16 +74,11 @@ const WorkspaceRow = ({
                 onClick={() => setDetailOpen(true)}
                 className="flex w-full items-center gap-3 border-b border-foreground-third/10 px-4 py-3 text-left last:border-b-0 active:bg-foreground-third/10"
             >
-                <Avatar className="rounded-md after:rounded-md">
-                    <AvatarImage
-                        src={counterparty?.imageUrl}
-                        alt=""
-                        className="rounded-md"
-                    />
-                    <AvatarFallback className="rounded-md bg-foreground-third">
-                        {counterparty?.firstName.charAt(0) ?? ""}
-                    </AvatarFallback>
-                </Avatar>
+                {counterparty ? (
+                    <UserAvatar user={counterparty} />
+                ) : (
+                    <div className="size-8 shrink-0 radius-tag bg-foreground-third/40" />
+                )}
 
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span

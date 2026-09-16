@@ -13,7 +13,7 @@ const page = () => {
             <SignIn
                 appearance={{
                     elements: {
-                        card: "gradient-border shadow-2xl",
+                        card: "brand-border shadow-2xl",
                         cardBox: "shadow-none",
                         headerTitle: "font-inter-bold",
                     },

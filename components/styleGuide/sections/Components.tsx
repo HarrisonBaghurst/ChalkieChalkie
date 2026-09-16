@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { EllipsisIcon, PencilIcon, TrashIcon, UserIcon } from "lucide-react";
+import { EllipsisIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -56,12 +56,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarGroup,
-    AvatarGroupCount,
-} from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 import Skeleton from "@/components/ui/Skeleton";
 import Spinner from "@/components/ui/Spinner";
 import Stepper from "@/components/ui/Stepper";
@@ -77,6 +72,14 @@ import {
 } from "@/components/dashboard/tableDensity";
 import { TableColumn } from "@/lib/tableColumns";
 import { Block, Caption, Code, Note, Section } from "../primitives";
+
+const SPECIMEN_PEOPLE = [
+    { id: "user_2aHb91Qk", firstName: "Harrison", lastName: "Baghurst" },
+    { id: "user_5Kd02Wzt", firstName: "Amara", lastName: "Sowande" },
+    { id: "user_9Pm74Lyx", firstName: "Jonah", lastName: "Tregarth" },
+    { id: "user_3Rc68Vbn", firstName: "Mira", lastName: "Rasmussen" },
+    { id: "user_7Yt15Xqd", firstName: "Elif", lastName: "Karadag" },
+];
 
 type SpecimenColumnKey =
     | "people"
@@ -506,37 +509,42 @@ const Components = () => {
 
             <Block
                 title="Identity"
-                description="Avatars are always circular and always ringed against the page. AvatarGroup overlaps them with a background-coloured ring; AvatarGroupCount closes an overflowing stack."
+                description="UserAvatar is the only way to draw a person. It takes { id, firstName, lastName } and fills itself from USER_COLOUR_PALETTE, hashed on the Clerk userId — the same colour the person's cursor, name pill and selection outline use on the board. There is no image variant: initials on the hashed colour is the avatar. Tag-shaped by default; pass shape=&quot;circle&quot; for the round form."
             >
                 <div className="flex flex-wrap items-center gap-8">
                     <Item label="sm / default / lg">
                         <div className="flex items-center gap-3">
-                            <Avatar size="sm">
-                                <AvatarFallback>HB</AvatarFallback>
-                            </Avatar>
-                            <Avatar>
-                                <AvatarFallback>HB</AvatarFallback>
-                            </Avatar>
-                            <Avatar size="lg">
-                                <AvatarFallback>
-                                    <UserIcon className="size-4" />
-                                </AvatarFallback>
-                            </Avatar>
+                            {SPECIMEN_PEOPLE.slice(0, 3).map((person, i) => (
+                                <UserAvatar
+                                    key={person.id}
+                                    user={person}
+                                    size={
+                                        (["sm", "default", "lg"] as const)[i]
+                                    }
+                                />
+                            ))}
                         </div>
                     </Item>
-                    <Item label="AvatarGroup + count">
-                        <AvatarGroup>
-                            <Avatar>
-                                <AvatarFallback>AS</AvatarFallback>
-                            </Avatar>
-                            <Avatar>
-                                <AvatarFallback>JT</AvatarFallback>
-                            </Avatar>
-                            <Avatar>
-                                <AvatarFallback>MR</AvatarFallback>
-                            </Avatar>
-                            <AvatarGroupCount>+3</AvatarGroupCount>
-                        </AvatarGroup>
+                    <Item label="shape=&quot;circle&quot;">
+                        <div className="flex items-center gap-3">
+                            {SPECIMEN_PEOPLE.slice(0, 3).map((person) => (
+                                <UserAvatar
+                                    key={person.id}
+                                    user={person}
+                                    shape="circle"
+                                />
+                            ))}
+                        </div>
+                    </Item>
+                    <Item label="distinct by colour">
+                        <div className="flex items-center gap-2">
+                            {SPECIMEN_PEOPLE.map((person) => (
+                                <UserAvatar
+                                    key={person.id}
+                                    user={person}
+                                />
+                            ))}
+                        </div>
                     </Item>
                 </div>
             </Block>
@@ -625,11 +633,12 @@ const Components = () => {
                                         columns={SPECIMEN_COLUMNS}
                                         cells={{
                                             people: (
-                                                <Avatar className="rounded-md after:rounded-md">
-                                                    <AvatarFallback className="rounded-md bg-foreground-third">
-                                                        {row.header.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                <UserAvatar
+                                                    user={{
+                                                        id: row.header,
+                                                        firstName: row.header,
+                                                    }}
+                                                />
                                             ),
                                             header: (
                                                 <span className="block truncate text-foreground-second">

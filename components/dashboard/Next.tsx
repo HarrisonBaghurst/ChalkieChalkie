@@ -16,12 +16,13 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 import {
     byCollapseState,
     CollapseState,
     useSidebarCollapse,
 } from "./sidebarCollapse";
+import { ACTIVE_SURFACE, PANEL_SURFACE } from "./cardSurface";
 
 // Masked rather than tinted, so the icon tracks its tag's text colour.
 const TagIcon = ({ src }: { src: string }) => (
@@ -59,18 +60,19 @@ const NextContent = ({
 }) => (
     <div className="flex flex-1 flex-col justify-between gap-6 md:pr-8">
         <div className="flex flex-col gap-6">
-            <p className="text-caption font-inter-regular gradient-text">
+            <p className="text-caption font-inter-regular">
                 Coming up next
             </p>
             <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">
-                <Avatar className="size-12 rounded-md after:rounded-md">
-                    <AvatarImage
-                        src={counterparty?.imageUrl}
-                        alt={`${counterparty?.firstName ?? ""} ${counterparty?.lastName ?? ""}`}
-                        className="rounded-md"
+                {counterparty ? (
+                    <UserAvatar
+                        user={counterparty}
+                        size="lg"
+                        className="size-12"
                     />
-                    <AvatarFallback className="rounded-md bg-foreground-third" />
-                </Avatar>
+                ) : (
+                    <div className="size-12 radius-tag bg-foreground-third/40" />
+                )}
                 <div className="flex flex-col gap-2">
                     <p className="text-heading font-inter-bold">
                         {formatSessionTime(workspace.startTime)}
@@ -106,8 +108,7 @@ const NextContent = ({
     </div>
 );
 
-const CARD_CLASS =
-    "h-fit min-h-50 bg-card-background border-2 p-5 radius-surface flex-col gap-6 gradient-border";
+const CARD_CLASS = "h-fit min-h-50 flex-col gap-6 transition-colors";
 
 export const nextCardWidth = (collapsed: CollapseState) =>
     byCollapseState(
@@ -141,17 +142,21 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
         ? joinDenialLabel(workspace, viewerIsHost, now)
         : null;
 
+    const openable = !!workspace && !denial;
+    const surface = openable ? ACTIVE_SURFACE : PANEL_SURFACE;
+
     if (!workspace) {
         return (
             <div
                 className={cn(
                     CARD_CLASS,
+                    surface,
                     width,
                     "flex",
                     paired ? "h-auto min-h-50" : "h-50",
                 )}
             >
-                <p className="text-caption font-inter-regular gradient-text">
+                <p className="text-caption font-inter-regular">
                     Coming up next
                 </p>
                 <p className="text-subheading">No upcoming sessions</p>
@@ -161,7 +166,7 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
 
     return (
         <>
-            <div className={cn(CARD_CLASS, width, "flex md:hidden")}>
+            <div className={cn(CARD_CLASS, surface, width, "flex md:hidden")}>
                 <NextContent
                     workspace={workspace}
                     counterparty={counterparty}
@@ -180,9 +185,12 @@ const Next = ({ workspace, usersMap, viewerId, paired }: NextProps) => {
                         onClick={join}
                         className={cn(
                             CARD_CLASS,
+                            surface,
                             width,
                             "group relative hidden text-left md:flex",
-                            denial ? "cursor-default" : "cursor-pointer",
+                            openable
+                                ? "cursor-pointer hover:border-foreground"
+                                : "cursor-default",
                         )}
                     >
                         {!denial && (

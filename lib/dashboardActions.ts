@@ -47,7 +47,7 @@ export const actionHighlightHref = (
     id: DashboardActionId,
 ): string => `${pathname}?${ACTION_HIGHLIGHT_PARAM}=${id}`;
 
-export const ACTION_HIGHLIGHT_CLASS = "animate-pulse gradient-ring";
+export const ACTION_HIGHLIGHT_CLASS = "animate-pulse brand-ring";
 
 export const resolveDashboardAction = (
     pathname: string,

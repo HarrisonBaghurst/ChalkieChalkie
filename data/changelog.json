@@ -1,8 +1,54 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.2.0",
+    "currentVersion": "0.2.1",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.2.1",
+            "date": "17 September 2026",
+            "changes": [
+                {
+                    "tag": "Changed",
+                    "text": "Everybody is now shown as their initials on a colour of their own rather than a profile picture. It is the same colour that already marks that person's cursor and selection on the board, so who you are looking at reads the same on the dashboard, on your tutors or students page and in a lesson."
+                },
+                {
+                    "tag": "Removed",
+                    "text": "Profile pictures are no longer shown anywhere in the app, and are no longer fetched to draw one. Nothing about how you look is sent between the people in a lesson - your initials and your colour are worked out from your account on each screen that needs them."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "There are now forty-eight identity colours rather than ten, so two people in the same lesson are far less likely to be handed the same one. Everyone clears the same legibility floor against the board, and your colour does not change once you have it."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The chalk gradient has been replaced by a single blue accent. It marks the sign-in card, the progress bar as you create a workspace, your plan tag, and the ring around a button you have just been sent to - the places that are the product speaking, rather than anything about a lesson."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The pen now offers eight colours rather than five - chalk, amber, coral, magenta, violet, cyan, green and black. Each is pushed as far as a screen will carry it, so an ink is always brighter than any colour a person can be given and a stroke is never mistaken for somebody's cursor."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Black has been added to the pen. Pasted pages are given a black background, so a black stroke covers what is underneath it rather than drawing on top of it - use it to blank out a worked answer on a past paper before going through it with a student."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The highlighter now offers five colours rather than four - butter, peach, rose, lilac and mint - each lifted to a softer shade so it sits over a stroke without burying it."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "The coming up next card is now raised only while the lesson can actually be opened. A tutor sees it lift as soon as the workspace is ready, a student once their tutor has opened it; the rest of the time it sits flat alongside the cards beside it rather than inviting a click that would be turned down."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Your plan tag now appears on the plan card at the top of the dashboard only, rather than there and beside the Chalkie Chalkie name in the sidebar. The tier is named once, on the card that already reports what it allows."
+                },
+                {
+                    "tag": "Removed",
+                    "text": "The warm glow behind the picture on the home page has gone. It was the largest thing the page loaded and it arrived before anything else, so the home page now opens noticeably faster on a slow connection."
+                }
+            ]
+        },
         {
             "version": "0.2.0",
             "date": "16 September 2026",

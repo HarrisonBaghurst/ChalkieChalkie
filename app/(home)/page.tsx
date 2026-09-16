@@ -32,18 +32,6 @@ const page = () => {
                 <DashboardLinkButton />
             </div>
             <div className="w-full aspect-4/3 relative pointer-events-none">
-                {/* Both fill a 84dvw-wide box that scale-110 widens to ~92dvw,
-                    so `sizes` is the same for each. Both are above the fold:
-                    without `priority` the ellipse renders loading="lazy" and
-                    the backdrop arrives after the mockup it sits behind. */}
-                <Image
-                    src={"/imgs/heroEllipse.webp"}
-                    alt="background ellipse"
-                    fill
-                    sizes="92vw"
-                    className="scale-110 pointer-events-none"
-                    priority
-                />
                 <Image
                     src={"/imgs/dashboardMockup.webp"}
                     alt="dashboard mockup image"

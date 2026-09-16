@@ -48,6 +48,9 @@
 
     --arrow-color: #7f7f7fff;
 
+    --brand: #46a2db;
+    --brand-foreground: var(--background);
+
     --padding: 0.5rem;
 
     --gap: 1rem;
@@ -129,6 +132,9 @@
 
     --color-card-background: var(--card-background);
     --color-card-background-hover: var(--card-background-hover);
+
+    --color-brand: var(--brand);
+    --color-brand-foreground: var(--brand-foreground);
 
     --font-heading: var(--font-sans);
 
@@ -336,85 +342,40 @@
     .scroll-target {
         scroll-margin-top: 8dvw;
     }
-    /* Chalk gradient border. Fill colour and border opacity are driven by
-       `--gb-fill` / `--gb-alpha` so variants (bright, interactive hover) only
-       override those two values instead of duplicating the gradient. */
-    .gradient-border,
-    .gradient-border-bright,
-    .gradient-card {
-        --gb-fill: var(--card-background);
-        --gb-alpha: 0.25;
-        border: 2px solid transparent;
-        background:
-            linear-gradient(var(--gb-fill), var(--gb-fill)) padding-box,
-            linear-gradient(
-                    150deg,
-                    rgba(219, 193, 90, var(--gb-alpha)) 0%,
-                    rgba(245, 139, 47, var(--gb-alpha)) 35%,
-                    rgba(227, 104, 104, var(--gb-alpha)) 62%,
-                    rgba(230, 110, 170, var(--gb-alpha)) 99%
-                )
-                border-box;
+    .brand-border,
+    .brand-border-bright,
+    .brand-card {
+        --bb-fill: var(--card-background);
+        --bb-alpha: 25%;
+        border: 2px solid
+            color-mix(in oklab, var(--brand) var(--bb-alpha), transparent);
+        background: var(--bb-fill);
     }
-    .gradient-border-bright {
-        --gb-alpha: 1;
+    .brand-border-bright {
+        --bb-alpha: 100%;
     }
-    /* Interactive variant of gradient-border: on hover the fill lifts to the
-       brighter card surface and the border reaches full chroma. */
-    .gradient-card {
-        transition: background 200ms ease;
+    .brand-card {
+        transition:
+            background 200ms ease,
+            border-color 200ms ease;
     }
-    .gradient-card:hover {
-        --gb-fill: var(--card-background-hover);
-        --gb-alpha: 1;
+    .brand-card:hover {
+        --bb-fill: var(--card-background-hover);
+        --bb-alpha: 100%;
     }
-    .gradient-background {
-        background: linear-gradient(
-            150deg,
-            rgba(219, 193, 90, 1) 0%,
-            rgba(245, 139, 47, 1) 35%,
-            rgba(227, 104, 104, 1) 62%,
-            rgba(230, 110, 170, 1) 99%
-        );
+    .brand-fill {
+        background: var(--brand);
     }
-    .gradient-ring {
+    .brand-ring {
         position: relative;
     }
-    .gradient-ring::after {
+    .brand-ring::after {
         content: "";
         position: absolute;
         inset: -4px;
         border-radius: inherit;
-        padding: 4px;
+        border: 4px solid var(--brand);
         pointer-events: none;
-        background: linear-gradient(
-            150deg,
-            rgba(219, 193, 90, 1) 0%,
-            rgba(245, 139, 47, 1) 35%,
-            rgba(227, 104, 104, 1) 62%,
-            rgba(230, 110, 170, 1) 99%
-        );
-        -webkit-mask:
-            linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-        mask:
-            linear-gradient(#fff 0 0) content-box,
-            linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
-        mask-composite: exclude;
-    }
-    .gradient-text {
-        background: linear-gradient(
-            150deg,
-            rgba(219, 193, 90, 0.75) 0%,
-            rgba(245, 139, 47, 0.75) 35%,
-            rgba(227, 104, 104, 0.75) 62%,
-            rgba(230, 110, 170, 0.75) 99%
-        );
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        -webkit-text-fill-color: transparent;
     }
 
     /* Neutral shimmer band that sweeps across skeleton placeholders. */
@@ -436,17 +397,6 @@
         );
         animation: skeleton-shimmer 1.6s ease-in-out infinite;
     }
-    .gradient-radial-glow {
-        background: radial-gradient(
-            ellipse 50dvw 40dvw at center,
-            #e0c03d66 0%,
-            #f58b2f4d 30%,
-            #e3686833 55%,
-            #e368681a 75%,
-            transparent
-        );
-    }
-
     /* Slow floating "hover" bob. Translation only: Tailwind v4 compiles
        `scale-110` to the standalone `scale` property, which composes with
        `transform` rather than being overridden by it. Re-stating scale(1.1)

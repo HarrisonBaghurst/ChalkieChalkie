@@ -52,7 +52,7 @@ const Stepper = ({
                     className="h-1 w-full overflow-hidden rounded-full bg-foreground-third/25"
                 >
                     <div
-                        className="h-full gradient-background transition-[width] duration-200"
+                        className="h-full brand-fill transition-[width] duration-200"
                         style={{
                             width: `${(current / steps.length) * 100}%`,
                         }}

@@ -9,7 +9,6 @@ export const ROOM_FULL_CLOSE_CODE = 4004;
 export type UserInfo = {
     firstName: string;
     lastName: string;
-    imageUrl: string;
     email: string;
 };
 

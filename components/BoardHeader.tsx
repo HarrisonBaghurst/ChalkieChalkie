@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import Image from "next/image";
+import UserAvatar from "@/components/UserAvatar";
 import { toast } from "sonner";
 
 // Raw snake_case row from GET /api/workspaces/[id].
@@ -16,7 +16,6 @@ type HostInfo = {
     id: string;
     firstName: string | null;
     lastName: string | null;
-    imageUrl: string;
 };
 
 const MAX_TITLE_LENGTH = 100;
@@ -100,19 +99,14 @@ const BoardHeader = () => {
 
     return (
         <div className="fixed top-4 left-4 z-50 flex items-center gap-4 bg-card-background radius-surface border border-foreground-third/15 px-4 py-3">
-            {host?.imageUrl ? (
-                <div className="relative w-10 h-10 radius-tag overflow-hidden bg-foreground-third shrink-0">
-                    <Image
-                        src={host.imageUrl}
-                        alt={`${hostFirstName} icon`}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                        unoptimized
-                    />
-                </div>
+            {host ? (
+                <UserAvatar
+                    user={host}
+                    size="lg"
+                    className="shrink-0"
+                />
             ) : (
-                <div className="w-10 h-10 radius-tag bg-foreground-third shrink-0" />
+                <div className="w-10 h-10 radius-tag bg-foreground-third/40 shrink-0" />
             )}
 
             <div className="font-inter-bold flex flex-col leading-tight">

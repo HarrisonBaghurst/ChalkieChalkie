@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName } from "@/lib/userColour";
 import type { LifecycleStatus } from "@/lib/workspaceLifecycle";
 
 type WorkspaceDetailSheetProps = {
@@ -119,21 +120,12 @@ const WorkspaceDetailSheet = ({
                                         key={person.id}
                                         className="flex items-center gap-3"
                                     >
-                                        <Avatar
+                                        <UserAvatar
+                                            user={person}
                                             size="sm"
-                                            className="rounded-md after:rounded-md"
-                                        >
-                                            <AvatarImage
-                                                src={person.imageUrl}
-                                                alt=""
-                                                className="rounded-md"
-                                            />
-                                            <AvatarFallback className="rounded-md bg-foreground-third">
-                                                {person.firstName.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        />
                                         <span className="min-w-0 flex-1 truncate text-small text-foreground-second">
-                                            {`${person.firstName} ${person.lastName}`.trim() ||
+                                            {getFullName(person) ||
                                                 person.email}
                                         </span>
                                         {/* Host marked with the same green

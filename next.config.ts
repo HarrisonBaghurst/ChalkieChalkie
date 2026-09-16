@@ -5,14 +5,6 @@ const nextConfig: NextConfig = {
     env: {
         NEXT_PUBLIC_VERSION: changelog.currentVersion,
     },
-    images: {
-        remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "img.clerk.com",
-            },
-        ],
-    },
     allowedDevOrigins: [process.env.ALLOWED_DEV_ORIGINS as string],
 };
 

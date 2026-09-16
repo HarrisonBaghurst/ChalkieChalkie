@@ -2,7 +2,8 @@
 
 import { userInfo } from "@/types/userTypes";
 import TapTooltip from "@/components/TapTooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName } from "@/lib/userColour";
 
 type PeopleStackProps = {
     people: userInfo[]; // stacked avatars, viewer-relative
@@ -10,16 +11,12 @@ type PeopleStackProps = {
     hostId?: string;
 };
 
-const fullName = (person: userInfo) =>
-    `${person.firstName} ${person.lastName}`.trim();
-
 const PeopleStack = ({ people, participants, hostId }: PeopleStackProps) => {
     if (people.length === 0) {
         return <span className="text-caption text-foreground-third">—</span>;
     }
 
     const [first, ...rest] = people;
-    const firstName = fullName(first);
 
     return (
         <TapTooltip
@@ -33,7 +30,7 @@ const PeopleStack = ({ people, participants, hostId }: PeopleStackProps) => {
                             key={person.id}
                             className="flex items-center gap-2"
                         >
-                            <span>{fullName(person)}</span>
+                            <span>{getFullName(person)}</span>
                             {person.id === hostId && (
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             )}
@@ -46,16 +43,7 @@ const PeopleStack = ({ people, participants, hostId }: PeopleStackProps) => {
                 type="button"
                 className="flex items-center gap-2"
             >
-                <Avatar className="rounded-md after:rounded-md">
-                    <AvatarImage
-                        src={first.imageUrl}
-                        alt={firstName}
-                        className="rounded-md"
-                    />
-                    <AvatarFallback className="rounded-md bg-foreground-third">
-                        {first.firstName.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
+                <UserAvatar user={first} />
 
                 {rest.length > 0 && (
                     <div className="flex w-8 h-8 items-center justify-center radius-tag text-caption text-foreground">

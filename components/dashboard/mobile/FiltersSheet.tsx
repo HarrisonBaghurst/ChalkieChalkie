@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 
 type FiltersSheetProps = {
     collaborators: userInfo[];
@@ -93,21 +93,10 @@ const FiltersSheet = ({
                                                 toggle(collaborator.id)
                                             }
                                         />
-                                        <Avatar
+                                        <UserAvatar
+                                            user={collaborator}
                                             size="sm"
-                                            className="rounded-md after:rounded-md"
-                                        >
-                                            <AvatarImage
-                                                src={collaborator.imageUrl}
-                                                alt=""
-                                                className="rounded-md"
-                                            />
-                                            <AvatarFallback className="rounded-md">
-                                                {collaborator.firstName.charAt(
-                                                    0,
-                                                )}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        />
                                         <span className="truncate">
                                             {collaborator.firstName}{" "}
                                             {collaborator.lastName}

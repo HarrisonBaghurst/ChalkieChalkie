@@ -25,7 +25,7 @@ const badgeVariants = cva(
                 destructive: "bg-destructive/15 text-destructive text-caption",
                 success: "bg-success/15 text-success text-caption",
                 highlight:
-                    "bg-[#46a2db]/10 text-caption rounded-full text-[#46a2db] border-1 border-[#46a2db]/20",
+                    "bg-brand/10 text-caption text-brand border-1 border-brand/20",
             },
         },
         defaultVariants: {

@@ -73,58 +73,60 @@ const Surfaces = () => (
         </Block>
 
         <Block
-            title="Chalk gradient"
-            description="The one piece of brand colour, a four-stop sweep from butter through orange and red to pink. It is an accent — it marks the product's own moments (brand mark, empty states, loading) and never carries meaning that status colours should carry."
+            title="Brand surfaces"
+            description="Drawn from --brand. They mark the product's own moments — the sign-in card, progress, an arriving action — and never carry meaning that a status colour should carry. Dashboard cards don't use the brand at all: they switch between the two surfaces in components/dashboard/cardSurface.ts. PANEL_SURFACE is the resting card; ACTIVE_SURFACE raises the fill to --card-background-hover and the border to --foreground/50, and is earned, not decorative — the Coming up next card wears it only while the viewer can actually open the workspace."
         >
             <div className="flex flex-col gap-8">
                 <Grid cols={2}>
                     <div className="flex flex-col gap-2">
-                        <div className="gradient-border radius-surface h-24 w-full" />
-                        <Code>.gradient-border</Code>
+                        <div className="brand-border radius-surface h-24 w-full" />
+                        <Code>.brand-border</Code>
                         <Caption>
-                            Card fill with the gradient at 25% on the border.
-                            The resting state.
+                            Card fill with the brand at 25% on the border. The
+                            resting state.
                         </Caption>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <div className="gradient-border-bright radius-surface h-24 w-full" />
-                        <Code>.gradient-border-bright</Code>
+                        <div className="brand-border-bright radius-surface h-24 w-full" />
+                        <Code>.brand-border-bright</Code>
                         <Caption>
-                            Same, at full chroma. For the one element that
+                            Same, at full strength. For the one element that
                             should draw the eye.
                         </Caption>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <div className="gradient-card radius-surface h-24 w-full" />
-                        <Code>.gradient-card</Code>
+                        <div className="brand-card radius-surface h-24 w-full" />
+                        <Code>.brand-card</Code>
                         <Caption>
                             Interactive variant — hover it. Fill lifts to the
-                            hover surface and the border reaches full chroma.
+                            hover surface and the border reaches full strength.
                         </Caption>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <div className="gradient-background radius-surface h-24 w-full" />
-                        <Code>.gradient-background</Code>
+                        <div className="brand-fill radius-surface h-24 w-full" />
+                        <Code>.brand-fill</Code>
                         <Caption>
-                            Solid gradient fill. Use behind dark text only.
+                            Solid brand fill. Pair with{" "}
+                            <Code>text-brand-foreground</Code>.
                         </Caption>
                     </div>
                 </Grid>
 
                 <div className="flex flex-col gap-2">
-                    <p className="gradient-text text-display">Chalkie Chalkie</p>
-                    <Code>.gradient-text</Code>
+                    <p className="text-brand text-display">Chalkie Chalkie</p>
+                    <Code>text-brand</Code>
                     <Caption>
-                        Gradient clipped to text at 75% alpha. Headline-sized
-                        text only — it loses legibility below the heading step.
+                        Brand as a text colour. A plain Tailwind utility off{" "}
+                        <Code>--color-brand</Code>, so it composes with the type
+                        scale at any step.
                     </Caption>
                 </div>
 
                 <Note>
-                    All four fill/border variants share one gradient definition
-                    driven by <Code>--gb-fill</Code> and <Code>--gb-alpha</Code>.
-                    A new variant overrides those two values; it does not
-                    duplicate the stops.
+                    The three fill/border variants share one definition driven
+                    by <Code>--bb-fill</Code> and <Code>--bb-alpha</Code>. A new
+                    variant overrides those two values; it does not restate the
+                    border.
                 </Note>
             </div>
         </Block>
@@ -141,13 +143,6 @@ const Surfaces = () => (
                         40px dot grid. The whiteboard surface — also used on the
                         sign-in, 404 and fullscreen loader pages so they read as
                         part of the board.
-                    </Caption>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <div className="gradient-radial-glow radius-surface h-24 w-full" />
-                    <Code>.gradient-radial-glow</Code>
-                    <Caption>
-                        Soft warm bloom for hero backdrops. Currently unused.
                     </Caption>
                 </div>
             </Grid>

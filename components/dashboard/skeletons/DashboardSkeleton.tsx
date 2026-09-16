@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { WORKSPACE_TABLE_COLUMNS } from "@/lib/dashboardTableColumns";
 import { useSidebarCollapse } from "../sidebarCollapse";
 import { nextCardWidth } from "../Next";
+import { PANEL_SURFACE } from "../cardSurface";
 import DataTable from "../DataTable";
 import WorkspaceTableRowSkeleton from "./WorkspaceTableRowSkeleton";
 import { MobileListSkeleton } from "./MobileRowSkeleton";
@@ -18,7 +19,8 @@ const NextSkeleton = () => {
     return (
         <div
             className={cn(
-                "relative h-fit bg-card-background border-2 p-5 radius-surface flex flex-col gap-6 gradient-border",
+                PANEL_SURFACE,
+                "relative h-fit flex flex-col gap-6",
                 nextCardWidth(collapsed),
             )}
         >
@@ -26,7 +28,7 @@ const NextSkeleton = () => {
                 <Skeleton className="w-5 h-5" />
             </div>
             <div className="flex flex-col gap-6 md:pr-8">
-                <p className="text-caption font-inter-regular gradient-text">
+                <p className="text-caption font-inter-regular">
                     Coming up next
                 </p>
                 <div className="grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-6">

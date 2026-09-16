@@ -16,7 +16,6 @@ export async function fetchUserProfiles(ids: string[]): Promise<userInfo[]> {
             id: u.id,
             firstName: u.firstName ?? "",
             lastName: u.lastName ?? "",
-            imageUrl: u.imageUrl,
             email: u.emailAddresses[0]?.emailAddress ?? "",
         }),
     );

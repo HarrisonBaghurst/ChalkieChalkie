@@ -122,7 +122,6 @@ const page = async () => {
                         id: c.id,
                         firstName: c.firstName ?? u.firstName,
                         lastName: c.lastName ?? u.lastName,
-                        imageUrl: c.imageUrl ?? u.imageUrl,
                         email: c.emailAddresses[0]?.emailAddress ?? u.email,
                     };
                 });

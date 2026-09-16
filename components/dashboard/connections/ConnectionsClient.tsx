@@ -10,7 +10,6 @@ import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
 import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
 import { LinkRole, LinkSummary } from "@/types/linkTypes";
-import { PlanId } from "@/types/planTypes";
 import { UserRole } from "@/types/userTypes";
 import DashboardShell from "../DashboardShell";
 import Sidebar from "../Sidebar";
@@ -23,7 +22,6 @@ import ConnectionsTable from "./ConnectionsTable";
 type ConnectionsClientProps = {
     // Server-resolved, so the heading doesn't flash before Clerk hydrates.
     role?: UserRole;
-    planId?: PlanId | null;
     linkedStudentsLimit?: number | null;
     sidebarCollapsed?: CollapseState;
     tableDensity?: TableDensity;
@@ -32,7 +30,6 @@ type ConnectionsClientProps = {
 // No ENVIRONMENT=testing fixture path here — this always hits the live API.
 const ConnectionsClient = ({
     role: serverRole,
-    planId,
     linkedStudentsLimit,
     sidebarCollapsed,
     tableDensity,
@@ -208,11 +205,7 @@ const ConnectionsClient = ({
             initialCollapsed={sidebarCollapsed}
             initialDensity={tableDensity}
             sidebar={
-                <Sidebar
-                    role={serverRole}
-                    planId={planId}
-                    onLinked={handleLinked}
-                />
+                <Sidebar role={serverRole} onLinked={handleLinked} />
             }
             bottomBar={<TabBar role={serverRole} onLinked={handleLinked} />}
             overlay={

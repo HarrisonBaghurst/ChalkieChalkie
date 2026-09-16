@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName } from "@/lib/userColour";
 import { Badge } from "@/components/ui/badge";
 import RowActionsMenu from "@/components/dashboard/RowActionsMenu";
 import { DataTableRow } from "@/components/dashboard/DataTable";
@@ -24,22 +25,15 @@ const ConnectionRow = ({
     onToggleActive,
 }: ConnectionRowProps) => {
     const { counterparty } = link;
-    const fullName =
-        `${counterparty.firstName} ${counterparty.lastName}`.trim();
+    const fullName = getFullName(counterparty);
 
     const cells: Record<ConnectionColumnKey, React.ReactNode> = {
         person: (
             <div className="flex items-center gap-3">
-                <Avatar className="rounded-md after:rounded-md shrink-0">
-                    <AvatarImage
-                        src={counterparty.imageUrl}
-                        alt={fullName}
-                        className="rounded-md"
-                    />
-                    <AvatarFallback className="rounded-md bg-foreground-third">
-                        {counterparty.firstName.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                    user={counterparty}
+                    className="shrink-0"
+                />
                 <div className="flex min-w-0 flex-col">
                     <span className="truncate font-inter-bold text-foreground">
                         {fullName || counterparty.email}

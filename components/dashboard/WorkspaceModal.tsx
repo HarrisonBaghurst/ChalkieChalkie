@@ -83,7 +83,6 @@ const initialForm = (mode: WorkspaceModalMode, user: ClerkUser): FormData => {
               id: user.id,
               firstName: user.firstName ?? "",
               lastName: user.lastName ?? "",
-              imageUrl: user.imageUrl ?? "",
               email:
                   user.primaryEmailAddress?.emailAddress ??
                   user.emailAddresses[0]?.emailAddress ??

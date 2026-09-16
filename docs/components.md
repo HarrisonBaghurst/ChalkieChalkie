@@ -15,6 +15,9 @@ components/
     ├─ SelectionActions   ← delete button pinned under the selection box; the
     │                       only route to delete without a keyboard
     └─ FullscreenLoader   ← shown until the room's first init completes
+  UserAvatar.tsx          ← the only way to draw a person, board and dashboard alike.
+                            Initials on the colour `getUserColour` hashes from the
+                            Clerk userId; there is no image variant
   ConnectionNotice        ← held-open toast while the socket is down; strokes
                             keep committing locally behind it
   dashboard/
@@ -23,6 +26,9 @@ components/
          │                  takes an `overlay` slot rendered inside that column
            ├─ Sidebar.tsx      ← identity, Menu, then a one-button Actions section (see Dashboard
            │                     Actions below); mounts whichever modal that action needs
+           ├─ cardSurface.ts   ← PANEL_SURFACE / ACTIVE_SURFACE, the two dashboard card
+           │                     fills. Lives apart from both callers because
+           │                     GettingStarted already imports from Next
            ├─ Next.tsx         ← the next upcoming lesson; also owns nextCardWidth and
            │                     dashboardCardRow, the widths GettingStarted pairs against
            ├─ GettingStarted   ← the onboarding checklist (see Getting-started Checklist in

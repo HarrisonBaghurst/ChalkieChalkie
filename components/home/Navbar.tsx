@@ -2,6 +2,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import HeroLoginButton from "./HeroLoginButton";
+import UserAvatar from "@/components/UserAvatar";
 
 const Navbar = () => {
     const pathname = usePathname();
@@ -20,13 +21,24 @@ const Navbar = () => {
             />
             <SignedIn>
                 <div className="flex gap-4 items-center">
-                    <UserButton
-                        appearance={{
-                            elements: {
-                                avatarBox: "!w-10 !h-10 !rounded-sm",
-                            },
-                        }}
-                    />
+                    <div className="relative size-10 shrink-0">
+                        {user && (
+                            <UserAvatar
+                                user={user}
+                                size="lg"
+                                className="absolute inset-0 size-10"
+                            />
+                        )}
+                        <UserButton
+                            appearance={{
+                                elements: {
+                                    rootBox: "absolute inset-0 z-10",
+                                    avatarBox:
+                                        "!w-10 !h-10 !rounded-sm opacity-0",
+                                },
+                            }}
+                        />
+                    </div>
                     <div
                         className={`font-inter-bold flex flex-col leading-tight ${
                             !isAtBrandTarget ? "cursor-pointer" : ""

@@ -4,7 +4,8 @@ import { useOthers, useSelf } from "@/hooks/realtime/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { getUserColour } from "@/lib/userColour";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName, getUserColour } from "@/lib/userColour";
 
 // Raw snake_case row from GET /api/workspaces/[id].
 type RoomRow = {
@@ -15,7 +16,6 @@ type Member = {
     id: string;
     firstName: string | null;
     lastName: string | null;
-    imageUrl: string;
     email: string | null;
 };
 
@@ -113,9 +113,7 @@ const ParticipantRoster = () => {
                 <div className="flex flex-col gap-1 px-2 pb-2 max-h-[60vh] overflow-y-auto">
                     {sorted.map((m) => {
                         const online = onlineIds.has(m.id);
-                        const name = `${m.firstName ?? ""} ${
-                            m.lastName ?? ""
-                        }`.trim();
+                        const name = getFullName(m);
                         return (
                             <div
                                 key={m.id}
@@ -123,16 +121,10 @@ const ParticipantRoster = () => {
                                     online ? "" : "opacity-40"
                                 }`}
                             >
-                                <div className="relative w-8 h-8 radius-tag overflow-hidden shrink-0">
-                                    {m.imageUrl ? (
-                                        <Image
-                                            src={m.imageUrl}
-                                            alt={`${name} icon`}
-                                            fill
-                                            sizes="32px"
-                                        />
-                                    ) : null}
-                                </div>
+                                <UserAvatar
+                                    user={m}
+                                    className="shrink-0"
+                                />
                                 <div className="flex flex-col min-w-0">
                                     <div className="text-small text-foreground truncate">
                                         {name || "Anonymous"}
@@ -146,7 +138,7 @@ const ParticipantRoster = () => {
                                     style={{
                                         backgroundColor: online
                                             ? getUserColour(m.id)
-                                            : "#52525b",
+                                            : "var(--foreground-third)",
                                     }}
                                 />
                             </div>

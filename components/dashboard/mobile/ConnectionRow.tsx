@@ -14,7 +14,8 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName } from "@/lib/userColour";
 import { Badge } from "@/components/ui/badge";
 
 type ConnectionRowProps = {
@@ -30,7 +31,7 @@ const ConnectionRow = ({
 }: ConnectionRowProps) => {
     const [open, setOpen] = useState(false);
     const { counterparty } = link;
-    const fullName = `${counterparty.firstName} ${counterparty.lastName}`.trim();
+    const fullName = getFullName(counterparty);
 
     return (
         <>
@@ -39,16 +40,7 @@ const ConnectionRow = ({
                 onClick={() => setOpen(true)}
                 className="flex w-full items-center gap-3 border-b border-foreground-third/10 px-4 py-3 text-left last:border-b-0 active:bg-foreground-third/10"
             >
-                <Avatar className="rounded-md after:rounded-md">
-                    <AvatarImage
-                        src={counterparty.imageUrl}
-                        alt=""
-                        className="rounded-md"
-                    />
-                    <AvatarFallback className="rounded-md bg-foreground-third">
-                        {counterparty.firstName.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
+                <UserAvatar user={counterparty} />
                 <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-small font-inter-bold text-foreground">
                         {fullName || counterparty.email}

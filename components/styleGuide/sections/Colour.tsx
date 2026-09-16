@@ -78,8 +78,24 @@ const Colour = () => (
         </Block>
 
         <Block
+            title="Brand"
+            description="One flat accent. It marks the product's own surfaces — the sign-in card, the Stepper's progress fill, the plan badge and the arriving-action ring. It is never used to distinguish one person from another; that is what the identity palette below is for."
+        >
+            <div className="flex flex-col gap-6">
+                <Swatch
+                    token="--brand"
+                    usage="bg-brand, text-brand, border-brand. Also the .brand-border / .brand-border-bright / .brand-card / .brand-fill / .brand-ring family in globals.css, which are the only places it appears as a surface. A card that just needs definition takes border-foreground/50 rather than the brand."
+                />
+                <Swatch
+                    token="--brand-foreground"
+                    usage="= --background. Dark label for anything filled with --brand, and the initials colour on every identity swatch."
+                />
+            </div>
+        </Block>
+
+        <Block
             title="Status and chrome"
-            description="Status colours are used sparingly and never as a decorative accent — that job belongs to the chalk gradient below."
+            description="Status colours are used sparingly and never as a decorative accent — that job belongs to --brand above."
         >
             <div className="flex flex-col gap-6">
                 <Swatch
@@ -139,12 +155,12 @@ const Colour = () => (
 
         <Block
             title="Drawing palettes"
-            description="Fixed hexes in lib/colours.ts, not CSS tokens — they are canvas paint, drawn into a <canvas> where CSS variables don't reach. Chosen to sit on the dark board and to echo the chalk gradient."
+            description="Fixed hexes in lib/colours.ts, not CSS tokens — they are canvas paint, drawn into a <canvas> where CSS variables don't reach. The six chromatic inks each sit on a hue between two identity hues, pushed to the most chroma sRGB will hold while staying above 6:1 against the board; saturation is what keeps them from reading as somebody's cursor, since each is more chromatic than any colour a person can be assigned. Chalk stays first — index 0 is the default the board opens with — and Black stays last."
         >
             <div className="flex flex-col gap-8">
                 <div className="flex flex-col gap-3">
                     <Caption>PEN_COLOURS — pen tool</Caption>
-                    <Grid cols={5}>
+                    <Grid cols={4}>
                         {PEN_COLOURS.map((c) => (
                             <HexSwatch
                                 key={c.code}
@@ -153,13 +169,24 @@ const Colour = () => (
                             />
                         ))}
                     </Grid>
+                    <Note>
+                        <Code>Black</Code> is not a drawing colour — it is a
+                        mask. Pasted pages are inverted on upload and their
+                        background filled with <Code>#000</Code> (
+                        <Code>lib/imagePrepare.ts</Code>), and pen strokes paint{" "}
+                        <em>over</em> images in <Code>canvasDrawing.ts</Code>,
+                        so an exactly-matching black stroke reads as an eraser
+                        on a past paper. It is the one ink whose hex must not be
+                        adjusted for aesthetics: shift it and it stops matching
+                        the fill it is hiding against.
+                    </Note>
                 </div>
                 <div className="flex flex-col gap-3">
                     <Caption>
                         HIGHLIGHT_COLOURS — highlighter tool (drawn at reduced
                         alpha)
                     </Caption>
-                    <Grid cols={4}>
+                    <Grid cols={5}>
                         {HIGHLIGHT_COLOURS.map((c) => (
                             <HexSwatch
                                 key={c.code}
@@ -196,13 +223,29 @@ const Colour = () => (
 
         <Block
             title="Per-user identity colours"
-            description="USER_COLOUR_PALETTE in lib/userColour.ts. A Clerk userId is hashed to a fixed index, so a person keeps the same colour across their live cursor and the participant roster in every session. Never assign these by array position or at random."
+            description="USER_COLOUR_PALETTE in lib/userColour.ts — 48 colours, 12 hues across four lightness and chroma steps, generated in OKLCH and gamut-fitted to sRGB. A Clerk userId is hashed to a fixed index, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
         >
-            <Grid cols={5}>
-                {USER_COLOUR_PALETTE.map((code) => (
-                    <HexSwatch key={code} name="" code={code} />
-                ))}
-            </Grid>
+            <div className="flex flex-col gap-3">
+                <Grid cols={6}>
+                    {USER_COLOUR_PALETTE.map((code) => (
+                        <HexSwatch key={code} name="" code={code} />
+                    ))}
+                </Grid>
+                <Note>
+                    Every entry clears 4.5:1 against <Code>--background</Code>,
+                    which is why initials are always drawn in{" "}
+                    <Code>--brand-foreground</Code> and never conditionally
+                    lightened. The band was chosen to hold that floor — move it
+                    lighter or darker and the contrast breaks.
+                </Note>
+                <Note tone="dead">
+                    The array length is load-bearing:{" "}
+                    <Code>getUserColour</Code> is <Code>hash % length</Code>, so
+                    adding or removing an entry reshuffles every existing
+                    user&apos;s colour. Changing a hex in place is safe;
+                    changing the count is not.
+                </Note>
+            </div>
         </Block>
     </Section>
 );

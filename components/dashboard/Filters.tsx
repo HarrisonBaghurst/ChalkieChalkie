@@ -10,7 +10,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 
 interface FiltersProps {
     collaborators: userInfo[];
@@ -77,19 +77,10 @@ const Filters = ({ collaborators, selectedIds, onChange }: FiltersProps) => {
                                 checked={checked}
                                 onCheckedChange={() => toggle(collaborator.id)}
                             />
-                            <Avatar
+                            <UserAvatar
+                                user={collaborator}
                                 size="sm"
-                                className="rounded-md after:rounded-md"
-                            >
-                                <AvatarImage
-                                    src={collaborator.imageUrl}
-                                    alt={collaborator.firstName}
-                                    className="rounded-md"
-                                />
-                                <AvatarFallback className="rounded-md">
-                                    {collaborator.firstName.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
+                            />
                             <span className="truncate">
                                 {collaborator.firstName}{" "}
                                 {collaborator.lastName}

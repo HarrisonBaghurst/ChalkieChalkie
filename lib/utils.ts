@@ -18,6 +18,7 @@ const twMerge = extendTailwindMerge({
                     ],
                 },
             ],
+            rounded: ["radius-tag", "radius-control", "radius-surface"],
         },
     },
 });

@@ -62,12 +62,7 @@ const CollaboratorsPicker = ({
                     {collaborators.map((collaborator, i) => {
                         const name = `${collaborator.firstName} ${collaborator.lastName}`;
                         const card = (
-                            <CollaboratorCard
-                                image={collaborator.imageUrl}
-                                firstName={collaborator.firstName}
-                                lastName={collaborator.lastName}
-                                email={collaborator.email}
-                            />
+                            <CollaboratorCard user={collaborator} />
                         );
 
                         const isOwner = i === 0;
@@ -141,12 +136,7 @@ const CollaboratorsPicker = ({
                                     "opacity-50 cursor-not-allowed hover:bg-transparent",
                             )}
                         >
-                            <CollaboratorCard
-                                image={friend.imageUrl}
-                                firstName={friend.firstName}
-                                lastName={friend.lastName}
-                                email={friend.email}
-                            />
+                            <CollaboratorCard user={friend} />
                         </button>
                     ))}
                 </div>

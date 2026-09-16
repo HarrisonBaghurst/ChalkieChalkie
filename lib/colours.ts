@@ -1,23 +1,35 @@
 export const PEN_COLOURS: { colour: string; code: string }[] = [
     {
-        colour: "White",
+        colour: "Chalk",
         code: "#e6e8e6",
     },
     {
-        colour: "Yellow",
-        code: "#dbc15a",
+        colour: "Amber",
+        code: "#ffcb00",
     },
     {
-        colour: "Orange",
-        code: "#f59542",
+        colour: "Coral",
+        code: "#ff5744",
     },
     {
-        colour: "Red",
-        code: "#e36868",
+        colour: "Magenta",
+        code: "#ff12f7",
     },
     {
-        colour: "Pink",
-        code: "#e66eaa",
+        colour: "Violet",
+        code: "#6c8aff",
+    },
+    {
+        colour: "Cyan",
+        code: "#00e3fe",
+    },
+    {
+        colour: "Green",
+        code: "#00fe78",
+    },
+    {
+        colour: "Black",
+        code: "#000000",
     },
 ];
 
@@ -30,18 +42,22 @@ export const SELECTION_COLOURS = {
 export const HIGHLIGHT_COLOURS: { colour: string; code: string }[] = [
     {
         colour: "Butter",
-        code: "#f2d178",
+        code: "#f0dda9",
     },
     {
         colour: "Peach",
-        code: "#f0a56b",
+        code: "#ffd2ca",
     },
     {
         colour: "Rose",
-        code: "#e88aa8",
+        code: "#facef4",
     },
     {
-        colour: "Mauve",
-        code: "#c78fbf",
+        colour: "Lilac",
+        code: "#d1ddff",
+    },
+    {
+        colour: "Mint",
+        code: "#b3edd3",
     },
 ];

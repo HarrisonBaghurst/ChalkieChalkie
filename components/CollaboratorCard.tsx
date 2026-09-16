@@ -1,30 +1,28 @@
 import React from "react";
 
-import Image from "next/image";
+import UserAvatar from "@/components/UserAvatar";
+import { getFullName } from "@/lib/userColour";
+import { userInfo } from "@/types/userTypes";
 
 type CollaboratorCardProps = {
-    image: string;
-    firstName: string;
-    lastName: string;
-    email: string;
+    user: userInfo;
 };
 
-const CollaboratorCard = ({
-    image,
-    firstName,
-    lastName,
-    email,
-}: CollaboratorCardProps) => {
+const CollaboratorCard = ({ user }: CollaboratorCardProps) => {
     return (
         <div className="flex justify-between items-center">
             <div className="flex gap-3 items-center p-2">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                    <Image src={image} alt={`${firstName} icon`} fill />
-                </div>
+                <UserAvatar
+                    user={user}
+                    shape="circle"
+                    className="shrink-0"
+                />
                 <div className="flex flex-col">
-                    <div className="text-body text-foreground">{`${firstName} ${lastName}`}</div>
+                    <div className="text-body text-foreground">
+                        {getFullName(user)}
+                    </div>
                     <div className="text-caption text-foreground-third">
-                        {email ? email : "Unknown email"}
+                        {user.email ? user.email : "Unknown email"}
                     </div>
                 </div>
             </div>

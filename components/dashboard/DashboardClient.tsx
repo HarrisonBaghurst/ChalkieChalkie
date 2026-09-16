@@ -301,7 +301,6 @@ const DashboardClient = ({
                     friends={friends}
                     onCreated={handleCreated}
                     role={serverRole}
-                    planId={planId}
                 />
             }
             bottomBar={
