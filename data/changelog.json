@@ -5,7 +5,7 @@
     "entries": [
         {
             "version": "0.2.0",
-            "date": "",
+            "date": "16 September 2026",
             "overview": "The following changes introduce the framework for tutor plans. While updating your plan is still not possible through the app (coming soon), the following changes lay the groundwork to setup subscriptions for different levels of tutor plans.",
             "changes": [
                 {
