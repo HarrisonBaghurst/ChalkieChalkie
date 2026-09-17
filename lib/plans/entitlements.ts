@@ -14,14 +14,14 @@ const PLAN_ENTITLEMENTS: Record<PlanId, PlanEntitlements> = {
         leadMs: 1 * HOUR_MS,
     },
     plus: {
-        maxWorkspaceMembers: 5,
+        maxWorkspaceMembers: 4,
         workspacesPerMonth: 50,
         maxLinkedStudents: 25,
         retentionMs: 30 * DAY_MS,
         leadMs: 24 * HOUR_MS,
     },
     professional: {
-        maxWorkspaceMembers: 10,
+        maxWorkspaceMembers: 6,
         workspacesPerMonth: null,
         maxLinkedStudents: null,
         retentionMs: 90 * DAY_MS,

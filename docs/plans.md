@@ -1,6 +1,6 @@
 # Plans, Entitlements & Usage
 
-Every paid limit in the app resolves through one server-only table. **Supabase `user_plans` is the single source of truth for a user's plan**; Clerk `publicMetadata` holds `role` and nothing else. Role is *what you may do*, plan is *how much* — a student has a role and no plan row at all.
+Every paid limit in the app resolves through one server-only table. **Supabase `user_plans` is the single source of truth for a user's plan**; Clerk `publicMetadata` holds `role` and nothing else. Role is _what you may do_, plan is _how much_ — a student has a role and no plan row at all.
 
 ## Where the numbers live
 
@@ -17,7 +17,7 @@ PlanEntitlements = {
 ```
 
 - **`null` means unlimited**, and only `workspacesPerMonth` and `maxLinkedStudents` may use it. Retention is deliberately always a number: "kept forever" is not a tier, because storage that never expires has no ceiling.
-- **`maxWorkspaceMembers` counts the host.** Basic's 2 is a 1:1 lesson. Every call site compares against the deduped `user_ids` array *after* the host is merged in, so the two can never drift.
+- **`maxWorkspaceMembers` counts the host.** Basic's 2 is a 1:1 lesson. Every call site compares against the deduped `user_ids` array _after_ the host is merged in, so the two can never drift.
 - `types/planTypes.ts` holds the types only. Types erase, so it is safe to import from a client component; the values are not.
 
 ## Resolution
@@ -28,7 +28,7 @@ PlanEntitlements = {
 - `entitlementsForUser` — returns `null` unless a row exists **and** its status grants entitlements.
 - `requireEntitlements` — the API-route guard, returning a 403 `{ reason: "no-plan" }`.
 
-**`past_due` grants, `unpaid` does not.** Stripe retries a failed card for two to three weeks before giving up, and a single expired card must not sever a tutor mid-term. `past_due` is that retry window and keeps every entitlement; the cut lands at `unpaid` or `cancelled`, which are the states that mean dunning is over. Treating `past_due` as no plan — which is what this table used to do — turned one bounced payment into an instant loss of access for the tutor *and* every student booked with them.
+**`past_due` grants, `unpaid` does not.** Stripe retries a failed card for two to three weeks before giving up, and a single expired card must not sever a tutor mid-term. `past_due` is that retry window and keeps every entitlement; the cut lands at `unpaid` or `cancelled`, which are the states that mean dunning is over. Treating `past_due` as no plan — which is what this table used to do — turned one bounced payment into an instant loss of access for the tutor _and_ every student booked with them.
 
 **A Supabase error is reported and then treated as no plan.** Failing closed is correct for a paid boundary, and the `error_logs` row is what makes an outage diagnosable rather than silent.
 
@@ -36,20 +36,20 @@ PlanEntitlements = {
 
 ## Enforcement points
 
-| Entitlement | Enforced in | Denial |
-| --- | --- | --- |
-| `maxWorkspaceMembers` | `app/api/workspaces/route.ts`, `[workspaceId]/route.ts` | 403 `{ reason: "members" }` |
-| `workspacesPerMonth` | `app/api/workspaces/route.ts` via `increment_usage` | 403 `{ reason: "quota", used, limit, resetsAt }` |
-| `maxLinkedStudents` | `app/api/links/redeem/route.ts`, `links/[linkId]` PATCH | 403 `{ reason: "linked-students" }` |
-| `retentionMs` / `leadMs` | `scheduleWindow`, at create and PATCH, and `reconcilePlanChange` | — |
-| any granting plan | `app/api/realtime-auth/route.ts` | 403 `{ reason: "host-no-plan" }` |
-| `MAX_SCHEDULE_AHEAD_MS` | `validateWorkspaceBody`, and the `ScheduleStep` picker cap | 400 `{ reason: "horizon" }` |
-| live member count | `realtime/src/BoardRoom.ts` | close code 4004 |
+| Entitlement              | Enforced in                                                      | Denial                                           |
+| ------------------------ | ---------------------------------------------------------------- | ------------------------------------------------ |
+| `maxWorkspaceMembers`    | `app/api/workspaces/route.ts`, `[workspaceId]/route.ts`          | 403 `{ reason: "members" }`                      |
+| `workspacesPerMonth`     | `app/api/workspaces/route.ts` via `increment_usage`              | 403 `{ reason: "quota", used, limit, resetsAt }` |
+| `maxLinkedStudents`      | `app/api/links/redeem/route.ts`, `links/[linkId]` PATCH          | 403 `{ reason: "linked-students" }`              |
+| `retentionMs` / `leadMs` | `scheduleWindow`, at create and PATCH, and `reconcilePlanChange` | —                                                |
+| any granting plan        | `app/api/realtime-auth/route.ts`                                 | 403 `{ reason: "host-no-plan" }`                 |
+| `MAX_SCHEDULE_AHEAD_MS`  | `validateWorkspaceBody`, and the `ScheduleStep` picker cap       | 400 `{ reason: "horizon" }`                      |
+| live member count        | `realtime/src/BoardRoom.ts`                                      | close code 4004                                  |
 
-- **`leadMs` sets how early a host *may* open a workspace, and nothing else.** It used to drive the start-time lock as well, which made a longer lead read as a downgrade — three days of frozen start time on Professional against one hour on Basic. The lock now hangs off `opened_at`; see [docs/access-control.md](access-control.md). Keep any future window variable on the access side of that line.
+- **`leadMs` sets how early a host _may_ open a workspace, and nothing else.** It used to drive the start-time lock as well, which made a longer lead read as a downgrade — three days of frozen start time on Professional against one hour on Basic. The lock now hangs off `opened_at`; see [docs/access-control.md](access-control.md). Keep any future window variable on the access side of that line.
 - **PATCH resolves entitlements lazily**, only when `collaborators` changes or an unlocked `startTime` needs the window recomputed. A host whose plan has lapsed can still write feedback on a past lesson — the same care that `sameInstant` exists for.
 - **The quota claims before the insert and releases on failure.** The counter is the authority, so it must claim before the work it authorises, exactly like the invite compare-and-swap in `links/redeem`. Worst case is one lost workspace on a Supabase error; the alternative is a cap two concurrent requests walk straight through.
-- **The links cap is the tutor's, whoever redeems.** It is checked inside the read-only block *before* the CAS claim, so a capped redeem never burns the other side's code. Two concurrent redeems can overshoot by one; `links:redeem` at 5 per 10 minutes makes that acceptable, and a trigger would be the fix if it ever isn't.
+- **The links cap is the tutor's, whoever redeems.** It is checked inside the read-only block _before_ the CAS claim, so a capped redeem never burns the other side's code. Two concurrent redeems can overshoot by one; `links:redeem` at 5 per 10 minutes makes that acceptable, and a trigger would be the fix if it ever isn't.
 - **Deleting a workspace does not refund quota.** Otherwise create-and-delete churn farms it.
 - **The quota period is the billing period, not the calendar month.** `usagePeriod` reads `current_period_start` / `current_period_end` off the plan row and falls back to the calendar month only when they are absent or inconsistent. Anchoring on the month handed a tutor who subscribed on the 25th the tail of one month plus the whole of the next inside a single billing cycle — up to twice the allowance, every first month. `usage_counters.period_start` is still a `date`, so the anchor is the UTC date of `current_period_start` and a new period is still a new row with no reset job. Read `current_period_start` from Stripe rather than recomputing a day-of-month: an anchor on the 31st bills on the 28th in February and a recomputed date drifts away from the invoice.
 - **Do not pass `billing_cycle_anchor: 'now'` when switching plans.** Stripe preserves the anchor across a `subscription.update` by default, which is what stops an upgrade minting a fresh quota. Cancel-and-resubscribe does start a new period and a new allowance, but the user pays another subscription fee for it, so it buys capacity at list price rather than exploiting anything. That stops being true the moment prorated refunds are offered — the monotonic floor in the TODO's Hardening section is the fix if it ever is.
@@ -71,7 +71,7 @@ A plan change is a **hard cut**: the new tier's limits apply to everything the u
 
 **The retention floor is the one place the cut is deliberately not hard.** Without it, cancelling sets `expires_at` in the past on every room and the next cron run destroys every board, stroke and R2 image that night. Revoking access is reversible — resubscribe and everything works — but deletion is not, and it lands on student data belonging to people who had no part in the decision. The realistic trigger is a mis-click or an expired card, not abuse. Thirty days of storage on a churned tutor is also the best reactivation lever there is.
 
-**The floor must never extend.** `min(existing, now + floor)` is what stops a board thirteen days into Basic's fourteen-day retention being pushed out to thirty *because* its host cancelled. Never sooner than the floor, never later than what they already had.
+**The floor must never extend.** `min(existing, now + floor)` is what stops a board thirteen days into Basic's fourteen-day retention being pushed out to thirty _because_ its host cancelled. Never sooner than the floor, never later than what they already had.
 
 ### What reconcile deliberately does not touch
 
@@ -93,7 +93,7 @@ Students see the consequence before they walk into it: `/api/users/workspaces` a
 
 The write-time member cap only binds when a workspace is written. A downgrade leaves rooms whose `user_ids` exceed the new cap, so the live count is enforced independently.
 
-- **The cap travels in the signed ticket** (`TicketClaims.cap`, plus `host`). `realtime-auth` resolves the *host's* plan — never the joiner's — and signs it; `verifyTicket` covers it with the same HMAC. The Worker and the DO never look a plan up.
+- **The cap travels in the signed ticket** (`TicketClaims.cap`, plus `host`). `realtime-auth` resolves the _host's_ plan — never the joiner's — and signs it; `verifyTicket` covers it with the same HMAC. The Worker and the DO never look a plan up.
 - **`verifyTicket` fails closed on a missing or non-positive cap.** Absence means a partial deploy or a signing bug, never "unlimited". Every tier caps members at a finite number, so an unlimited tier would have to encode that explicitly here rather than by omission.
 - **The DO counts distinct users, not sockets** — `MAX_CONNECTIONS_PER_USER` already allows one person three tabs, and those must not consume three seats.
 - **The host holds a reserved slot** and bypasses the check, so a tutor who drops connection can always re-enter their own full room. Non-host capacity is therefore `cap - 1`.
@@ -106,13 +106,13 @@ Entitlements are resolved server-side in `app/dashboard/page.tsx` and passed to 
 
 `EntitlementsState` carries three things: `entitlements`, `usage` (the `workspaces_created` counter for the current period) and `linkedStudents` (the active `tutor_links` count, resolved by `countActiveStudentLinks` and only when entitlements exist). The dashboard's usage card is the first consumer of the latter two — see [docs/dashboard.md](dashboard.md) for when it renders and why it never counts `friends.length`.
 
-The numbers do reach the browser — the picker renders `2 / 2` and `ScheduleStep` needs `leadMs` for its opens-immediately notice. **That is display, not authority**: editing them in devtools achieves nothing, because create, PATCH and redeem all re-check. What must never reach the client is the *table* of all three tiers.
+The numbers do reach the browser — the picker renders `2 / 2` and `ScheduleStep` needs `leadMs` for its opens-immediately notice. **That is display, not authority**: editing them in devtools achieves nothing, because create, PATCH and redeem all re-check. What must never reach the client is the _table_ of all three tiers.
 
 `ENVIRONMENT=testing` renders the dashboard from `data/testWorkspaces.json` against a fixed `TEST_LIMITS`, not a plan lookup — the test path has no real user to resolve.
 
 ### The tier badge on the usage card
 
-`Usage` renders the tier as a `highlight` `Badge` opposite the "Your plan" heading. `highlight` was added to `components/ui/badge.tsx` for this: a solid `bg-brand` fill under `text-background` text, no border of its own, and the same tag-tier rounding every other variant carries. It is the only variant that *fills* with a chromatic colour rather than tinting one — `destructive` and `success` sit at `/15` behind their own text colour — so it is the loudest label in the set. It travels as a `planId` prop through `DashboardClient`, **not through `useEntitlements`**, because `EntitlementsState` carries only numbers — the tier name is not one of them. `app/dashboard/page.tsx` is the only page that resolves it; nothing on `/dashboard/connections` names a tier.
+`Usage` renders the tier as a `highlight` `Badge` opposite the "Your plan" heading. `highlight` was added to `components/ui/badge.tsx` for this: a solid `bg-brand` fill under `text-background` text, no border of its own, and the same tag-tier rounding every other variant carries. It is the only variant that _fills_ with a chromatic colour rather than tinting one — `destructive` and `success` sit at `/15` behind their own text colour — so it is the loudest label in the set. It travels as a `planId` prop through `DashboardClient`, **not through `useEntitlements`**, because `EntitlementsState` carries only numbers — the tier name is not one of them. `app/dashboard/page.tsx` is the only page that resolves it; nothing on `/dashboard/connections` names a tier.
 
 - **`grantedPlanForUser` is the resolver**, not `entitlementsForUser` — the latter discards `userPlan.plan` and returns only numbers. It applies the same `statusGrantsEntitlements` filter, so `past_due` and `cancelled` render no badge at all. A visible badge therefore always means a plan that currently works; it must never sit above a create button that 403s.
 - It shares `getUserPlan`'s React `cache()`, so resolving tier and entitlements on the same render is still one query.
@@ -237,3 +237,37 @@ Testing the DO backstop needs separate Clerk accounts, not tabs, and a simulated
 Nothing writes `user_plans` yet, so a plan change is a `update user_plans set plan = ...` followed by a reconcile. `POST /api/admin/reconcile-plan` takes `{ "userId": "user_xxx" }` and is guarded by `requireAdmin` — an exact role match, so a tutor account cannot call it. It is deliberately not rate limited.
 
 Clerk authenticates it by session cookie, so the least friction is `fetch("/api/admin/reconcile-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: "user_xxx" }) })` from the browser console while signed in as admin. From a terminal, curl it with the `__session` cookie copied out of devtools. It returns a summary — rooms rewindowed, links deactivated and reactivated, and the ids of any rooms left over the member cap.
+
+## Plan text within Stripe
+
+This is exactly the description and marketing text stored within Stripe. Reuse it wherever plan descriptions are needed on the site.
+
+### Basic — £5 per month
+
+For tutors teaching one-to-one, a couple of lessons a week. You get 10 lessons a month, workspaces stay available for 14 days, and you can keep 3 students linked on your account.
+
+- One-to-one lessons.
+- 10 lessons per month — around two a week.
+- Workspaces stay available for 14 days after your lesson.
+- Open your workspace 1 hour before you start.
+- Keep up to 3 students on your account.
+
+### Plus — £15 per month
+
+For tutors with a busy timetable or entering an exam period. You get 50 lessons a month, workspaces stay available for 30 days, and you can keep 25 students linked on your account.
+
+- Up to 3 students in a lesson.
+- 50 lessons per month — around ten a week.
+- Workspaces stay available for 30 days after your lesson.
+- Open your workspace 24 hours before you start.
+- Keep up to 25 students on your account.
+
+### Professional — £45 per month
+
+For full-time tutors teaching several lessons a day. You get unlimited lessons each month, workspaces stay available for 90 days, and you can link as many students as you need.
+
+- Up to 5 students in a lesson.
+- Unlimited lessons.
+- Workspaces stay available for 90 days after your lesson.
+- Open your workspace 3 days before you start.
+- Keep unlimited students on your account.
