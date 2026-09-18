@@ -35,6 +35,9 @@ export const RATE_LIMITS = {
     "links:redeem:ip": { keyBy: "ip", limit: 20, window: "1 h" },
     "links:delete": { keyBy: "userId", limit: 10, window: "1 m" },
     "links:patch": { keyBy: "userId", limit: 20, window: "1 m" },
+    "billing:checkout": { keyBy: "userId", limit: 5, window: "10 m" },
+    "billing:switch": { keyBy: "userId", limit: 5, window: "10 m" },
+    "billing:webhook": { keyBy: "ip", limit: 100, window: "1 m" },
 } as const satisfies Record<string, LimiterConfig>;
 
 export type RateLimitKey = keyof typeof RATE_LIMITS;

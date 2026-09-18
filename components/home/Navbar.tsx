@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import HeroLoginButton from "./HeroLoginButton";
@@ -12,6 +13,17 @@ const Navbar = () => {
     const isInWorkspace = pathname.startsWith("/board");
     const brandHref = isInWorkspace ? "/dashboard" : "/";
     const isAtBrandTarget = pathname === brandHref;
+
+    const showPricing =
+        !isInWorkspace &&
+        !pathname.startsWith("/dashboard") &&
+        pathname !== "/pricing";
+
+    const pricingLink = showPricing ? (
+        <Link href="/pricing" className="text-body hover:underline">
+            Pricing
+        </Link>
+    ) : null;
 
     return (
         <div className="h-fit py-[2svh] px-4 lg:px-[6dvw] fixed w-full flex justify-between items-center z-40">
@@ -62,6 +74,7 @@ const Navbar = () => {
                         <p>Chalkie Chalkie</p>
                     </div>
                 </div>
+                {pricingLink}
             </SignedIn>
             <SignedOut>
                 <div
@@ -79,7 +92,10 @@ const Navbar = () => {
                     </p>
                     <p>Chalkie Chalkie</p>
                 </div>
-                <HeroLoginButton />
+                <div className="flex items-center gap-6">
+                    {pricingLink}
+                    <HeroLoginButton />
+                </div>
             </SignedOut>
         </div>
     );

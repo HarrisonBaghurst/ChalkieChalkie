@@ -9,6 +9,8 @@ Create `.env.local` with:
 - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
 - `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000`)
 - `NEXT_PUBLIC_MAX_IMAGE_WIDTH`, `NEXT_PUBLIC_MAX_IMAGE_HEIGHT`, `NEXT_PUBLIC_IMAGE_QUALITY` — the box every image and PDF page is scaled into, and the JPEG quality it is encoded at. All three are optional, defaulting to `2048`/`2048`/`0.85` in `lib/imagePrepare.ts`. **Client-side, so advisory only** — a tampered value still meets the route's 413 and the storage bucket's own limit. `NEXT_PUBLIC_` is inlined at build time, so changing one needs a rebuild, not just a redeploy
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — from the Stripe dashboard's API keys page, and from the webhook endpoint you point at `/api/billing/webhook` (`stripe listen` prints a `whsec_` for local work). `lib/stripe.ts` constructs the client at module scope with `process.env.STRIPE_SECRET_KEY!`, so **`next build` fails outright without it** — the same as `SUPABASE_URL`
+- `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PROFESSIONAL` — the recurring GBP price on each of the three products. These are the only mapping from a Stripe price back to a `PlanId`, so a live-mode deploy carrying sandbox price IDs writes no plan at all and logs `billing:sync` instead. Missing ones do not break the build; they throw when that tier is bought
 - `RESEND_API_KEY`, `CONTACT_EMAIL`
 - `CRON_SECRET`
 - `VERCEL_TOKEN` — Vercel access token used by the nightly promotion cron; `VERCEL_TEAM_ID` as well if the project ever moves off a personal account. `VERCEL_PROJECT_ID` comes free from Vercel's system environment variables.

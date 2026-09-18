@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PLAN_LABELS } from "@/lib/plans/labels";
 import { planFactsLine, resolveUsageMeters, UsageMeter } from "@/lib/planUsage";
@@ -74,13 +75,12 @@ const Usage = ({ entitlements, usage, linkedStudents, planId }: UsageProps) => {
                 </p>
                 {planId !== "professional" && (
                     <Button
+                        asChild
                         variant="outline"
                         size="default"
-                        disabled
                         className="w-full"
                     >
-                        Change plan
-                        <Badge variant="outline">Upcoming</Badge>
+                        <Link href="/pricing">Change plan</Link>
                     </Button>
                 )}
             </div>

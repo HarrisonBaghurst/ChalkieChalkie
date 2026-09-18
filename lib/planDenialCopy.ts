@@ -60,6 +60,47 @@ export const planDenialCopy = (body: DenialBody): DenialCopy | null => {
                 description:
                     "This lesson's start time has passed, so it can no longer be changed.",
             };
+        case "has-plan":
+            return {
+                title: "You already have a plan",
+                description:
+                    "Change the plan you are on rather than buying a second one.",
+            };
+        case "checkout-pending":
+            return {
+                title: "Payment already going through",
+                description:
+                    "You have just paid for a plan and Stripe is still confirming it. Give it a few seconds, then reload the page.",
+            };
+        case "change-in-progress":
+            return {
+                title: "Plan change already going through",
+                description:
+                    "A change to this account's plan is still being processed. Give it a few seconds, then try again.",
+            };
+        case "no-subscription":
+            return {
+                title: "No subscription to change",
+                description:
+                    "Choose a plan first, then you can move between them whenever you like.",
+            };
+        case "comped-plan":
+            return {
+                title: "Plan set manually",
+                description:
+                    "This account's plan was granted directly and is not billed through Stripe, so it cannot be changed here.",
+            };
+        case "no-pending-change":
+            return {
+                title: "Nothing scheduled",
+                description:
+                    "There is no upcoming plan change on this account to cancel.",
+            };
+        case "same-plan":
+            return {
+                title: "Already on this plan",
+                description: "Pick a different plan to change to.",
+            };
         case "linked-students":
             return {
                 title: "Linked student limit reached",

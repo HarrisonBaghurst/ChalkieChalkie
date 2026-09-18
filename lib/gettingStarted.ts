@@ -9,6 +9,7 @@ export type ChecklistCounts = {
     linkCount: number;
     workspaceCount: number;
     startedCount: number;
+    hasPlan: boolean;
 };
 
 export type ChecklistRow = {
@@ -21,6 +22,7 @@ export type ChecklistRow = {
 
 const DASHBOARD_PATH = "/dashboard";
 const CONNECTIONS_PATH = "/dashboard/connections";
+const PRICING_PATH = "/pricing";
 
 export const resolvePresentation = (
     surface: ChecklistSurface,
@@ -81,6 +83,13 @@ const tutorRows = (
     presentation: ChecklistPresentation,
     counts: ChecklistCounts,
 ): ChecklistRow[] => [
+    {
+        title: "Choose your plan",
+        body: "Pick the tier that matches your timetable — you need one before you can schedule a lesson.",
+        done: counts.hasPlan,
+        href: PRICING_PATH,
+        cta: "See plans",
+    },
     {
         title: "Link your first student",
         body: "Share a code with your student, or enter one they have sent you.",

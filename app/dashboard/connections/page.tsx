@@ -26,15 +26,23 @@ const resolveLinkedStudentsLimit = async (): Promise<number | null> => {
     return (await entitlementsForUser(userId))?.maxLinkedStudents ?? null;
 };
 
+const resolveHasPlan = async (): Promise<boolean> => {
+    const { userId } = await auth();
+    if (!userId) return false;
+    return (await entitlementsForUser(userId)) !== null;
+};
+
 const page = async () => {
     const role = await resolveRole();
     const linkedStudentsLimit = await resolveLinkedStudentsLimit();
+    const hasPlan = await resolveHasPlan();
     const sidebarCollapsed = await readSidebarCookie();
     const tableDensity = await readTableDensityCookie();
     return (
         <ConnectionsClient
             role={role}
             linkedStudentsLimit={linkedStudentsLimit}
+            hasPlan={hasPlan}
             sidebarCollapsed={sidebarCollapsed}
             tableDensity={tableDensity}
         />

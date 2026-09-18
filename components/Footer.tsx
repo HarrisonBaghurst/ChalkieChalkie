@@ -28,11 +28,14 @@ const Footer = () => {
                             <Link href="/" className={linkClass}>
                                 Home
                             </Link>
-                            <Link href="/dashboard" className={linkClass}>
-                                Dashboard
+                            <Link href="/pricing" className={linkClass}>
+                                Pricing
                             </Link>
                             <Link href="/sign-in" className={linkClass}>
                                 Sign in
+                            </Link>
+                            <Link href="/dashboard" className={linkClass}>
+                                Dashboard
                             </Link>
                             <Link href="/changelog" className={linkClass}>
                                 Changelog

@@ -42,12 +42,12 @@ export const RETENTION_FLOOR_MS = 30 * DAY_MS;
 export const PLAN_IDS = Object.keys(PLAN_ENTITLEMENTS) as PlanId[];
 
 export const parsePlanId = (value: unknown): PlanId | null =>
-    typeof value === "string" && value in PLAN_ENTITLEMENTS
+    typeof value === "string" && Object.hasOwn(PLAN_ENTITLEMENTS, value)
         ? (value as PlanId)
         : null;
 
 export const parsePlanStatus = (value: unknown): PlanStatus | null =>
-    typeof value === "string" && value in GRANTING_STATUSES
+    typeof value === "string" && Object.hasOwn(GRANTING_STATUSES, value)
         ? (value as PlanStatus)
         : null;
 

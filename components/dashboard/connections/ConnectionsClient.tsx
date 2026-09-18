@@ -23,6 +23,7 @@ type ConnectionsClientProps = {
     // Server-resolved, so the heading doesn't flash before Clerk hydrates.
     role?: UserRole;
     linkedStudentsLimit?: number | null;
+    hasPlan?: boolean;
     sidebarCollapsed?: CollapseState;
     tableDensity?: TableDensity;
 };
@@ -31,6 +32,7 @@ type ConnectionsClientProps = {
 const ConnectionsClient = ({
     role: serverRole,
     linkedStudentsLimit,
+    hasPlan = false,
     sidebarCollapsed,
     tableDensity,
 }: ConnectionsClientProps) => {
@@ -192,6 +194,7 @@ const ConnectionsClient = ({
         linkCount: links.length,
         workspaceCount,
         startedCount,
+        hasPlan,
     };
 
     const presentation = isUnsupportedRole

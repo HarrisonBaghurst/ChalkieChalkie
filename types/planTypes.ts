@@ -25,6 +25,43 @@ export type UserPlan = {
     currentPeriodEnd: string | null;
 };
 
+export type PlanComparisonRow = {
+    label: string;
+    values: string[];
+};
+
+export type PlanRow = {
+    plan: PlanId | null;
+    status: PlanStatus | null;
+    stripeCustomerId: string | null;
+    stripeSubscriptionId: string | null;
+    pendingPlan: PlanId | null;
+    pendingPlanAt: string | null;
+};
+
+export type PendingPlanChange = {
+    plan: PlanId;
+    at: string;
+};
+
+export type BillingIntentKind = "checkout" | "switch";
+
+export type BillingIntentStatus = "creating" | "open";
+
+export type BillingIntentRow = {
+    userId: string;
+    kind: BillingIntentKind;
+    plan: PlanId;
+    intentId: string;
+    status: BillingIntentStatus;
+    stripeSessionId: string | null;
+    expiresAt: string;
+};
+
+export type BillingClaim =
+    | { owned: true; intent: BillingIntentRow }
+    | { owned: false; intent: BillingIntentRow };
+
 export type UsagePeriod = {
     start: string;
     end: string;

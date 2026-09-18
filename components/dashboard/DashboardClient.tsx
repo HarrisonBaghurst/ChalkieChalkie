@@ -242,6 +242,7 @@ const DashboardClient = ({
         linkCount: friends.length,
         workspaceCount: workspaces.length,
         startedCount: previousAll.length,
+        hasPlan: !!planId,
     };
 
     const checklistRole: LinkRole = role === "tutor" ? "tutor" : "student";

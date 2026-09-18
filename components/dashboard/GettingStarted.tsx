@@ -104,7 +104,7 @@ const GettingStarted = ({
                         Getting started
                     </p>
                     <p className="text-foreground-third">
-                        Three steps before your first lesson.
+                        {`${rows.length} steps before your first lesson.`}
                     </p>
                 </div>
             ) : (

@@ -48,6 +48,11 @@ const sitemap = (): MetadataRoute.Sitemap => [
         priority: 1,
     },
     {
+        url: absoluteUrl("/pricing"),
+        changeFrequency: "monthly",
+        priority: 0.8,
+    },
+    {
         url: absoluteUrl("/changelog"),
         lastModified: parseDocumentDate(changelog.entries.at(0)?.date ?? ""),
         changeFrequency: "monthly",
