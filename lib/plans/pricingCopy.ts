@@ -7,6 +7,8 @@ export type PlanCopy = {
     features: string[];
 };
 
+export const ONELINK_URL = "https://link.com";
+
 export const PLAN_ORDER: PlanId[] = ["basic", "plus", "professional"];
 
 export const planRank = (plan: PlanId): number => PLAN_ORDER.indexOf(plan);

@@ -78,3 +78,23 @@ alter table "Room" add column opened_at timestamptz;
 - `lifecyclePhase` / `lifecycleStatus` / `joinDenialLabel` drive the dashboard's Status column, its disabled Join action and the mobile row dot, so all three agree by construction. They take `now` as an argument rather than reading the clock, and the dashboard feeds them `hooks/useNow.tsx` on a 60-second tick — `DashboardClient` previously froze `now` at mount, so no boundary ever advanced on an open page.
 - **The ladder is `Ready in 3 days` → `Ready to open` → `Open` → `Deletes in 12 days`.** Nothing opens on a schedule any more, so the `scheduled` label names availability rather than an event. `past` keeps precedence over both `ready` and `open`, so an opened lesson still counts down to deletion once its slot is behind it.
 - **`lifecycleStatus` and `joinDenialLabel` take `viewerIsHost` before `now`.** The `ready` phase is the only one that splits — `Ready to open` (green) for the host, `Waiting for tutor` (amber) for everyone else — but the argument is required rather than defaulted so a call site has to decide. Pass `isHost(...)`, not a `canManage` flag: those also demand the `tutor` role, and the status a student sees must not depend on their own role.
+
+## Account Deletion
+
+`DELETE /api/account` removes a user from every system. `components/dashboard/settings/DeleteAccountDialog.tsx` is the only caller; it lists what will be lost from `accountLosses` (resolved on the Settings page server render) and enables its destructive button only once `fully delete my account` is typed. The server re-checks the phrase through `matchesDeletePhrase` in `lib/accountDeletion.ts`.
+
+- **Guards, in order:** signed in, not an admin (`isAdmin`, 403 `{ reason: "admin" }`), Clerk `has({ reverification: "strict" })` — otherwise `reverificationErrorResponse`, which `useReverification` on the client turns into Clerk's re-authentication modal — then `account:delete` at 3 per 10 minutes, then the phrase (409 `{ reason: "confirmation" }`).
+- **Every response is JSON**, including the 401 and 400. `useReverification` parses the body with `res.json()` and hands back the body, not the `Response`, so the dialog reads `deleted` off the body rather than `res.ok`.
+- **The dialog drops to `modal={false}` while the request is in flight.** Clerk's reverification prompt portals outside our Radix dialog, and a modal Radix dialog traps focus and disables outside pointer events — so the password field lost focus on every click and could not be used. Non-modal removes the trap and our overlay for exactly the window in which Clerk's prompt can appear; `close` already ignores dismissal while `submitting`, so clicks inside Clerk's prompt cannot close ours.
+- **It claims `billing_intents` first**, as a `switch`, so a checkout or plan change cannot run while the account is being torn down.
+
+`lib/deleteAccount.ts` then runs, and every step is safe to repeat so a failed request can simply be retried:
+
+1. **Stripe — `cancelAllSubscriptions`.** Lists subscriptions on every customer id the account has ever held (`user_plans` and `billing_customers`), adds the one the row names, and cancels every live one immediately with `prorate: false`. Nothing is refunded. The **Customer is kept** — Managed Payments holds VAT and invoice records against it.
+2. **Tombstone — `markAccountDeleted`.** Writes `deleted_accounts`. `syncSubscription` returns early for any tombstoned id, so the `customer.subscription.deleted` from step 1 — or any later redelivery — cannot recreate a `user_plans` row for a user who no longer exists. `billing/checkout` refuses tombstoned ids with `{ reason: "account-deleted" }` for the window between a failed deletion and its retry.
+3. **Hosted workspaces — every one, past, current and future.** `deleteWorkspaceResources` per room, ten at a time: Durable Object storage, R2 `{roomId}/` prefix, then the `Room` row, then the DO again. Any failure is reported as `account:delete-workspace` and the whole request fails so it can be retried; rooms already gone are simply not found the second time.
+4. **Joined workspaces** — the user is filtered out of `user_ids` and then evicted, Supabase first, as everywhere else.
+5. **Rows** — `tutor_links` (either side), `link_invites` issued, `usage_counters`, `billing_intents`, `billing_customers`, `user_plans`, then the plan cache key.
+6. **Clerk last** — `users.deleteUser`, a 404 counting as done. Keeping the identity until the end is what makes a partial failure retryable: the user is still signed in and can press the button again.
+
+`error_logs` rows carrying the user id are left in place.

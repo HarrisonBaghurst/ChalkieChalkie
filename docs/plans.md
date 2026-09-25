@@ -137,7 +137,7 @@ The numbers do reach the browser — the picker renders `2 / 2` and `ScheduleSte
 
 Stripe is the **merchant of record**, through [Managed Payments](https://docs.stripe.com/payments/managed-payments): it calculates, collects and remits VAT in over 80 countries, and handles fraud, disputes and transaction-level support. Every Checkout Session sets `managed_payments: { enabled: true }`, and all three products carry `txcd_10103000` (SaaS – personal use) and show **Eligible** in the product catalogue — that flag is the precondition for the parameter doing anything.
 
-Customers manage and cancel through **Onelink** (`link.com`) by default, which is where Managed Payments sends receipts and subscription emails from. That is why there is no customer portal here and no rush to build one.
+Customers manage and cancel through **Onelink** (`link.com`) by default, which is where Managed Payments sends receipts and subscription emails from. That is why there is no customer portal here and no rush to build one. The Billing section of `/dashboard/settings` links out to it (`ONELINK_URL` in `lib/plans/pricingCopy.ts`) for card details and receipts.
 
 `lib/stripe.ts` constructs the client with **no `apiVersion`**, so every call runs on the version the installed SDK pins. Do not pin one by hand. `managed_payments` is GA on that version and typed natively, and running two calls on a preview version while webhook payloads arrive on another is exactly how the field below gets read off the wrong object.
 
@@ -154,7 +154,7 @@ Customers manage and cancel through **Onelink** (`link.com`) by default, which i
 | `lib/plans/syncSubscription.ts` | The only writer of `user_plans`: upsert, then `reconcilePlanChange` if the tier changed, the status crossed the granting line, or the latch is still raised from a reconcile that did not finish. Also holds `revokeDeletedCustomer`, the one write not driven by a subscription |
 | `lib/plans/billingIntent.ts` | The only writer of `billing_intents`: the atomic claim that allows one billing operation per account, and the `intent_id` every Stripe mutation is keyed on |
 | `lib/plans/billingCustomer.ts` | The only writer of `billing_customers`: one Stripe customer per Clerk id, created before Checkout runs |
-| `app/api/billing/` | `checkout`, `switch`, `pending`, `webhook`. `_shared.ts` holds the body parsers, the comped and `past_due` denials, and `clearCancellation` |
+| `app/api/billing/` | `checkout`, `switch`, `pending`, `cancel`, `webhook`. `_shared.ts` holds the body parsers, the comped and `past_due` denials, and `clearCancellation` |
 
 **`readPlanRow` exists because `getUserPlan` is React-`cache()`d and that cache is live inside a route handler.** The webhook has to compare against the row as it was before its own write, and `reconcilePlanChange` calls `getUserPlan` itself — so a `getUserPlan` earlier in the same request would hand reconcile the stale pre-write row and reconcile to the tier the user just left. Never read the plan through the cached helper on a path that also writes it.
 
@@ -400,7 +400,17 @@ The automatic rule clears the pending columns when **the subscription no longer 
 
 The banner reads off the same `readPlanRow` and renders whichever of the two is set, preferring the tier change when both are.
 
-**The banner lives on `/pricing` for now**, above the tiers, and is rendered straight off `readPlanRow` — the page already loads that row for the highlight, so it costs no extra query. It belongs in Settings' current-plan section once that page exists; see `TODO.md`.
+**The pending state shows in two places, in two forms.** `/pricing` renders `PendingPlanBanner` above the tiers; `/dashboard/settings` renders the same information as an orange `warning` card of its own at the top of the page — **Plan ends** or **Scheduled change**. Both read it straight off `readPlanRow`, which each page already loads, so it costs no extra query. Both **Keep** buttons run through `useKeepPlan` in `hooks/useKeepPlan.ts`, which the Settings Danger zone also uses for its own **Keep <tier>** button.
+
+### Cancelling from Settings
+
+**`POST /api/billing/cancel` is the in-app cancellation**, behind the destructive **Cancel plan** button in the Settings Danger zone and a confirmation dialog built like the downgrade one (`OPTION_PANEL` now lives in `components/dashboard/cardSurface.ts` and both import it). It sets `cancel_at_period_end: true` with `proration_behavior: "none"`, keyed `:cancel` off the intent, so nothing is charged or refunded and the plan runs to `current_period_end`. `syncSubscription` then writes `cancels_at` and the banner appears.
+
+- **It claims the `switch` intent**, so it cannot race a checkout or a tier change, and refuses comped rows, non-granting rows (`no-subscription`) and a row already carrying `cancels_at` (`already-cancelling`).
+- **A cancellation beats a scheduled tier change.** A subscription with a pending downgrade or scheduled upgrade is schedule-managed, and the two cannot sensibly coexist — there is no next period for the change to land in. The route releases the schedule first, re-retrieves, then cancels, and syncs with `pending: null` so the mirror clears in the same write. The dialog says so: "Your scheduled change to <tier> is also cancelled."
+- **Undo is the existing route.** `DELETE /api/billing/pending` already runs `clearCancellation`, so **Keep <tier>** needs nothing new. A released tier change is not restored by it; the user schedules it again from `/pricing`.
+
+Account deletion cancels immediately instead, with no refund; see [docs/access-control.md](access-control.md).
 
 ### The pricing page
 
@@ -623,6 +633,17 @@ create table if not exists billing_intents (
 **That adoption step is what stops the scatter coming back.** Without it a subscriber who cancels and later resubscribes would have a `user_plans` row pointing at one customer and no `billing_customers` row at all, and the next checkout would mint a second customer for them — the precise failure this table exists to prevent.
 
 **`stripe_session_id` is unique but nullable**, which Postgres allows for any number of rows. It is null for the whole `creating` window and whenever a row is reclaimed, and the unique constraint is what lets the webhook delete by session id without ever touching the wrong account's row.
+
+### Migration for account deletion
+
+`deleted_accounts` is the tombstone `syncSubscription` and `billing/checkout` read. Run once in Supabase before deploying the Settings page:
+
+```sql
+create table deleted_accounts (
+    user_id    text primary key,
+    deleted_at timestamptz not null default now()
+);
+```
 
 ## Seeding your own account
 

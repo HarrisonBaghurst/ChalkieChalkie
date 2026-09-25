@@ -107,6 +107,10 @@ const Colour = () => (
                     usage="Confirmation only. Button variant success, badge variant success."
                 />
                 <Swatch
+                    token="--warning"
+                    usage="Something is about to change that the user should act on before it lands, such as a plan ending or a scheduled tier change. Tinted surfaces only: bg-warning/15 with border-warning/45."
+                />
+                <Swatch
                     token="--border"
                     usage="Hairline borders. A 25% mix of --foreground-third — the same expression .control-surface uses, so a stock shadcn border and a hand-built control line up exactly."
                 />

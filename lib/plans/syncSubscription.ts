@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isDeletedAccount } from "@/lib/deletedAccounts";
 import { reportError } from "@/lib/errorResponse";
 import { statusGrantsEntitlements } from "@/lib/plans/entitlements";
 import {
@@ -145,6 +146,8 @@ export const syncSubscription = async (
         );
         return null;
     }
+
+    if (await isDeletedAccount(userId)) return null;
 
     const status = planStatusFor(subscription.status);
     const previous = await readPlanRow(userId);

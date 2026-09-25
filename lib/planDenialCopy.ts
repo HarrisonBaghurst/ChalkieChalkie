@@ -113,6 +113,24 @@ export const planDenialCopy = (body: DenialBody): DenialCopy | null => {
                 description:
                     "Keep your current plan first, then you can move between tiers again. Upgrading now also works: it starts a new billing period today and cancels the ending.",
             };
+        case "already-cancelling":
+            return {
+                title: "Your plan is already set to end",
+                description:
+                    "Use Keep plan in Settings if you want to carry on.",
+            };
+        case "account-deleted":
+            return {
+                title: "This account is being deleted",
+                description:
+                    "Finish deleting it from Settings. A deleted account cannot buy a plan.",
+            };
+        case "confirmation":
+            return {
+                title: "Confirmation did not match",
+                description:
+                    "Type the phrase exactly as shown to delete your account.",
+            };
         case "linked-students":
             return {
                 title: "Linked student limit reached",

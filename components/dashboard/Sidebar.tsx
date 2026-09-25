@@ -166,6 +166,14 @@ const Sidebar = ({
             active: pathname === "/dashboard/connections",
         },
         {
+            text: "Settings",
+            icon: "/icons/settings.svg",
+            iconDark: "/icons/settings-dark.svg",
+            status: true,
+            link: "/dashboard/settings",
+            active: pathname === "/dashboard/settings",
+        },
+        {
             text: "Messages",
             icon: "/icons/message-square-text.svg",
             iconDark: "/icons/message-square-text-dark.svg",

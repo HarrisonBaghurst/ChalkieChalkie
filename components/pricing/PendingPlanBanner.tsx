@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { PANEL_SURFACE } from "@/components/dashboard/cardSurface";
 import { Button } from "@/components/ui/button";
+import { useKeepPlan } from "@/hooks/useKeepPlan";
 import { PLAN_LABELS } from "@/lib/plans/labels";
-import { resetLabel, responseDenialCopy } from "@/lib/planDenialCopy";
+import { resetLabel } from "@/lib/planDenialCopy";
 import { cn } from "@/lib/utils";
 import { PlanId } from "@/types/planTypes";
 
@@ -23,43 +21,8 @@ const PendingPlanBanner = ({
     pendingPlanAt,
     cancelsAt,
 }: PendingPlanBannerProps) => {
-    const router = useRouter();
-    const [submitting, setSubmitting] = useState(false);
-
     const keeping = currentPlan ? PLAN_LABELS[currentPlan] : "your plan";
-
-    const cancel = async () => {
-        if (submitting) return;
-        setSubmitting(true);
-
-        try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL}/api/billing/pending`,
-                { method: "DELETE" },
-            );
-
-            if (!res.ok) {
-                const denial = await responseDenialCopy(res);
-                toast.error(
-                    denial?.title ?? "Could not cancel the scheduled change.",
-                    {
-                        description: denial?.description ?? "Please try again.",
-                    },
-                );
-                return;
-            }
-
-            toast.success(`Staying on ${keeping}.`, {
-                description: "The scheduled change has been cancelled.",
-            });
-            router.refresh();
-        } catch (err) {
-            console.error(err);
-            toast.error("Something went wrong.");
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    const { keep, submitting } = useKeepPlan(keeping);
 
     return (
         <div
@@ -85,7 +48,7 @@ const PendingPlanBanner = ({
                 variant="outline"
                 size="default"
                 disabled={submitting}
-                onClick={cancel}
+                onClick={keep}
                 className="shrink-0"
             >
                 {submitting ? "Working..." : `Keep ${keeping}`}

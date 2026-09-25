@@ -59,6 +59,13 @@ const TabBar = ({
             iconDark: "/icons/graduation-cap-dark.svg",
             enabled: isTutor || isStudent,
         },
+        {
+            label: "Settings",
+            href: "/dashboard/settings",
+            icon: "/icons/settings.svg",
+            iconDark: "/icons/settings-dark.svg",
+            enabled: true,
+        },
     ];
 
     const action = roleKnown ? resolveDashboardAction(pathname, role) : null;

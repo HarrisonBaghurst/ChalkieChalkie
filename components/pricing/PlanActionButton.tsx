@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { OPTION_PANEL } from "@/components/dashboard/cardSurface";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -30,9 +31,6 @@ type PlanActionButtonProps = {
 
 const LIFT_ON_CARD_HOVER =
     "group-hover/plan:bg-primary group-hover/plan:text-primary-foreground hover:bg-primary/90";
-
-const OPTION_PANEL =
-    "flex flex-col gap-2 radius-surface border border-foreground-third/15 bg-background-second p-4";
 
 const effectiveLabel = (iso: unknown): string | null => {
     if (typeof iso !== "string") return null;

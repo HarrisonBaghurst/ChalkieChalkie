@@ -1,3 +1,4 @@
+import { reportError } from "@/lib/errorResponse";
 import { deleteWorkspaceImages } from "@/lib/r2";
 import { deleteRealtimeRoom } from "@/lib/realtimeAdmin";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -14,10 +15,11 @@ export async function deleteWorkspaceResources(roomId: string): Promise<void> {
     try {
         await deleteWorkspaceImages(roomId);
     } catch (err) {
-        console.error(`Failed to delete images for room ${roomId}`, err);
+        await reportError("workspace:delete-images", err);
     }
 
-    await supabaseAdmin.from("Room").delete().eq("id", roomId);
+    const { error } = await supabaseAdmin.from("Room").delete().eq("id", roomId);
+    if (error) throw error;
 
     try {
         await deleteRealtimeRoom(roomId);

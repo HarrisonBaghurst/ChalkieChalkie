@@ -1,3 +1,4 @@
+import { isDeletedAccount } from "@/lib/deletedAccounts";
 import { errorResponse, reportError } from "@/lib/errorResponse";
 import { customerFor, replaceCustomer } from "@/lib/plans/billingCustomer";
 import {
@@ -216,6 +217,13 @@ export async function POST(req: Request) {
     let owned: BillingIntentRow | null = null;
 
     try {
+        if (await isDeletedAccount(userId)) {
+            return billingDenial(
+                "account-deleted",
+                "This account is being deleted",
+            );
+        }
+
         const row = await readPlanRow(userId);
 
         const comped = compedPlanDenial(row);

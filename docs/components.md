@@ -56,6 +56,9 @@ components/
            │                     FiltersSheet
            ├─ connections/     ← app/dashboard/connections: ConnectionsClient, ConnectionsTable +
            │                     ConnectionRow, LinkCodeDialog (generate/redeem tabs), InviteCountdown
+           ├─ settings/        ← app/dashboard/settings: SettingsClient, SettingsSection (section,
+           │                     row and action primitives plus date helpers), CancelPlanDialog,
+           │                     DeleteAccountDialog
            └─ skeletons/       ← loading states mirroring the real layouts, mobile and desktop
   forms/StepperFormDialog ← the one multi-step form dialog, driven by a FormSpec from
                             lib/forms/ (betaRequest, bugReport). Replaced

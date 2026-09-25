@@ -81,6 +81,7 @@
 
     --destructive: #c21f2f;
     --success: #3a9630;
+    --warning: #d9822b;
 
     /* Same expression as `.control-surface` below, so a stock shadcn border
        and an existing .control-surface element are pixel-identical. */
@@ -175,6 +176,7 @@
     --color-destructive: var(--destructive);
 
     --color-success: var(--success);
+    --color-warning: var(--warning);
 
     --color-accent-foreground: var(--accent-foreground);
 
