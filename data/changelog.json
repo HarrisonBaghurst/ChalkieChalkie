@@ -1,8 +1,67 @@
 {
     "title": "Changelog",
-    "currentVersion": "0.2.1",
+    "currentVersion": "0.3.0",
     "intro": "What have we been up to recently? Find out exactly whats changed in in each version below starting from the most recent changes.",
     "entries": [
+        {
+            "version": "0.3.0",
+            "date": "",
+            "overview": "Plans can now be bought, changed and cancelled from inside the app. Payments are taken by Stripe, your card details and receipts are kept on Link, and the plan you are on is now what makes your account a tutor account.",
+            "changes": [
+                {
+                    "tag": "Added",
+                    "text": "There is a new pricing page, reached from Pricing in the header and footer of every page outside the dashboard. It sets out Basic at £5, Plus at £15 and Professional at £45 a month, who each one is for, and a table comparing how many people fit in a lesson, how many lessons you get a month, how many students you can link, how long workspaces are kept and how early they open."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Choosing a plan takes you to Stripe to pay, then back to a welcome page once the payment has gone through. The plan is ready to use straight away, with nothing further to set up. If you are not signed in, the buttons ask you to sign in first and bring you back to the pricing page afterwards."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Buying a plan is now what makes an account a tutor account, rather than sending a request and waiting for it to be approved by hand. You are told as much before you are sent to pay, along with a reminder that students do not need a plan - their tutor's plan covers their lessons, so all a student needs is a link code."
+                },
+                {
+                    "tag": "Removed",
+                    "text": "The request tutor access form has gone. The button on the getting started checklist now reads Upgrade to a tutor account and takes you to the pricing page instead, and the Change plan button on the plan card at the top of the dashboard, which was marked as upcoming, now does the same."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Moving up a plan offers two choices. Upgrade now starts the new plan straight away and takes its full price today, moving your billing date to today - what is left of the month you have already paid for is not refunded. Upgrade next period charges nothing today and moves you across at your next renewal, so you get the rest of the month you have paid for first."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Moving down a plan always waits until the end of the month you have paid for. Nothing is charged or refunded today, you keep everything your current plan allows until then, and your next payment is the first at the lower price. Changing plan never charges or refunds part of a month."
+                },
+                {
+                    "tag": "Added",
+                    "text": "A plan change or cancellation you have scheduled is shown at the top of the pricing page with the date it takes effect, alongside a Keep button that undoes it if you change your mind."
+                },
+                {
+                    "tag": "Added",
+                    "text": "There is a new Settings page, found in the sidebar and in the tabs along the bottom of a phone. It shows the plan you are on, whether it is active, and how much your next payment is and when, with a link through to Link for your card details and receipts. It also has a Contact us button for telling us about anything that is not working."
+                },
+                {
+                    "tag": "Added",
+                    "text": "If a payment has not gone through, Settings says so at the top of the page and tells you whether it is still being retried - in which case you keep everything your plan allows in the meantime - or whether it has stopped. Changing plan is held back until the payment clears, and the message says how to update your card."
+                },
+                {
+                    "tag": "Added",
+                    "text": "You can now cancel your plan from Settings. It carries on until the end of the period you have already paid for, and before you confirm you are shown what stops when it ends - how many upcoming lessons will no longer open, how many students will be made inactive, and that your workspaces are kept for thirty days before being removed. A plan change you had scheduled is cancelled along with it. Until the plan ends, the Keep button beside it brings it back as if nothing had happened."
+                },
+                {
+                    "tag": "Added",
+                    "text": "You can now delete your account from Settings. The window lists everything that goes with it - your plan, which is cancelled straight away with no refund for the days left, every workspace you host along with its boards and images, your links to your tutors or students, and your place in workspaces you have joined - and only lets you continue once you type fully delete my account. You are asked to confirm it is you before anything is removed, and your email address can be used to sign up again afterwards with a fresh, empty account."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Refunding a month in full now ends the plan it paid for, so you are no longer billed again the following month after being given your money back. A partial refund, or a refund of an older month, leaves your plan as it is."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Fewer people now fit in a lesson on the two larger plans. Plus allows you and three students rather than four, and Professional you and five students rather than nine. Basic stays one-to-one."
+                }
+            ]
+        },
         {
             "version": "0.2.1",
             "date": "17 September 2026",
