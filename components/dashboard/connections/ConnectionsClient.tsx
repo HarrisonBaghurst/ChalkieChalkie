@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
-import { useUserRole } from "@/hooks/useUserRole";
+import { UserRoleProvider } from "@/hooks/useUserRole";
 import { CollapseState } from "@/lib/sidebarCookie";
 import { TableDensity } from "@/lib/tableDensityCookie";
 import { DASHBOARD_GRACE_MS } from "@/lib/dashboardFilters";
@@ -37,8 +37,7 @@ const ConnectionsClient = ({
     tableDensity,
 }: ConnectionsClientProps) => {
     const { isLoaded, isSignedIn } = useUser();
-    const clientRole = useUserRole();
-    const role = serverRole ?? clientRole;
+    const role = serverRole ?? "student";
     const roleKnown = !!serverRole || isLoaded;
 
     const [links, setLinks] = useState<LinkSummary[]>([]);
@@ -204,90 +203,94 @@ const ConnectionsClient = ({
     const ready = !loading && isLoaded;
 
     return (
-        <DashboardShell
-            crumbs={[
-                { label: "Dashboard", href: "/dashboard" },
-                { label: heading },
-            ]}
-            initialCollapsed={sidebarCollapsed}
-            initialDensity={tableDensity}
-            sidebar={
-                <Sidebar role={serverRole} onLinked={handleLinked} />
-            }
-            bottomBar={<TabBar role={serverRole} onLinked={handleLinked} />}
-            overlay={
-                ready && presentation === "page" ? (
-                    <GettingStartedTakeover
-                        role={linkRole}
-                        surface="connections"
-                        counts={checklistCounts}
-                    />
-                ) : null
-            }
-        >
-            {!ready ? (
-                <ConnectionsSkeleton />
-            ) : isUnsupportedRole ? (
-                <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
-                    <p className="text-small text-foreground-second">
-                        Connections are for tutors and students.
-                    </p>
-                </div>
-            ) : (
-                <>
-                    {presentation === "card" && (
-                        <GettingStarted
+        <UserRoleProvider value={role}>
+            <DashboardShell
+                crumbs={[
+                    { label: "Dashboard", href: "/dashboard" },
+                    { label: heading },
+                ]}
+                initialCollapsed={sidebarCollapsed}
+                initialDensity={tableDensity}
+                sidebar={
+                    <Sidebar role={serverRole} onLinked={handleLinked} />
+                }
+                bottomBar={
+                    <TabBar role={serverRole} onLinked={handleLinked} />
+                }
+                overlay={
+                    ready && presentation === "page" ? (
+                        <GettingStartedTakeover
                             role={linkRole}
                             surface="connections"
-                            presentation="card"
                             counts={checklistCounts}
                         />
-                    )}
+                    ) : null
+                }
+            >
+                {!ready ? (
+                    <ConnectionsSkeleton />
+                ) : isUnsupportedRole ? (
+                    <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
+                        <p className="text-small text-foreground-second">
+                            Connections are for tutors and students.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {presentation === "card" && (
+                            <GettingStarted
+                                role={linkRole}
+                                surface="connections"
+                                presentation="card"
+                                counts={checklistCounts}
+                            />
+                        )}
 
-                    {showCapNotice && (
-                        <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
-                            <p className="text-small font-inter-bold text-foreground">
-                                {inactiveCount} connection
-                                {inactiveCount === 1 ? " is" : "s are"} inactive
-                            </p>
-                            <p className="text-caption text-foreground-second">
-                                Your plan covers {linkedStudentsLimit} linked
-                                student
-                                {linkedStudentsLimit === 1 ? "" : "s"}. Inactive
-                                students stay on this list but can&apos;t join
-                                new workspaces. Remove a student to reactivate
-                                another, or upgrade to keep them all.
-                            </p>
+                        {showCapNotice && (
+                            <div className="radius-surface border border-foreground-third/15 bg-card-background px-4 py-3">
+                                <p className="text-small font-inter-bold text-foreground">
+                                    {inactiveCount} connection
+                                    {inactiveCount === 1 ? " is" : "s are"} inactive
+                                </p>
+                                <p className="text-caption text-foreground-second">
+                                    Your plan covers {linkedStudentsLimit} linked
+                                    student
+                                    {linkedStudentsLimit === 1 ? "" : "s"}. Inactive
+                                    students stay on this list but can&apos;t join
+                                    new workspaces. Remove a student to reactivate
+                                    another, or upgrade to keep them all.
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="md:hidden">
+                            <ConnectionsList
+                                links={links}
+                                role={linkRole}
+                                onRemove={handleRemove}
+                                onToggleActive={
+                                    role === "tutor"
+                                        ? handleToggleActive
+                                        : undefined
+                                }
+                            />
                         </div>
-                    )}
-
-                    <div className="md:hidden">
-                        <ConnectionsList
-                            links={links}
-                            role={linkRole}
-                            onRemove={handleRemove}
-                            onToggleActive={
-                                role === "tutor"
-                                    ? handleToggleActive
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div className="hidden md:block">
-                        <ConnectionsTable
-                            links={links}
-                            role={linkRole}
-                            onRemove={handleRemove}
-                            onToggleActive={
-                                role === "tutor"
-                                    ? handleToggleActive
-                                    : undefined
-                            }
-                        />
-                    </div>
-                </>
-            )}
-        </DashboardShell>
+                        <div className="hidden md:block">
+                            <ConnectionsTable
+                                links={links}
+                                role={linkRole}
+                                onRemove={handleRemove}
+                                onToggleActive={
+                                    role === "tutor"
+                                        ? handleToggleActive
+                                        : undefined
+                                }
+                            />
+                        </div>
+                    </>
+                )}
+            </DashboardShell>
+        </UserRoleProvider>
     );
 };
 

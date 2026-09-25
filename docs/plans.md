@@ -1,6 +1,6 @@
 # Plans, Entitlements & Usage
 
-Every paid limit in the app resolves through one server-only table. **Supabase `user_plans` is the single source of truth for a user's plan**, and the Stripe webhook is the only thing that writes it; Clerk `publicMetadata` holds `role` and nothing else. Role is _what you may do_, plan is _how much_ — a student has a role and no plan row at all.
+Every paid limit in the app resolves through one server-only table. **Supabase `user_plans` is the single source of truth for a user's plan**, and the Stripe webhook is the only thing that writes it. **It is also the source of the account role**: a granting row makes the user a tutor, and anything else makes them a student (admin comes from `ADMIN_USER_IDS`). See [docs/access-control.md](access-control.md).
 
 ## Where the numbers live
 
@@ -22,9 +22,13 @@ PlanEntitlements = {
 
 ## Resolution
 
-`lib/serverPlan.ts` mirrors `lib/roles.ts` / `lib/serverRole.ts`:
+`lib/serverPlan.ts` is what `lib/serverRole.ts` is built on:
 
-- `getUserPlan` — one indexed PK lookup, wrapped in React `cache()` so a server render checking entitlements twice costs one query.
+- `getUserPlan` — read through Redis (`chalkie:plan:{userId}`, 5-minute TTL), then one indexed PK lookup on a miss. It is wrapped in React `cache()` so a server render checking role and entitlements together costs one read. Page-to-page navigation therefore costs one Redis GET and no Supabase query.
+    - **"No plan" is cached too** (`{ plan: null }`), so students also skip Supabase. A Supabase error is **not** cached, so an outage does not pin anyone to "no plan" for the whole TTL.
+    - **Invalidation is a delete, not a write-through.** `syncSubscription` and `revokeDeletedCustomer` call `invalidatePlanCache` straight after their row write, so a cancellation or upgrade takes effect on the next request. The TTL is only a backstop for SQL hand-edits (a comped row, the seed below) and for the narrow race where a read that began before the upsert re-caches the old row. After a hand-edit, delete the key or wait five minutes.
+    - **Upstash failures fall through to Supabase** and are reported as `plan:cache:read` / `write` / `invalidate`. A failed invalidation leaves the old row cached for up to the TTL.
+    - `readUserPlanFresh` bypasses the cache. `reconcilePlanChange` uses it because it must never act on a cached row.
 - `entitlementsForUser` — returns `null` unless a row exists **and** its status grants entitlements.
 - `requireEntitlements` — the API-route guard, returning a 403 `{ reason: "no-plan" }`.
 
@@ -47,7 +51,7 @@ PlanEntitlements = {
 | live member count        | `realtime/src/BoardRoom.ts`                                      | close code 4004                                  |
 
 - **`leadMs` sets how early a host _may_ open a workspace, and nothing else.** It used to drive the start-time lock as well, which made a longer lead read as a downgrade — three days of frozen start time on Professional against one hour on Basic. The lock now hangs off `opened_at`; see [docs/access-control.md](access-control.md). Keep any future window variable on the access side of that line.
-- **PATCH resolves entitlements lazily**, only when `collaborators` changes or an unlocked `startTime` needs the window recomputed. A host whose plan has lapsed can still write feedback on a past lesson — the same care that `sameInstant` exists for.
+- **PATCH resolves entitlements lazily**, only when `collaborators` changes or an unlocked `startTime` needs the window recomputed. `requireTutor` already demands a granting plan, so a host whose plan has lapsed is refused every PATCH, feedback included — a lapsed tutor is a student.
 - **The quota claims before the insert and releases on failure.** The counter is the authority, so it must claim before the work it authorises, exactly like the invite compare-and-swap in `links/redeem`. Worst case is one lost workspace on a Supabase error; the alternative is a cap two concurrent requests walk straight through.
 - **The links cap is the tutor's, whoever redeems.** It is checked inside the read-only block _before_ the CAS claim, so a capped redeem never burns the other side's code. Two concurrent redeems can overshoot by one; `links:redeem` at 5 per 10 minutes makes that acceptable, and a trigger would be the fix if it ever isn't.
 - **Deleting a workspace does not refund quota.** Otherwise create-and-delete churn farms it.
@@ -410,6 +414,7 @@ The banner reads off the same `readPlanRow` and renders whichever of the two is 
     **Keying this on `currentPlan !== null` is the bug to avoid**, and it is not hypothetical — it was the first thing to break in testing. A hand-seeded row (the `insert into user_plans` at the bottom of this file) grants a tier with both Stripe ids null, so the client called `switch`, which requires a subscription id, and every seeded account got `no-subscription` with no way forward. Seeded accounts are the *normal* state of every account that predates Stripe, including your own. The page therefore resolves all three facts from one `readPlanRow`: the granting tier, whether any row exists, and whether a subscription exists.
 
     A row with no Stripe behind it consequently shows **Choose** on all three tiers, including the one it is on. Both routes then refuse — see comped plans below. The buttons are deliberately left saying the wrong thing: the accounts this affects are hand-granted ones belonging to people who already know it, and a fourth button state for them would be carrying UI weight for an audience of a handful.
+- **A first purchase is confirmed before Checkout, because buying a plan is what makes an account a tutor** (see [docs/access-control.md](access-control.md)). A signed-in user with no granting plan gets a dialog that says so, and tells a student they don't need a plan: their tutor's plan covers their lessons, so they should ask for a link code. The `/pricing` subtitle says the same thing. The dialog is keyed on `currentPlan === null`, not on the endpoint, so a comped account (granting tier, no subscription) still goes straight to `checkout` and gets its denial toast. Telling a tutor who is already comped that buying a plan will turn them into a tutor would be wrong.
 - **Both switches go through a confirmation dialog**, each with its billing note in an inset `bg-background-second` panel. The downgrade keeps one panel and one confirm: nothing is charged or refunded today, and the next invoice is the first at the lower price.
 
     **The upgrade dialog is where the money decision is actually made**, so it is two panels and two confirms rather than a warning. *Upgrade now* names the price and says all three consequences in order — charged in full today, billing date moves to today, the rest of the current month is not refunded. *Upgrade on <date>* says nothing is charged today and the new tier and its price arrive together at the renewal. The second option exists because the first forfeits the remainder of a month already paid for; offering only the immediate one would make every mid-month upgrade a bad deal with no alternative, which is the sort of thing users discover on a statement.

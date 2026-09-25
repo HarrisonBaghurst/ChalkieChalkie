@@ -4,11 +4,17 @@
 
 Two distinct concepts:
 
-- **Account role** — `student | tutor | admin`, stored in Clerk `publicMetadata.role`. The three are **mutually exclusive and confer separate privileges**; neither tutor nor admin is a superset of the other. `lib/roles.ts` defines them and parses the stored value (failing closed to `student`). Server-side: `lib/serverRole.ts` (`getUserRole`, plus `requireTutor` / `requireAdmin` guards for API routes — each demands its exact role, so `requireTutor` rejects an admin — and `requireLinkRole`, which returns `"student" | "tutor"` or a 403, for the bidirectional invite-code flow). Client-side: `hooks/useUserRole.tsx`.
+- **Account role** — `student | tutor | admin`, **derived, never stored**. Clerk metadata is not read anywhere. `getUserRole` in `lib/serverRole.ts` resolves it in this order:
+    1. `admin` if the Clerk ID is listed in the `ADMIN_USER_IDS` env var.
+    2. `tutor` if Supabase `user_plans` holds a granting plan (`grantedPlanForUser`, so `active`, `trialing` and `past_due`).
+    3. `student` otherwise.
+
+  The three are **mutually exclusive and confer separate privileges**; neither tutor nor admin is a superset of the other. Guards: `requireTutor` (403 `{ reason: "no-plan" }`, so the client's `responseDenialCopy` explains it), `requireAdmin` (env var only, no query), and `requireLinkRole`, which returns `"student" | "tutor"` or a 403, for the bidirectional invite-code flow. Client-side: `hooks/useUserRole.tsx` reads a `UserRoleProvider` that `DashboardClient` and `ConnectionsClient` fill from the server-resolved role. It does not read Clerk and has no hydration gap.
     - `student` — the default. Joins workspaces they were invited to; can link to tutors and see their linked tutors at `/dashboard/connections`.
     - `tutor` — creates, edits and deletes workspaces; can link to students and see their linked students. The workspace collaborator picker (`CollaboratorsPicker`) only ever offers linked students — `/api/users/friends` is strictly the caller's linked counterparties, not a general user search.
     - `admin` — internal tooling only (currently `/style-guide`). No product privileges, including linking — an admin can hold no tutor-student links. Don't widen a tutor-gated route to admins to make internal tooling easier.
-    - **Nothing in the repo ever writes `publicMetadata`.** There is no Clerk webhook and no admin route, so a new account is a student *by absence of the key* rather than by assignment, and promoting someone to tutor is a hand-edit in the Clerk dashboard. `POST /api/tutor-access` is only how a request reaches you — it sends an email with the Clerk ID stamped server-side, and you still make the change by hand. Anything that automates promotion has to add the first write path.
+    - **Buying a plan is the promotion, and losing it is the demotion.** No role is ever written: the Stripe webhook's `user_plans` upsert is the only write, and the role follows it. A scheduled cancellation keeps the user a tutor until `current_period_end`. Once the row reaches `unpaid` or `cancelled` they are a student again and lose every tutor-gated write, **including feedback on past lessons and deleting their own workspaces**. Anyone may buy a plan, including a student with existing links.
+    - **Demotion reaches the API on the next request.** The role shares `getUserPlan`'s Redis cache (see [docs/plans.md](plans.md)), and the webhook deletes that key right after writing the row. An open dashboard still shows tutor controls until it reloads; the first action it tries gets the `no-plan` 403 and its toast.
 - **Workspace host** — the creator of a workspace (`Workspace.host`), the only member allowed to edit it. Helpers in `lib/workspaceHost.ts`.
 - **Tutor-student links** — a separate relation from workspace membership, stored in Supabase `tutor_links` (positional `tutor_id`/`student_id`, not role-stamped) and formed by redeeming a 10-minute invite code (`link_invites`). Either side can remove a link; removing one also strips the student from the tutor's future-dated rooms (`lib/unlinkRooms.ts`) and evicts their live sockets from those rooms. See `lib/links.ts`, `lib/inviteCode.ts`, `app/api/links/`.
 
@@ -18,7 +24,7 @@ Two distinct concepts:
 - **The call is best-effort and never fails its caller** — it reports through `reportError` and returns. The row is already correct, so a Worker outage costs one stale session rather than a failed unlink or a failed save.
 - **No client change was needed.** `client.ts` ignores the close code and reconnects, `/api/realtime-auth` 403s, and `RoomProvider` pushes to `/forbidden`. If you ever want a message first, that is where to branch on 1008.
 
-`useUserRole` returns `student` until Clerk hydrates, so anything privileged must also gate on `isLoaded` or take a server-resolved role as a prop (`app/dashboard/page.tsx` resolves it and passes it to `DashboardClient`/`Sidebar` for this reason).
+`useUserRole` returns `student` outside a `UserRoleProvider`, so any new page that needs the role must resolve it on the server and provide it, the way `app/dashboard/page.tsx` and `app/dashboard/connections/page.tsx` do.
 
 `app/api/realtime-auth/route.ts` gates room access: checks Supabase to confirm the authenticated Clerk user is in the room's `user_ids` array, then that the room is inside its access window, **that the host has opened it**, and **that the host still has a granting plan**, before signing a ticket. Returns 403 otherwise (client redirects to `/forbidden`). Membership failure returns a bodyless 403 so a non-member learns nothing; a **member** who fails a later check gets `{ reason }`, which `client.ts` reads and `RoomProvider` forwards as `/forbidden?reason=`.
 

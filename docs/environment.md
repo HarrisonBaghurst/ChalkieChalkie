@@ -6,7 +6,8 @@ Create `.env.local` with:
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL`
 - `SUPABASE_URL`, `SUPABASE_SECRET_KEY`
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` — Cloudflare R2, where every pasted image and rasterised PDF page is stored. The API token needs **Object Read & Write** on that bucket and nothing more. The bucket must stay **private**: no public dev URL, no unauthenticated custom domain, since the app's own route is the only thing that authorises a read (see Image Storage & Serving below)
-- `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` — rate limiting and the plan/role cache in `lib/serverPlan.ts`
+- `ADMIN_USER_IDS` — comma-separated Clerk user IDs that resolve to the `admin` role (`lib/serverRole.ts`). Server-only. Unset means no admins, and `/style-guide` 404s for everyone. Changing it needs a redeploy
 - `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000`)
 - `NEXT_PUBLIC_MAX_IMAGE_WIDTH`, `NEXT_PUBLIC_MAX_IMAGE_HEIGHT`, `NEXT_PUBLIC_IMAGE_QUALITY` — the box every image and PDF page is scaled into, and the JPEG quality it is encoded at. All three are optional, defaulting to `2048`/`2048`/`0.85` in `lib/imagePrepare.ts`. **Client-side, so advisory only** — a tampered value still meets the route's 413 and the storage bucket's own limit. `NEXT_PUBLIC_` is inlined at build time, so changing one needs a rebuild, not just a redeploy
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — from the Stripe dashboard's API keys page, and from the webhook endpoint you point at `/api/billing/webhook` (`stripe listen` prints a `whsec_` for local work). `lib/stripe.ts` constructs the client at module scope with `process.env.STRIPE_SECRET_KEY!`, so **`next build` fails outright without it** — the same as `SUPABASE_URL`

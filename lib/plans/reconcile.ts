@@ -6,7 +6,7 @@ import {
     entitlementsFor,
     statusGrantsEntitlements,
 } from "@/lib/plans/entitlements";
-import { getUserPlan } from "@/lib/serverPlan";
+import { readUserPlanFresh } from "@/lib/serverPlan";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
     PlanEntitlements,
@@ -236,7 +236,7 @@ export const reconcilePlanChange = async (
     userId: string,
     now: number = Date.now(),
 ): Promise<ReconcileSummary> => {
-    const userPlan = await getUserPlan(userId);
+    const userPlan = await readUserPlanFresh(userId);
     const granted =
         userPlan && statusGrantsEntitlements(userPlan.status)
             ? userPlan.plan

@@ -69,7 +69,7 @@ Read the doc that covers what you are about to touch, before touching it.
 | `hooks/useInsertPdf.tsx`, `lib/r2.ts`, `lib/image*.ts`, `lib/pdfLease.ts`, `app/api/workspaces/*/images/` | [docs/images.md](docs/images.md) |
 | `components/dashboard/`, `app/dashboard/`, `lib/dashboard*.ts`, `lib/tableColumns.ts`, `lib/*Cookie.ts` | [docs/dashboard.md](docs/dashboard.md) |
 | `app/api/`, `proxy.ts`, `app/(home)/`, `app/(legal)/`, route layout or a new page | [docs/routes-api.md](docs/routes-api.md) |
-| Auth, roles, websocket tickets, eviction, workspace open/expiry windows, `lib/roles.ts`, `lib/serverRole.ts`, `lib/realtimeTicket.ts`, `lib/realtimeAdmin.ts`, `lib/workspaceLifecycle.ts`, `lib/links.ts` | [docs/access-control.md](docs/access-control.md) |
+| Auth, roles, websocket tickets, eviction, workspace open/expiry windows, `lib/serverRole.ts`, `lib/realtimeTicket.ts`, `lib/realtimeAdmin.ts`, `lib/workspaceLifecycle.ts`, `lib/links.ts` | [docs/access-control.md](docs/access-control.md) |
 | Paid plans, entitlement values, usage quotas, `lib/plans/`, `lib/serverPlan.ts`, `lib/usage.ts`, `types/planTypes.ts`, `hooks/useEntitlements.tsx` | [docs/plans.md](docs/plans.md) |
 | Deployment, `vercel.json`, `app/api/cron/`, `lib/ratelimit.ts`, `lib/errorResponse.ts`, `data/changelog.json`, version bumps | [docs/ops.md](docs/ops.md) |
 | Adding or changing an environment variable | [docs/environment.md](docs/environment.md) |

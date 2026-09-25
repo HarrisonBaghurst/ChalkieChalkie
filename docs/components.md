@@ -58,7 +58,7 @@ components/
            │                     ConnectionRow, LinkCodeDialog (generate/redeem tabs), InviteCountdown
            └─ skeletons/       ← loading states mirroring the real layouts, mobile and desktop
   forms/StepperFormDialog ← the one multi-step form dialog, driven by a FormSpec from
-                            lib/forms/ (betaRequest, bugReport, tutorAccess). Replaced
+                            lib/forms/ (betaRequest, bugReport). Replaced
                             SendMessage.tsx, whose two modes were an if/else through
                             every step, field, validator and review list — add a form by
                             writing a config, never by adding a branch here

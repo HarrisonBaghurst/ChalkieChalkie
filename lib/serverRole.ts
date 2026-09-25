@@ -1,30 +1,39 @@
-import { clerkClient } from "@clerk/nextjs/server";
+import "server-only";
+
 import { UserRole } from "@/types/userTypes";
 import { LinkRole } from "@/types/linkTypes";
-import { parseUserRole } from "@/lib/roles";
+import { grantedPlanForUser, planDenial } from "@/lib/serverPlan";
+
+const adminUserIds = (): Set<string> =>
+    new Set(
+        (process.env.ADMIN_USER_IDS ?? "")
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean),
+    );
+
+export const isAdmin = (userId: string): boolean =>
+    adminUserIds().has(userId);
 
 export const getUserRole = async (userId: string): Promise<UserRole> => {
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    return parseUserRole(user?.publicMetadata?.role);
+    if (isAdmin(userId)) return "admin";
+    return (await grantedPlanForUser(userId)) ? "tutor" : "student";
 };
 
-// Exact match, not a privilege level: requireTutor rejects an admin.
-const requireRole = async (
+export const requireTutor = async (
     userId: string,
-    role: UserRole,
 ): Promise<Response | null> => {
-    if ((await getUserRole(userId)) !== role) {
-        return new Response("Forbidden", { status: 403 });
-    }
-    return null;
+    if ((await getUserRole(userId)) === "tutor") return null;
+    return planDenial(
+        "no-plan",
+        "This account does not have an active plan",
+    );
 };
 
-export const requireTutor = (userId: string): Promise<Response | null> =>
-    requireRole(userId, "tutor");
-
-export const requireAdmin = (userId: string): Promise<Response | null> =>
-    requireRole(userId, "admin");
+export const requireAdmin = async (
+    userId: string,
+): Promise<Response | null> =>
+    isAdmin(userId) ? null : new Response("Forbidden", { status: 403 });
 
 // Returns the role rather than discarding it — the invite flow needs to know
 // which side the caller is on. Admin holds no links, so it is rejected.

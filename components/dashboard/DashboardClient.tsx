@@ -18,7 +18,7 @@ import { mapRoomRow, type RoomRow } from "@/lib/workspaceMapping";
 import { ChecklistCounts, resolvePresentation } from "@/lib/gettingStarted";
 import { LinkRole } from "@/types/linkTypes";
 import { PlanId } from "@/types/planTypes";
-import { useUserRole } from "@/hooks/useUserRole";
+import { UserRoleProvider } from "@/hooks/useUserRole";
 import {
     EntitlementsProvider,
     type EntitlementsState,
@@ -64,8 +64,7 @@ const DashboardClient = ({
     testData,
 }: DashboardClientProps = {}) => {
     const { isLoaded, isSignedIn, user } = useUser();
-    const clientRole = useUserRole();
-    const role = serverRole ?? clientRole;
+    const role = serverRole ?? "student";
 
     const [workspaces, setWorkspaces] = useState<Workspace[]>(
         testData?.workspaces ?? [],
@@ -368,7 +367,11 @@ const DashboardClient = ({
         </DashboardShell>
     );
 
-    return <EntitlementsProvider value={plan}>{shell}</EntitlementsProvider>;
+    return (
+        <UserRoleProvider value={role}>
+            <EntitlementsProvider value={plan}>{shell}</EntitlementsProvider>
+        </UserRoleProvider>
+    );
 };
 
 export default DashboardClient;

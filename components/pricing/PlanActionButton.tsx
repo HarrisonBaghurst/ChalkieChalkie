@@ -90,6 +90,8 @@ const PlanActionButton = ({
 
     const upgrade = switching && !downgrade;
 
+    const firstPlan = !hasGrantedPlan;
+
     const renewal = effectiveLabel(currentPeriodEnd);
 
     const submit = async (when?: SwitchWhen) => {
@@ -167,14 +169,66 @@ const PlanActionButton = ({
                 size="lg"
                 disabled={submitting}
                 onClick={
-                    switching ? () => setConfirming(true) : () => submit()
+                    switching || firstPlan
+                        ? () => setConfirming(true)
+                        : () => submit()
                 }
                 className={cn("w-full", !hasGrantedPlan && LIFT_ON_CARD_HOVER)}
             >
                 {submitting ? "Working..." : action}
             </Button>
 
-            {confirming && (
+            {confirming && firstPlan && (
+                <Dialog
+                    open
+                    onOpenChange={(open) => !open && setConfirming(false)}
+                >
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{action}?</DialogTitle>
+                            <DialogDescription>
+                                {`Plans are for tutors. Buying ${label} turns this into a tutor account, so you can create workspaces and invite students to them.`}
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className={OPTION_PANEL}>
+                            <p className="text-small">
+                                Learning with a tutor? You don&apos;t need a
+                                plan.
+                            </p>
+                            <p className="text-caption text-foreground-third">
+                                Your tutor&apos;s plan covers every lesson they
+                                invite you to, so students never pay. If your
+                                tutor has asked you to join, ask them for a
+                                link code instead.
+                            </p>
+                        </div>
+
+                        <DialogFooter>
+                            <Button
+                                variant="ghost"
+                                size="default"
+                                onClick={() => setConfirming(false)}
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                variant="default"
+                                size="default"
+                                disabled={submitting}
+                                onClick={() => submit()}
+                            >
+                                {submitting
+                                    ? "Working..."
+                                    : "Continue to payment"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {confirming && switching && (
                 <Dialog
                     open
                     onOpenChange={(open) => !open && setConfirming(false)}

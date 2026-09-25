@@ -30,8 +30,8 @@ const page = async () => {
             <div className="flex flex-col gap-6 w-fit">
                 <h1 className="text-display w-fit">Choose your plan</h1>
                 <p className="text-subheading font-inter-regular text-foreground-third">
-                    Only tutors require a plan. You can cancel whenever you
-                    like.
+                    Plans are for tutors. Students don&apos;t need one. You can
+                    cancel whenever you like.
                 </p>
             </div>
 

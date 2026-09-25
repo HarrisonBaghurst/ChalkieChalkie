@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { getUserRole } from "@/lib/serverRole";
+import { isAdmin } from "@/lib/serverRole";
 import StyleGuide from "@/components/styleGuide/StyleGuide";
 
 export const metadata: Metadata = {
@@ -15,8 +15,7 @@ const page = async () => {
     const { userId } = await auth();
     if (!userId) notFound();
 
-    const role = await getUserRole(userId).catch(() => null);
-    if (role !== "admin") notFound();
+    if (!isAdmin(userId)) notFound();
 
     return <StyleGuide />;
 };

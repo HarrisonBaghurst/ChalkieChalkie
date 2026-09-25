@@ -28,7 +28,7 @@ export const planDenialCopy = (body: DenialBody): DenialCopy | null => {
             return {
                 title: "No active plan",
                 description:
-                    "This account does not have a plan that allows creating workspaces.",
+                    "This account does not have a plan that allows creating or managing workspaces.",
             };
         case "quota": {
             const tally =

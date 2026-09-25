@@ -9,6 +9,7 @@ import {
 } from "@/lib/plans/planRow";
 import { reconcilePlanChange } from "@/lib/plans/reconcile";
 import { planForPriceId, planStatusFor } from "@/lib/plans/stripePrices";
+import { invalidatePlanCache } from "@/lib/serverPlan";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
     PendingPlanChange,
@@ -197,6 +198,8 @@ export const syncSubscription = async (
         );
     }
 
+    await invalidatePlanCache(userId);
+
     if (changed || previous?.reconcilePending) {
         const summary = await reconcilePlanChange(userId);
 
@@ -259,6 +262,8 @@ export const revokeDeletedCustomer = async (
                 `Could not revoke the plan row for ${userId}: ${error.message}`,
             );
         }
+
+        await invalidatePlanCache(userId);
     }
 
     const summary = await reconcilePlanChange(userId);

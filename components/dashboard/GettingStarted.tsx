@@ -1,12 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import StepperFormDialog from "@/components/forms/StepperFormDialog";
-import { TUTOR_ACCESS } from "@/lib/forms/tutorAccess";
 import {
     ChecklistCounts,
     ChecklistPresentation,
@@ -85,7 +82,6 @@ const GettingStarted = ({
     counts,
 }: GettingStartedProps) => {
     const { collapsed } = useSidebarCollapse();
-    const [requestOpen, setRequestOpen] = useState(false);
 
     const rows = resolveChecklist(role, surface, presentation, counts);
 
@@ -122,21 +118,14 @@ const GettingStarted = ({
             {role === "student" && counts.linkCount === 0 && (
                 <div className="mt-auto flex flex-col gap-2 border-t border-foreground-third/25 pt-5">
                     <Button
+                        asChild
                         variant="outline"
                         size="default"
-                        onClick={() => setRequestOpen(true)}
                         className="w-full"
                     >
-                        Upgrade to a tutor account
+                        <Link href="/pricing">Upgrade to a tutor account</Link>
                     </Button>
                 </div>
-            )}
-
-            {requestOpen && (
-                <StepperFormDialog
-                    spec={TUTOR_ACCESS}
-                    onClose={() => setRequestOpen(false)}
-                />
             )}
         </div>
     );
