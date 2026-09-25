@@ -46,7 +46,7 @@ const Forbidden = async ({
             <div className="items-center flex flex-col gap-4 text-center">
                 <p className="text-display text-foreground">{heading}</p>
                 <p className="pb-4 text-foreground-second">{detail}</p>
-                <Button asChild>
+                <Button size="lg" asChild>
                     <Link href="/dashboard">Back to dashboard</Link>
                 </Button>
             </div>

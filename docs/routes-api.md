@@ -11,6 +11,7 @@
 - `app/sign-in/` — Clerk sign-in page (styled via `lib/clerkAppearance.ts`)
 - `app/style-guide/` — Admin-only design system reference (see above)
 - `app/forbidden/` — Shown when a user fails workspace access (403 from realtime-auth)
+- `app/checkout/success/` — Stripe's `success_url` after a first purchase, `/checkout/success?plan=<PlanId>`. A static thank-you on `dotted-paper` naming the plan from `PLAN_LABELS`; it does not poll or read `user_plans`, since the webhook normally lands before the redirect. `plan` is cosmetic only, and anything that is not a `PlanId` 404s
 - `app/not-found.tsx` — 404, also what unauthorised style-guide requests render
 - `app/api/` — Backend routes:
     - `realtime-auth` — issues a 60-second HMAC ticket after the membership check, **the access-window check** (see Workspace Lifecycle below) **and the host's plan check**, and is the only writer of `Room.last_activity_at` besides workspace-create, and of `Room.opened_at`
@@ -24,4 +25,4 @@
     - `cron/remove-unused-rooms` — deletes rooms whose `expires_at` has passed (see Workspace Lifecycle below); runs daily at 05:00 via `vercel.json` crons, authenticated with `CRON_SECRET`. Reads in batches of 500 because PostgREST caps a request at 1000 rows, and re-reads from the top each time rather than paging by offset, since deleting a room removes it from the result set. A room whose teardown throws is held aside so a batch of nothing but failures ends the drain instead of looping on it, and the whole loop stops at a 45-second budget — under Vercel's 60-second default, with the remainder still expired tomorrow
     - `cron/promote-latest` — promotes the newest staged production build to live (see Deployment below)
 
-`proxy.ts` is the Clerk middleware: protects `/board(.*)` and `/dashboard(.*)`. `/style-guide` is deliberately **not** listed there — a middleware redirect to sign-in would advertise that the route exists, so the page gates itself and 404s instead.
+`proxy.ts` is the Clerk middleware: protects `/board(.*)`, `/dashboard(.*)` and `/checkout(.*)`. `/style-guide` is deliberately **not** listed there — a middleware redirect to sign-in would advertise that the route exists, so the page gates itself and 404s instead.

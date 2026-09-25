@@ -42,7 +42,7 @@ const sessionParams = (
     expires_at: nowSeconds() + SESSION_TTL_SECONDS,
     metadata: { plan },
     subscription_data: { metadata: { clerk_user_id: userId } },
-    success_url: absoluteUrl("/dashboard?checkout=success"),
+    success_url: absoluteUrl(`/checkout/success?plan=${plan}`),
     cancel_url: absoluteUrl("/pricing?checkout=cancelled"),
 });
 

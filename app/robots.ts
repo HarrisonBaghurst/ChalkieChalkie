@@ -9,6 +9,7 @@ const robots = (): MetadataRoute.Robots => ({
             "/api/",
             "/board/",
             "/dashboard",
+            "/checkout",
             "/sign-in",
             "/forbidden",
             "/style-guide",
