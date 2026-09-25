@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         );
     }
 
-    const period = usagePeriod(await getUserPlan(userId));
+    const period = await usagePeriod(userId, await getUserPlan(userId));
 
     const claim = await claimUsage(
         userId,

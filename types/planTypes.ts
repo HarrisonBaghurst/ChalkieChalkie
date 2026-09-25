@@ -33,16 +33,23 @@ export type PlanComparisonRow = {
 export type PlanRow = {
     plan: PlanId | null;
     status: PlanStatus | null;
+    currentPeriodEnd: string | null;
     stripeCustomerId: string | null;
     stripeSubscriptionId: string | null;
     pendingPlan: PlanId | null;
     pendingPlanAt: string | null;
+    cancelsAt: string | null;
+    reconcilePending: boolean;
+    updatedAt: string | null;
+    lastEventAt: string | null;
 };
 
 export type PendingPlanChange = {
     plan: PlanId;
     at: string;
 };
+
+export type SwitchWhen = "now" | "period-end";
 
 export type BillingIntentKind = "checkout" | "switch";
 
@@ -85,6 +92,7 @@ export type EntitlementDenial =
 export type ReconcileSummary = {
     userId: string;
     plan: PlanId | null;
+    ok: boolean;
     roomsRewindowed: number;
     linksDeactivated: number;
     linksReactivated: number;

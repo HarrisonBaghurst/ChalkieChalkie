@@ -81,11 +81,21 @@ const roomChange = (
     return change.expires_at || change.opens_at ? change : null;
 };
 
+const WRITE_BATCH = 20;
+
+const chunk = <T,>(items: T[], size: number): T[][] => {
+    const batches: T[][] = [];
+    for (let i = 0; i < items.length; i += size) {
+        batches.push(items.slice(i, i + size));
+    }
+    return batches;
+};
+
 const reconcileRooms = async (
     userId: string,
     entitlements: PlanEntitlements | null,
     now: number,
-): Promise<{ rewindowed: number; overCap: string[] }> => {
+): Promise<{ ok: boolean; rewindowed: number; overCap: string[] }> => {
     const { data, error } = await supabaseAdmin
         .from("Room")
         .select("id, start_time, opens_at, expires_at, opened_at, user_ids")
@@ -94,7 +104,7 @@ const reconcileRooms = async (
 
     if (error) {
         await reportError("plan:reconcile:rooms", error, undefined, userId);
-        return { rewindowed: 0, overCap: [] };
+        return { ok: false, rewindowed: 0, overCap: [] };
     }
 
     const rooms = (data ?? []) as HostedRoom[];
@@ -104,23 +114,28 @@ const reconcileRooms = async (
         .filter((change): change is RoomChange => change !== null);
 
     let rewindowed = 0;
+    let ok = true;
 
-    for (const { id, ...fields } of changes) {
-        const { error: updateError } = await supabaseAdmin
-            .from("Room")
-            .update(fields)
-            .eq("id", id);
+    for (const batch of chunk(changes, WRITE_BATCH)) {
+        const results = await Promise.all(
+            batch.map(({ id, ...fields }) =>
+                supabaseAdmin.from("Room").update(fields).eq("id", id),
+            ),
+        );
 
-        if (updateError) {
-            await reportError(
-                "plan:reconcile:rooms",
-                updateError,
-                undefined,
-                userId,
-            );
-            continue;
+        for (const result of results) {
+            if (result.error) {
+                ok = false;
+                await reportError(
+                    "plan:reconcile:rooms",
+                    result.error,
+                    undefined,
+                    userId,
+                );
+                continue;
+            }
+            rewindowed++;
         }
-        rewindowed++;
     }
 
     const cap = entitlements?.maxWorkspaceMembers;
@@ -130,14 +145,14 @@ const reconcileRooms = async (
               .map((room) => room.id)
         : [];
 
-    return { rewindowed, overCap };
+    return { ok, rewindowed, overCap };
 };
 
 const reconcileLinks = async (
     userId: string,
     entitlements: PlanEntitlements | null,
     now: number,
-): Promise<{ deactivated: number; reactivated: number }> => {
+): Promise<{ ok: boolean; deactivated: number; reactivated: number }> => {
     const { data, error } = await supabaseAdmin
         .from("tutor_links")
         .select("id, created_at, deactivated_at")
@@ -146,7 +161,7 @@ const reconcileLinks = async (
 
     if (error) {
         await reportError("plan:reconcile:links", error, undefined, userId);
-        return { deactivated: 0, reactivated: 0 };
+        return { ok: false, deactivated: 0, reactivated: 0 };
     }
 
     const links = (data ?? []) as LinkRow[];
@@ -182,7 +197,7 @@ const reconcileLinks = async (
                 undefined,
                 userId,
             );
-            return { deactivated: 0, reactivated: 0 };
+            return { ok: false, deactivated: 0, reactivated: 0 };
         }
     }
 
@@ -202,11 +217,16 @@ const reconcileLinks = async (
                 undefined,
                 userId,
             );
-            return { deactivated: toDeactivate.length, reactivated: 0 };
+            return {
+                ok: false,
+                deactivated: toDeactivate.length,
+                reactivated: 0,
+            };
         }
     }
 
     return {
+        ok: true,
         deactivated: toDeactivate.length,
         reactivated: toReactivate.length,
     };
@@ -233,6 +253,7 @@ export const reconcilePlanChange = async (
     return {
         userId,
         plan: granted as PlanId | null,
+        ok: rooms.ok && links.ok,
         roomsRewindowed: rooms.rewindowed,
         linksDeactivated: links.deactivated,
         linksReactivated: links.reactivated,

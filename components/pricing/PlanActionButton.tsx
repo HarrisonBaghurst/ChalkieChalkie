@@ -14,20 +14,25 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { PLAN_LABELS } from "@/lib/plans/labels";
-import { planRank } from "@/lib/plans/pricingCopy";
+import { PLAN_COPY, planRank } from "@/lib/plans/pricingCopy";
 import { responseDenialCopy } from "@/lib/planDenialCopy";
 import { cn } from "@/lib/utils";
-import { PlanId } from "@/types/planTypes";
+import { PlanId, SwitchWhen } from "@/types/planTypes";
 
 type PlanActionButtonProps = {
     plan: PlanId;
     currentPlan: PlanId | null;
     signedIn: boolean;
     hasSubscription: boolean;
+    currentPeriodEnd: string | null;
+    cancelling: boolean;
 };
 
 const LIFT_ON_CARD_HOVER =
     "group-hover/plan:bg-primary group-hover/plan:text-primary-foreground hover:bg-primary/90";
+
+const OPTION_PANEL =
+    "flex flex-col gap-2 radius-surface border border-foreground-third/15 bg-background-second p-4";
 
 const effectiveLabel = (iso: unknown): string | null => {
     if (typeof iso !== "string") return null;
@@ -44,6 +49,8 @@ const PlanActionButton = ({
     currentPlan,
     signedIn,
     hasSubscription,
+    currentPeriodEnd,
+    cancelling,
 }: PlanActionButtonProps) => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
@@ -81,7 +88,11 @@ const PlanActionButton = ({
         hasSubscription &&
         planRank(plan) < planRank(currentPlan);
 
-    const submit = async () => {
+    const upgrade = switching && !downgrade;
+
+    const renewal = effectiveLabel(currentPeriodEnd);
+
+    const submit = async (when?: SwitchWhen) => {
         if (submitting) return;
         setSubmitting(true);
 
@@ -91,7 +102,7 @@ const PlanActionButton = ({
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ plan }),
+                    body: JSON.stringify(when ? { plan, when } : { plan }),
                 },
             );
 
@@ -122,7 +133,7 @@ const PlanActionButton = ({
                 {
                     description: effective
                         ? "Your current plan runs until then, so nothing changes today."
-                        : "Your new limits apply straight away.",
+                        : "Your new limits apply straight away, and your billing date has moved to today.",
                 },
             );
 
@@ -146,13 +157,18 @@ const PlanActionButton = ({
         ? PLAN_LABELS[currentPlan]
         : "your current plan";
 
+    const price = PLAN_COPY[plan].price;
+    const currentPrice = currentPlan ? PLAN_COPY[currentPlan].price : null;
+
     return (
         <>
             <Button
                 variant="outline"
                 size="lg"
                 disabled={submitting}
-                onClick={switching ? () => setConfirming(true) : submit}
+                onClick={
+                    switching ? () => setConfirming(true) : () => submit()
+                }
                 className={cn("w-full", !hasGrantedPlan && LIFT_ON_CARD_HOVER)}
             >
                 {submitting ? "Working..." : action}
@@ -169,22 +185,63 @@ const PlanActionButton = ({
                             <DialogDescription>
                                 {downgrade
                                     ? `You keep everything ${currentLabel} allows until the end of the period you have paid for. ${label} takes over from then, which lowers how many lessons, students and days of storage you have.`
-                                    : `${label} starts as soon as you confirm, and its higher limits reach the lessons and students you already have, not only the ones you create next.`}
+                                    : `Plans are never part-charged or part-refunded. ${label} is paid for a full month either way — choose when that month starts.`}
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="flex flex-col gap-2 radius-surface border border-foreground-third/15 bg-background-second p-4">
-                            <p className="text-small">
-                                {downgrade
-                                    ? "Nothing is charged or refunded today."
-                                    : "You are not charged today."}
-                            </p>
-                            <p className="text-caption text-foreground-third">
-                                {downgrade
-                                    ? `You carry on paying the ${currentLabel} price for the billing period you have already bought, so there is no refund for the rest of it. Your next invoice is the first one at the ${label} price, on your usual billing date.`
-                                    : `We credit the part of this billing period you have not used on ${currentLabel} and charge those same days at the ${label} price. The difference is added to your next invoice, alongside the ${label} monthly fee. Your billing date does not change.`}
-                            </p>
-                        </div>
+                        {downgrade ? (
+                            <div className={OPTION_PANEL}>
+                                <p className="text-small">
+                                    Nothing is charged or refunded today.
+                                </p>
+                                <p className="text-caption text-foreground-third">
+                                    You carry on paying the {currentLabel} price
+                                    for the billing period you have already
+                                    bought, so there is no refund for the rest
+                                    of it. Your next invoice is the first one at
+                                    the {label} price, on your usual billing
+                                    date.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                <div className={OPTION_PANEL}>
+                                    <p className="text-small">
+                                        Upgrade now — you are charged {price}{" "}
+                                        today
+                                    </p>
+                                    <p className="text-caption text-foreground-third">
+                                        {label} starts immediately and {price}{" "}
+                                        is taken today for a full month.{" "}
+                                        {currentPrice
+                                            ? `The ${currentPrice} you have already paid for this ${currentLabel} month is not refunded and does not come off the ${price}, so ${currentPrice} and ${price} are both charged this month.`
+                                            : `What you have already paid for this ${currentLabel} month is not refunded and does not come off the ${price}.`}{" "}
+                                        Your billing date moves to today, so the
+                                        next {price} is taken a month from now.
+                                    </p>
+                                </div>
+
+                                {!cancelling && (
+                                    <div className={OPTION_PANEL}>
+                                        <p className="text-small">
+                                            {renewal
+                                                ? `Upgrade on ${renewal} — nothing today`
+                                                : "Upgrade next period — nothing today"}
+                                        </p>
+                                        <p className="text-caption text-foreground-third">
+                                            You keep {currentLabel} for the rest
+                                            of the month you have paid for.{" "}
+                                            {label} takes over{" "}
+                                            {renewal
+                                                ? `on ${renewal}`
+                                                : "at your next renewal"}{" "}
+                                            and is charged then, on your usual
+                                            billing date.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <DialogFooter>
                             <Button
@@ -194,13 +251,33 @@ const PlanActionButton = ({
                             >
                                 {downgrade ? `Keep ${currentLabel}` : "Cancel"}
                             </Button>
+
+                            {upgrade && !cancelling && (
+                                <Button
+                                    variant="outline"
+                                    size="default"
+                                    disabled={submitting}
+                                    onClick={() => submit("period-end")}
+                                >
+                                    {renewal
+                                        ? `Start on ${renewal}`
+                                        : "Start next period"}
+                                </Button>
+                            )}
+
                             <Button
                                 variant={downgrade ? "destructive" : "default"}
                                 size="default"
                                 disabled={submitting}
-                                onClick={submit}
+                                onClick={() =>
+                                    submit(downgrade ? "period-end" : "now")
+                                }
                             >
-                                {submitting ? "Working..." : action}
+                                {submitting
+                                    ? "Working..."
+                                    : downgrade
+                                      ? action
+                                      : `Pay ${price} now`}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

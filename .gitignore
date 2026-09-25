@@ -44,3 +44,5 @@ next-env.d.ts
 /.clerk/
 
 TODO.md
+
+stripeTesting.md

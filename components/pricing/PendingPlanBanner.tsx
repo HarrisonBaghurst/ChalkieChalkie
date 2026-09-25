@@ -12,14 +12,16 @@ import { PlanId } from "@/types/planTypes";
 
 type PendingPlanBannerProps = {
     currentPlan: PlanId | null;
-    pendingPlan: PlanId;
+    pendingPlan: PlanId | null;
     pendingPlanAt: string | null;
+    cancelsAt: string | null;
 };
 
 const PendingPlanBanner = ({
     currentPlan,
     pendingPlan,
     pendingPlanAt,
+    cancelsAt,
 }: PendingPlanBannerProps) => {
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
@@ -68,12 +70,14 @@ const PendingPlanBanner = ({
         >
             <div className="flex flex-col gap-1">
                 <p className="text-body">
-                    Your plan changes to {PLAN_LABELS[pendingPlan]}{" "}
-                    {resetLabel(pendingPlanAt ?? undefined)}.
+                    {pendingPlan
+                        ? `Your plan changes to ${PLAN_LABELS[pendingPlan]} ${resetLabel(pendingPlanAt ?? undefined)}.`
+                        : `Your plan ends ${resetLabel(cancelsAt ?? undefined)}.`}
                 </p>
                 <p className="text-caption text-foreground-third">
-                    Nothing changes before then — you keep everything {keeping}{" "}
-                    allows until the end of the period you have paid for.
+                    {pendingPlan
+                        ? `Nothing changes before then — you keep everything ${keeping} allows until the end of the period you have paid for.`
+                        : `Nothing changes before then. After that your lessons stop opening and your students are unlinked, though nothing is deleted for another 30 days.`}
                 </p>
             </div>
 

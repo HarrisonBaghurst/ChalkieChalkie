@@ -2,14 +2,27 @@ import { errorResponse } from "@/lib/errorResponse";
 import { claimIntent, releaseIntent } from "@/lib/plans/billingIntent";
 import { statusGrantsEntitlements } from "@/lib/plans/entitlements";
 import { readPlanRow } from "@/lib/plans/planRow";
-import { PLAN_RANK, priceIdFor } from "@/lib/plans/stripePrices";
+import {
+    PLAN_RANK,
+    planForPriceId,
+    priceIdFor,
+} from "@/lib/plans/stripePrices";
 import { syncSubscription } from "@/lib/plans/syncSubscription";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { stripe } from "@/lib/stripe";
 import { BillingIntentRow } from "@/types/planTypes";
 import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
-import { billingDenial, compedPlanDenial, planFromBody } from "../_shared";
+import {
+    billingDenial,
+    clearCancellation,
+    compedPlanDenial,
+    pastDueDenial,
+    releaseSchedule,
+    switchFromBody,
+} from "../_shared";
+
+export const maxDuration = 60;
 
 const scheduleIdOf = (
     schedule: Stripe.Subscription["schedule"],
@@ -37,8 +50,10 @@ export async function POST(req: Request) {
     const blocked = await enforceRateLimit(req, "billing:switch", userId);
     if (blocked) return blocked;
 
-    const plan = await planFromBody(req);
-    if (plan instanceof Response) return plan;
+    const parsed = await switchFromBody(req);
+    if (parsed instanceof Response) return parsed;
+
+    const { plan, when } = parsed;
 
     let held: BillingIntentRow | null = null;
 
@@ -47,6 +62,9 @@ export async function POST(req: Request) {
 
         const comped = compedPlanDenial(row);
         if (comped) return comped;
+
+        const pastDue = pastDueDenial(row);
+        if (pastDue) return pastDue;
 
         if (
             !row?.stripeSubscriptionId ||
@@ -101,29 +119,48 @@ export async function POST(req: Request) {
             );
         }
 
+        const live = planForPriceId(item.price.id);
+
+        if (live === plan) {
+            await syncSubscription(userId, subscription);
+            return Response.json({ plan, effectiveAt: null });
+        }
+
+        const upgrade = PLAN_RANK[plan] > PLAN_RANK[live ?? row.plan];
+        const immediate = upgrade && when === "now";
+
+        if (
+            (subscription.cancel_at || subscription.cancel_at_period_end) &&
+            !immediate
+        ) {
+            return billingDenial(
+                "cancelling",
+                "This account's subscription is already set to end",
+            );
+        }
+
         const price = priceIdFor(plan);
         const scheduleId = scheduleIdOf(subscription.schedule);
-        const upgrade = PLAN_RANK[plan] > PLAN_RANK[row.plan];
 
-        if (upgrade) {
+        if (immediate) {
             if (scheduleId) {
-                await stripe.subscriptionSchedules.release(
-                    scheduleId,
-                    {},
-                    key(held, "release"),
-                );
+                await releaseSchedule(scheduleId, `${held.intentId}:release`);
             }
 
             const updated = await stripe.subscriptions.update(
                 subscription.id,
                 {
                     items: [{ id: item.id, price }],
-                    proration_behavior: "create_prorations",
+                    proration_behavior: "none",
+                    billing_cycle_anchor: "now",
+                    cancel_at_period_end: false,
                 },
                 key(held, "update"),
             );
 
-            await syncSubscription(userId, updated, null);
+            const settled = await clearCancellation(updated, held.intentId);
+
+            await syncSubscription(userId, settled, null);
 
             return Response.json({ plan, effectiveAt: null });
         }
@@ -162,6 +199,7 @@ export async function POST(req: Request) {
             schedule.id,
             {
                 end_behavior: "release",
+                proration_behavior: "none",
                 phases: [
                     ...started,
                     {

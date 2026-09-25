@@ -11,7 +11,10 @@ import {
     PlanId,
 } from "@/types/planTypes";
 
-const CREATING_TTL_MS = 60 * 1000;
+const CREATING_TTL_MS: Record<BillingIntentKind, number> = {
+    checkout: 60 * 1000,
+    switch: 120 * 1000,
+};
 
 const SELECTED =
     "user_id, kind, plan, intent_id, status, stripe_session_id, expires_at";
@@ -50,8 +53,8 @@ export const intentHasLapsed = (
     return Number.isNaN(expiry) || expiry <= now;
 };
 
-const creatingExpiry = (now: number): string =>
-    new Date(now + CREATING_TTL_MS).toISOString();
+const creatingExpiry = (now: number, kind: BillingIntentKind): string =>
+    new Date(now + CREATING_TTL_MS[kind]).toISOString();
 
 const readIntent = async (
     userId: string,
@@ -86,7 +89,7 @@ const reclaim = async (
             intent_id: crypto.randomUUID(),
             status: "creating",
             stripe_session_id: null,
-            expires_at: creatingExpiry(now),
+            expires_at: creatingExpiry(now, kind),
             updated_at: new Date(now).toISOString(),
         })
         .eq("user_id", previous.userId)
@@ -127,7 +130,7 @@ export const claimIntent = async (
                     intent_id: crypto.randomUUID(),
                     status: "creating",
                     stripe_session_id: null,
-                    expires_at: creatingExpiry(now),
+                    expires_at: creatingExpiry(now, kind),
                     updated_at: new Date(now).toISOString(),
                 },
                 { onConflict: "user_id", ignoreDuplicates: true },

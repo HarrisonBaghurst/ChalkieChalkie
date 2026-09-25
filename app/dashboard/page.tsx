@@ -55,7 +55,9 @@ const resolvePlan = async (): Promise<EntitlementsState> => {
     ]);
 
     const [usage, linkedStudents] = await Promise.all([
-        readUsage(userId, usagePeriod(userPlan)),
+        usagePeriod(userId, userPlan).then((period) =>
+            readUsage(userId, period),
+        ),
         entitlements ? resolveLinkedStudents(userId) : null,
     ]);
 

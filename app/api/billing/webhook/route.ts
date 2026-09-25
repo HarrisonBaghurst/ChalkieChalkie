@@ -2,12 +2,15 @@ import { errorResponse, reportError } from "@/lib/errorResponse";
 import { forgetCustomerId } from "@/lib/plans/billingCustomer";
 import { releaseIntentForSession } from "@/lib/plans/billingIntent";
 import { userIdForSubscription } from "@/lib/plans/planRow";
-import { syncSubscription } from "@/lib/plans/syncSubscription";
-import { enforceRateLimit } from "@/lib/ratelimit";
+import {
+    revokeDeletedCustomer,
+    syncSubscription,
+} from "@/lib/plans/syncSubscription";
 import { stripe } from "@/lib/stripe";
 import Stripe from "stripe";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const CLERK_USER_ID_REGEX = /^user_[a-zA-Z0-9]+$/;
 
@@ -33,6 +36,7 @@ const idOf = (value: string | { id: string } | null | undefined): string | null 
 
 const applySubscription = async (
     subscription: Stripe.Subscription,
+    eventCreated: number,
     hint?: string | null,
 ): Promise<void> => {
     const userId =
@@ -48,15 +52,16 @@ const applySubscription = async (
         return;
     }
 
-    await syncSubscription(userId, subscription);
+    await syncSubscription(userId, subscription, undefined, eventCreated);
 };
 
 const applySubscriptionId = async (
     subscriptionId: string,
+    eventCreated: number,
     hint?: string | null,
 ): Promise<void> => {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    await applySubscription(subscription, hint);
+    await applySubscription(subscription, eventCreated, hint);
 };
 
 type ChargeSubscription = {
@@ -105,12 +110,29 @@ const revoke = async (subscription: Stripe.Subscription): Promise<void> => {
     }
 };
 
+const supersededInvoice = async (
+    context: string,
+    { subscription, invoiceId }: ChargeSubscription,
+): Promise<boolean> => {
+    if (idOf(subscription.latest_invoice) === invoiceId) return false;
+
+    await reportError(
+        context,
+        new Error(
+            `Invoice ${invoiceId} is not the latest on subscription ${subscription.id}; plan left alone`,
+        ),
+    );
+    return true;
+};
+
 const handleRefund = async (charge: Stripe.Charge): Promise<void> => {
-    if (charge.amount_refunded < charge.amount) {
+    if (charge.amount_captured <= 0) return;
+
+    if (charge.amount_refunded < charge.amount_captured) {
         await reportError(
             "billing:refund",
             new Error(
-                `Partial refund of ${charge.amount_refunded} on charge ${charge.id}; plan left alone`,
+                `Partial refund of ${charge.amount_refunded} of ${charge.amount_captured} on charge ${charge.id}; plan left alone`,
             ),
         );
         return;
@@ -119,19 +141,9 @@ const handleRefund = async (charge: Stripe.Charge): Promise<void> => {
     const resolved = await subscriptionForCharge(charge);
     if (!resolved) return;
 
-    const { subscription, invoiceId } = resolved;
+    if (await supersededInvoice("billing:refund", resolved)) return;
 
-    if (idOf(subscription.latest_invoice) !== invoiceId) {
-        await reportError(
-            "billing:refund",
-            new Error(
-                `Full refund of superseded invoice ${invoiceId} on subscription ${subscription.id}; plan left alone`,
-            ),
-        );
-        return;
-    }
-
-    await revoke(subscription);
+    await revoke(resolved.subscription);
 };
 
 const handleDispute = async (dispute: Stripe.Dispute): Promise<void> => {
@@ -142,6 +154,8 @@ const handleDispute = async (dispute: Stripe.Dispute): Promise<void> => {
     const resolved = await subscriptionForCharge(charge);
 
     if (!resolved) return;
+
+    if (await supersededInvoice("billing:dispute", resolved)) return;
 
     await reportError(
         "billing:dispute",
@@ -157,17 +171,20 @@ const handle = async (event: Stripe.Event): Promise<void> => {
     switch (event.type) {
         case "checkout.session.completed": {
             const session = event.data.object;
+            const subscriptionId =
+                session.mode === "subscription"
+                    ? idOf(session.subscription)
+                    : null;
+
+            if (subscriptionId) {
+                await applySubscriptionId(
+                    subscriptionId,
+                    event.created,
+                    session.client_reference_id,
+                );
+            }
+
             await releaseIntentForSession(session.id);
-
-            if (session.mode !== "subscription") return;
-
-            const subscriptionId = idOf(session.subscription);
-            if (!subscriptionId) return;
-
-            await applySubscriptionId(
-                subscriptionId,
-                session.client_reference_id,
-            );
             return;
         }
         case "checkout.session.expired":
@@ -177,7 +194,7 @@ const handle = async (event: Stripe.Event): Promise<void> => {
         }
         case "customer.subscription.updated":
         case "customer.subscription.deleted": {
-            await applySubscription(event.data.object);
+            await applySubscription(event.data.object, event.created);
             return;
         }
         case "invoice.payment_failed": {
@@ -187,7 +204,7 @@ const handle = async (event: Stripe.Event): Promise<void> => {
             );
             if (!subscriptionId) return;
 
-            await applySubscriptionId(subscriptionId);
+            await applySubscriptionId(subscriptionId, event.created);
             return;
         }
         case "charge.refunded": {
@@ -199,15 +216,35 @@ const handle = async (event: Stripe.Event): Promise<void> => {
             return;
         }
         case "customer.deleted": {
-            await forgetCustomerId(event.data.object.id);
+            const customerId = event.data.object.id;
+            await revokeDeletedCustomer(customerId);
+            await forgetCustomerId(customerId);
             return;
         }
     }
 };
 
+const SIGNATURE_REPORT_INTERVAL_MS = 10 * 60 * 1000;
+
+let lastSignatureReport = 0;
+
+const reportSignatureFailure = async (error: unknown): Promise<void> => {
+    const now = Date.now();
+    if (now - lastSignatureReport < SIGNATURE_REPORT_INTERVAL_MS) return;
+    lastSignatureReport = now;
+
+    await reportError("billing:webhook-signature", error, 400);
+};
+
 export async function POST(req: Request) {
     const signature = req.headers.get("stripe-signature");
-    if (!signature) return new Response("Invalid signature", { status: 400 });
+
+    if (!signature) {
+        await reportSignatureFailure(
+            new Error("Webhook request carried no stripe-signature header"),
+        );
+        return new Response("Invalid signature", { status: 400 });
+    }
 
     const payload = await req.text();
 
@@ -218,12 +255,10 @@ export async function POST(req: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET!,
         );
-    } catch {
+    } catch (error) {
+        await reportSignatureFailure(error);
         return new Response("Invalid signature", { status: 400 });
     }
-
-    const blocked = await enforceRateLimit(req, "billing:webhook");
-    if (blocked) return blocked;
 
     if (!HANDLED.has(event.type)) return Response.json({ received: true });
 

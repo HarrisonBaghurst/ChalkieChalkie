@@ -101,6 +101,18 @@ export const planDenialCopy = (body: DenialBody): DenialCopy | null => {
                 title: "Already on this plan",
                 description: "Pick a different plan to change to.",
             };
+        case "past-due":
+            return {
+                title: "Your last payment did not go through",
+                description:
+                    "Update your card using the link in your Stripe receipt email. Once the payment clears you can change your plan again — you keep everything your plan allows in the meantime.",
+            };
+        case "cancelling":
+            return {
+                title: "Your plan is already set to end",
+                description:
+                    "Keep your current plan first, then you can move between tiers again. Upgrading now also works: it starts a new billing period today and cancels the ending.",
+            };
         case "linked-students":
             return {
                 title: "Linked student limit reached",

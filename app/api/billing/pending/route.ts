@@ -6,7 +6,9 @@ import { enforceRateLimit } from "@/lib/ratelimit";
 import { stripe } from "@/lib/stripe";
 import { BillingIntentRow } from "@/types/planTypes";
 import { auth } from "@clerk/nextjs/server";
-import { billingDenial } from "../_shared";
+import { billingDenial, clearCancellation, releaseSchedule } from "../_shared";
+
+export const maxDuration = 60;
 
 export async function DELETE(req: Request) {
     const { userId } = await auth();
@@ -20,14 +22,20 @@ export async function DELETE(req: Request) {
     try {
         const row = await readPlanRow(userId);
 
-        if (!row?.stripeSubscriptionId || !row.pendingPlan) {
+        const target = row?.pendingPlan ?? row?.plan ?? null;
+
+        if (
+            !row?.stripeSubscriptionId ||
+            !target ||
+            (!row.pendingPlan && !row.cancelsAt)
+        ) {
             return billingDenial(
                 "no-pending-change",
                 "There is no scheduled plan change to cancel",
             );
         }
 
-        const claim = await claimIntent(userId, "switch", row.pendingPlan);
+        const claim = await claimIntent(userId, "switch", target);
 
         if (!claim.owned) {
             return billingDenial(
@@ -51,14 +59,16 @@ export async function DELETE(req: Request) {
             typeof schedule === "string" ? schedule : (schedule?.id ?? null);
 
         if (scheduleId) {
-            await stripe.subscriptionSchedules.release(
-                scheduleId,
-                {},
-                { idempotencyKey: `${held.intentId}:release` },
-            );
+            await releaseSchedule(scheduleId, `${held.intentId}:release`);
         }
 
-        await syncSubscription(userId, subscription, null);
+        const released = scheduleId
+            ? await stripe.subscriptions.retrieve(row.stripeSubscriptionId)
+            : subscription;
+
+        const settled = await clearCancellation(released, held.intentId);
+
+        await syncSubscription(userId, settled, null);
 
         return Response.json({ plan: row.plan });
     } catch (error) {

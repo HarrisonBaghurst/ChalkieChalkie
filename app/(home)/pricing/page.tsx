@@ -35,19 +35,21 @@ const page = async () => {
                 </p>
             </div>
 
-            {row?.pendingPlan && (
+            {(row?.pendingPlan || row?.cancelsAt) && (
                 <PendingPlanBanner
                     currentPlan={currentPlan}
                     pendingPlan={row.pendingPlan}
                     pendingPlanAt={row.pendingPlanAt}
+                    cancelsAt={row.cancelsAt}
                 />
             )}
 
             <PricingTiers
                 currentPlan={currentPlan}
                 signedIn={!!userId}
-                hasHadPlan={row !== null}
                 hasSubscription={!!row?.stripeSubscriptionId}
+                currentPeriodEnd={row?.currentPeriodEnd ?? null}
+                cancelling={!!row?.cancelsAt}
             />
 
             <PlanComparison rows={planComparison()} />

@@ -30,14 +30,45 @@ const calendarMonth = (now: Date): UsagePeriod => ({
     ).toISOString(),
 });
 
-export const usagePeriod = (
+const STALE_REPORT_INTERVAL_MS = 10 * 60 * 1000;
+const STALE_REPORT_CAP = 500;
+
+const lastStaleReport = new Map<string, number>();
+
+const shouldReportStale = (userId: string, now: number): boolean => {
+    const last = lastStaleReport.get(userId);
+    if (last !== undefined && now - last < STALE_REPORT_INTERVAL_MS) {
+        return false;
+    }
+
+    if (lastStaleReport.size >= STALE_REPORT_CAP) lastStaleReport.clear();
+    lastStaleReport.set(userId, now);
+    return true;
+};
+
+export const usagePeriod = async (
+    userId: string,
     userPlan: UserPlan | null,
     now: Date = new Date(),
-): UsagePeriod => {
+): Promise<UsagePeriod> => {
     const start = parseInstant(userPlan?.currentPeriodStart);
     const end = parseInstant(userPlan?.currentPeriodEnd);
 
     if (!start || !end || end.getTime() <= start.getTime()) {
+        return calendarMonth(now);
+    }
+
+    if (end.getTime() <= now.getTime()) {
+        if (shouldReportStale(userId, now.getTime())) {
+            await reportError(
+                "usage:stale-period",
+                new Error(
+                    `Billing period ended ${end.toISOString()} and has not been renewed; falling back to the calendar month`,
+                ),
+                undefined,
+                userId,
+            );
+        }
         return calendarMonth(now);
     }
 

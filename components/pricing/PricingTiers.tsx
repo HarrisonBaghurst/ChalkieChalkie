@@ -13,15 +13,17 @@ import PlanActionButton from "./PlanActionButton";
 type PricingTiersProps = {
     currentPlan: PlanId | null;
     signedIn: boolean;
-    hasHadPlan: boolean;
     hasSubscription: boolean;
+    currentPeriodEnd: string | null;
+    cancelling: boolean;
 };
 
 const PricingTiers = ({
     currentPlan,
     signedIn,
-    hasHadPlan,
     hasSubscription,
+    currentPeriodEnd,
+    cancelling,
 }: PricingTiersProps) => (
     <div className="grid w-full items-stretch gap-6 md:grid-cols-3">
         {PLAN_ORDER.map((plan) => {
@@ -43,11 +45,6 @@ const PricingTiers = ({
                             </p>
                             {current && (
                                 <Badge variant="highlight">Current plan</Badge>
-                            )}
-                            {plan === "basic" && !hasHadPlan && (
-                                <Badge variant="outline">
-                                    Free trial available
-                                </Badge>
                             )}
                         </div>
 
@@ -80,6 +77,8 @@ const PricingTiers = ({
                             currentPlan={currentPlan}
                             signedIn={signedIn}
                             hasSubscription={hasSubscription}
+                            currentPeriodEnd={currentPeriodEnd}
+                            cancelling={cancelling}
                         />
                     </div>
                 </div>
