@@ -71,6 +71,14 @@
                 {
                     "tag": "Added",
                     "text": "Every report comes straight to us and is never shown to the person it is about. The report window also tells you to call 999 if someone is in immediate danger, and links to CEOP for reporting online sexual abuse or grooming."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Everyone now has their own blob character in place of the coloured square with their initials. It is picked for you when you sign up and stays the same everywhere you appear - the dashboard, the participant list on the whiteboard and the header of every page."
+                },
+                {
+                    "tag": "Changed",
+                    "text": "Your colour on the whiteboard - your cursor, name tag, selection outline and dot in the participant list - now matches the colour of your blob, so it may be different from the one you had before."
                 }
             ]
         },
