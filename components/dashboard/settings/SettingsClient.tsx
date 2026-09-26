@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { UserRoleProvider } from "@/hooks/useUserRole";
 import { useKeepPlan } from "@/hooks/useKeepPlan";
 import { CollapseState } from "@/lib/sidebarCookie";
@@ -19,6 +20,7 @@ import { UserRole } from "@/types/userTypes";
 import DashboardShell from "../DashboardShell";
 import Sidebar from "../Sidebar";
 import TabBar from "../mobile/TabBar";
+import { byCollapseState, useSidebarCollapse } from "../sidebarCollapse";
 import CancelPlanDialog from "./CancelPlanDialog";
 import DeleteAccountDialog from "./DeleteAccountDialog";
 import {
@@ -310,6 +312,26 @@ const DangerZone = ({
     );
 };
 
+const SettingsColumn = ({ children }: { children: React.ReactNode }) => {
+    const { collapsed } = useSidebarCollapse();
+
+    return (
+        <div
+            className={cn(
+                "flex w-full flex-col gap-4",
+                byCollapseState(
+                    collapsed,
+                    "lg:px-[10dvw]",
+                    "xl:px-[10dvw]",
+                    "xl:px-[10dvw]",
+                ),
+            )}
+        >
+            {children}
+        </div>
+    );
+};
+
 const SettingsClient = ({
     role: serverRole,
     settings,
@@ -331,13 +353,13 @@ const SettingsClient = ({
                 bottomBar={<TabBar role={serverRole} />}
             >
                 {settings ? (
-                    <div className="flex w-full flex-col gap-4 px-16 md:px-[10dvw]">
+                    <SettingsColumn>
                         <PaymentOverdue plan={settings.plan} />
                         <PendingChange plan={settings.plan} />
                         <PlanAndBilling plan={settings.plan} />
                         <HelpSection />
                         <DangerZone role={role} settings={settings} />
-                    </div>
+                    </SettingsColumn>
                 ) : (
                     <div className="flex grow items-center justify-center py-24">
                         <p className="text-body text-foreground-third">
