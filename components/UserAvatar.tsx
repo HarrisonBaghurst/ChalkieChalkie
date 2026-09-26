@@ -1,5 +1,7 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { getFullName, getUserColour, getUserInitials } from "@/lib/userColour";
+import type { Expression } from "blobatar";
+import Image from "next/image";
+
+import { getFullName, getUserBlobatar } from "@/lib/userColour";
 import { cn } from "@/lib/utils";
 
 export type AvatarPerson = {
@@ -12,37 +14,38 @@ export type AvatarPerson = {
 interface UserAvatarProps {
     user: AvatarPerson;
     size?: "sm" | "default" | "lg";
-    shape?: "tag" | "circle";
+    expression?: Expression;
     className?: string;
 }
+
+const SIZE_CLASSES = {
+    sm: "size-6",
+    default: "size-8",
+    lg: "size-10",
+};
 
 const UserAvatar = ({
     user,
     size = "default",
-    shape = "tag",
+    expression,
     className,
 }: UserAvatarProps) => {
     const name = getFullName(user);
 
     return (
-        <Avatar
-            size={size}
-            aria-label={name || undefined}
+        <Image
+            src={getUserBlobatar(user, expression)}
+            alt={name}
+            width={40}
+            height={40}
+            unoptimized
+            draggable={false}
             className={cn(
-                shape === "tag" && "radius-tag after:rounded-md",
+                "shrink-0 select-none scale-150",
+                SIZE_CLASSES[size],
                 className,
             )}
-        >
-            <AvatarFallback
-                className={cn(
-                    "font-inter-bold text-brand-foreground",
-                    shape === "tag" && "radius-tag",
-                )}
-                style={{ backgroundColor: getUserColour(user) }}
-            >
-                {getUserInitials(user.firstName, user.lastName)}
-            </AvatarFallback>
-        </Avatar>
+        />
     );
 };
 

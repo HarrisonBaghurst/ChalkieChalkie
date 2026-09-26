@@ -531,7 +531,7 @@ const Components = () => {
 
             <Block
                 title="Identity"
-                description='UserAvatar is the only way to draw a person. It takes { id, firstName, lastName, email } and fills itself from USER_COLOUR_PALETTE, hashed on the lower-cased email and falling back to the Clerk userId when there is none — the same colour the person&apos;s cursor, name pill and selection outline use on the board. Always pass the email: it is optional on the type so a caller that omits it still compiles, but that person then hashes by id and gets a different colour here than on the board. There is no image variant: initials on the hashed colour is the avatar. Tag-shaped by default; pass shape="circle" for the round form.'
+                description="UserAvatar is the only way to draw a person. It renders the person's blobatar, generated in the browser from their Clerk userId with the user_ prefix stripped, on a transparent backdrop. The blob's body colour is the same colour their cursor, name pill, selection outline and roster dot use on the board."
             >
                 <div className="flex flex-wrap items-center gap-8">
                     <Item label="sm / default / lg">
@@ -545,18 +545,7 @@ const Components = () => {
                             ))}
                         </div>
                     </Item>
-                    <Item label='shape="circle"'>
-                        <div className="flex items-center gap-3">
-                            {SPECIMEN_PEOPLE.slice(0, 3).map((person) => (
-                                <UserAvatar
-                                    key={person.id}
-                                    user={person}
-                                    shape="circle"
-                                />
-                            ))}
-                        </div>
-                    </Item>
-                    <Item label="distinct by colour">
+                    <Item label="distinct by id">
                         <div className="flex items-center gap-2">
                             {SPECIMEN_PEOPLE.map((person) => (
                                 <UserAvatar key={person.id} user={person} />

@@ -5,7 +5,7 @@ import {
     PEN_COLOURS,
     SELECTION_COLOURS,
 } from "@/lib/colours";
-import { USER_COLOUR_PALETTE } from "@/lib/userColour";
+import { getUserColour } from "@/lib/userColour";
 import {
     Block,
     Caption,
@@ -16,6 +16,11 @@ import {
     Section,
     Swatch,
 } from "../primitives";
+
+const IDENTITY_SPECIMEN_IDS = Array.from(
+    { length: 12 },
+    (_, i) => `user_specimen${i}`,
+);
 
 const Colour = () => (
     <Section
@@ -227,41 +232,23 @@ const Colour = () => (
 
         <Block
             title="Per-user identity colours"
-            description="USER_COLOUR_PALETTE in lib/userColour.ts — 48 colours, 12 hues across four lightness and chroma steps, generated in OKLCH and gamut-fitted to sRGB. The person's lower-cased email is hashed to a fixed index, falling back to the Clerk userId when no email is available, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session. Never assign these by array position or at random."
+            description="getUserColour in lib/userColour.ts returns the body colour of the person's blobatar, derived from their Clerk userId with the user_ prefix stripped, so a person keeps the same colour across their avatar, live cursor, name pill, selection outline and roster dot in every session."
         >
             <div className="flex flex-col gap-3">
                 <Grid cols={6}>
-                    {USER_COLOUR_PALETTE.map((code) => (
-                        <HexSwatch key={code} name="" code={code} />
+                    {IDENTITY_SPECIMEN_IDS.map((id) => (
+                        <HexSwatch
+                            key={id}
+                            name=""
+                            code={getUserColour({ id })}
+                        />
                     ))}
                 </Grid>
                 <Note>
-                    Every entry clears 4.5:1 against <Code>--background</Code>,
-                    which is why initials are always drawn in{" "}
-                    <Code>--brand-foreground</Code> and never conditionally
-                    lightened. The band was chosen to hold that floor — move it
-                    lighter or darker and the contrast breaks.
-                </Note>
-                <Note tone="dead">
-                    The array is deliberately not in hue order. The hash adds
-                    each character code in turn, so two ids sharing a long
-                    prefix and differing only near the end land a short distance
-                    apart in the array — in gradient order that handed them
-                    near-identical colours. The order above is solved so that
-                    any two entries within three positions of each other differ
-                    by at least ΔE 0.141, against 0.050 for the hue-sorted
-                    original. Re-sorting this array by hue undoes that.
-                </Note>
-                <Note tone="dead">
-                    The array length is load-bearing:{" "}
-                    <Code>getUserColour</Code> is <Code>hash % length</Code>, so
-                    adding or removing an entry reshuffles every existing
-                    user&apos;s colour. Changing a hex in place is safe;
-                    changing the count is not. The hash is FNV-1a plus the
-                    murmur3 <Code>fmix32</Code> finaliser — the finaliser is
-                    what makes the low bits usable, and{" "}
-                    <Code>hash % length</Code> reads exactly those. Do not
-                    replace it with a plain multiply-and-add.
+                    The ink tone is excluded through blobatar&apos;s{" "}
+                    <Code>traits.tone</Code> option, so every body colour
+                    clears 4.5:1 against <Code>--background</Code> and name
+                    pills can always use <Code>--brand-foreground</Code>.
                 </Note>
             </div>
         </Block>

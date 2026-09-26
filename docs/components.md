@@ -16,8 +16,9 @@ components/
     │                       only route to delete without a keyboard
     └─ FullscreenLoader   ← shown until the room's first init completes
   UserAvatar.tsx          ← the only way to draw a person, board and dashboard alike.
-                            Initials on the colour `getUserColour` hashes from the
-                            Clerk userId; there is no image variant
+                            The person's blobatar from `getUserBlobatar`, keyed on
+                            the Clerk userId; transparent, no initials;
+                            optional `expression`, default `thinking`
   ConnectionNotice        ← held-open toast while the socket is down; strokes
                             keep committing locally behind it
   dashboard/

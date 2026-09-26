@@ -12,11 +12,7 @@ const CollaboratorCard = ({ user }: CollaboratorCardProps) => {
     return (
         <div className="flex justify-between items-center">
             <div className="flex gap-3 items-center p-2">
-                <UserAvatar
-                    user={user}
-                    shape="circle"
-                    className="shrink-0"
-                />
+                <UserAvatar user={user} className="shrink-0" />
                 <div className="flex flex-col">
                     <div className="text-body text-foreground">
                         {getFullName(user)}
