@@ -11,6 +11,7 @@ import { ONELINK_URL, PLAN_COPY } from "@/lib/plans/pricingCopy";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import StepperFormDialog from "@/components/forms/StepperFormDialog";
+import ReportConcernDialog from "@/components/ReportConcernDialog";
 import { BUG_REPORT } from "@/lib/forms/bugReport";
 import { PlanStatus } from "@/types/planTypes";
 import { PlanSummary, SettingsData } from "@/types/settingsTypes";
@@ -192,30 +193,50 @@ const PlanAndBilling = ({ plan }: { plan: PlanSummary }) => {
 
 const HelpSection = () => {
     const [contacting, setContacting] = useState(false);
+    const [reporting, setReporting] = useState(false);
 
     return (
         <SettingsCard
             title="Help"
             description="Something not working, or a question about your account?"
         >
-            <SettingsAction
-                title="Contact Chalkie Chalkie"
-                description="Send us a message and we will reply by email."
-            >
-                <Button
-                    variant="outline"
-                    size="default"
-                    onClick={() => setContacting(true)}
+            <div className="flex flex-col divide-y divide-foreground-third/25">
+                <SettingsAction
+                    title="Contact Chalkie Chalkie"
+                    description="Send us a message and we will reply by email."
                 >
-                    Contact us
-                </Button>
-            </SettingsAction>
+                    <Button
+                        variant="outline"
+                        size="default"
+                        onClick={() => setContacting(true)}
+                    >
+                        Contact us
+                    </Button>
+                </SettingsAction>
+                <SettingsAction
+                    title="Report a concern"
+                    description="Tell us about behaviour or content that worries you, including anything that could put a child at risk."
+                >
+                    <Button
+                        variant="outline"
+                        size="default"
+                        onClick={() => setReporting(true)}
+                    >
+                        Report a concern
+                    </Button>
+                </SettingsAction>
+            </div>
             {contacting && (
                 <StepperFormDialog
                     spec={BUG_REPORT}
                     onClose={() => setContacting(false)}
                 />
             )}
+            <ReportConcernDialog
+                open={reporting}
+                onClose={() => setReporting(false)}
+                chooseWorkspace
+            />
         </SettingsCard>
     );
 };

@@ -14,6 +14,7 @@ import { useNow } from "@/hooks/useNow";
 import UserAvatar from "@/components/UserAvatar";
 import type { WorkspaceBucket } from "../WorkspaceTableRow";
 import WorkspaceModal, { FEEDBACK_STEP } from "../WorkspaceModal";
+import ReportConcernDialog from "@/components/ReportConcernDialog";
 import WorkspaceDetailSheet from "./WorkspaceDetailSheet";
 
 type WorkspaceRowProps = {
@@ -40,6 +41,7 @@ const WorkspaceRow = ({
     const now = useNow();
     const [detailOpen, setDetailOpen] = useState(false);
     const [modalStep, setModalStep] = useState<number | null>(null);
+    const [reporting, setReporting] = useState(false);
 
     const viewerIsHost = !!user && isHost(user.id, workspace);
 
@@ -127,7 +129,18 @@ const WorkspaceRow = ({
                     setDetailOpen(false);
                     setModalStep(FEEDBACK_STEP);
                 }}
+                onReport={() => {
+                    setDetailOpen(false);
+                    setReporting(true);
+                }}
                 onClose={() => setDetailOpen(false)}
+            />
+
+            <ReportConcernDialog
+                open={reporting}
+                onClose={() => setReporting(false)}
+                workspaceId={workspace.id}
+                members={participants}
             />
 
             {canManage && (

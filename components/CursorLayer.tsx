@@ -1,7 +1,7 @@
 import { useOthers } from "@/hooks/realtime/hooks";
 import { RefObject, useEffect, useRef } from "react";
 import { CanvasState } from "@/types/canvasStateTypes";
-import { getFullName, getUserColour } from "@/lib/userColour";
+import { getFullName, getUserColour, UNNAMED_USER } from "@/lib/userColour";
 import { cn } from "@/lib/utils";
 
 const SELECTION_LABEL_GAP = 6;
@@ -27,7 +27,7 @@ const UserPill = ({
         style={{ backgroundColor: colour }}
     >
         <span className="text-caption font-inter-bold text-brand-foreground">
-            {name || "Anonymous"}
+            {name || UNNAMED_USER}
         </span>
     </div>
 );
@@ -77,7 +77,7 @@ const CursorLayer = ({ canvasStateRef }: CursorLayerProps) => {
     return (
         <>
             {others.map(({ connectionId, id, presence, info }) => {
-                const colour = getUserColour({ id, email: info?.email });
+                const colour = getUserColour({ id });
                 const name = getFullName(info ?? {});
 
                 if (presence?.selection) {

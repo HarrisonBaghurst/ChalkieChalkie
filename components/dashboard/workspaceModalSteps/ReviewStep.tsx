@@ -68,7 +68,7 @@ const ReviewStep = ({
                 {collaborators.length > 0 ? (
                     <div className="flex flex-col gap-1">
                         {collaborators.map((c, i) => (
-                            <div key={c.email}>
+                            <div key={c.id}>
                                 {c.firstName} {c.lastName}
                                 {i === 0 && (
                                     <span className="text-foreground-third text-caption ml-2">

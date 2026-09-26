@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { OPTION_PANEL } from "@/components/dashboard/cardSurface";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
@@ -53,6 +54,12 @@ const PlanActionButton = ({
     const router = useRouter();
     const [submitting, setSubmitting] = useState(false);
     const [confirming, setConfirming] = useState(false);
+    const [adult, setAdult] = useState(false);
+
+    const closeFirstPlan = () => {
+        setConfirming(false);
+        setAdult(false);
+    };
 
     const label = PLAN_LABELS[plan];
 
@@ -179,7 +186,7 @@ const PlanActionButton = ({
             {confirming && firstPlan && (
                 <Dialog
                     open
-                    onOpenChange={(open) => !open && setConfirming(false)}
+                    onOpenChange={(open) => !open && closeFirstPlan()}
                 >
                     <DialogContent>
                         <DialogHeader>
@@ -202,11 +209,25 @@ const PlanActionButton = ({
                             </p>
                         </div>
 
+                        <label className="flex cursor-pointer items-start gap-3">
+                            <Checkbox
+                                checked={adult}
+                                onCheckedChange={(checked) =>
+                                    setAdult(checked === true)
+                                }
+                                className="mt-0.5"
+                            />
+                            <span className="text-small text-foreground-second">
+                                I confirm I am 18 or over. Plans can only be
+                                bought by adults.
+                            </span>
+                        </label>
+
                         <DialogFooter>
                             <Button
                                 variant="ghost"
                                 size="default"
-                                onClick={() => setConfirming(false)}
+                                onClick={closeFirstPlan}
                             >
                                 Cancel
                             </Button>
@@ -214,7 +235,7 @@ const PlanActionButton = ({
                             <Button
                                 variant="default"
                                 size="default"
-                                disabled={submitting}
+                                disabled={submitting || !adult}
                                 onClick={() => submit()}
                             >
                                 {submitting

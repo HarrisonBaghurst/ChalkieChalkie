@@ -107,7 +107,6 @@ export async function POST(request: NextRequest) {
         {
             firstName: user.firstName ?? "",
             lastName: user.lastName ?? "",
-            email: user.emailAddresses[0]?.emailAddress ?? "",
         },
         roomData.host_id,
         cap,

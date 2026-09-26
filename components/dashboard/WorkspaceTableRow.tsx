@@ -21,6 +21,7 @@ import TapTooltip from "@/components/TapTooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTableRow } from "./DataTable";
+import ReportConcernDialog from "@/components/ReportConcernDialog";
 import RowActionsMenu from "./RowActionsMenu";
 import WorkspaceModal, { FEEDBACK_STEP } from "./WorkspaceModal";
 
@@ -56,6 +57,7 @@ const WorkspaceTableRow = ({
     const { entitlements } = useEntitlements();
     const now = useNow();
     const [modalStep, setModalStep] = useState<number | null>(null);
+    const [reporting, setReporting] = useState(false);
 
     const viewerIsHost = !!user && isHost(user.id, workspace);
 
@@ -172,6 +174,10 @@ const WorkspaceTableRow = ({
                                   },
                               ]
                             : []),
+                        {
+                            label: "Report a concern",
+                            onSelect: () => setReporting(true),
+                        },
                     ]}
                 />
                 {canManage && (
@@ -186,6 +192,12 @@ const WorkspaceTableRow = ({
                     />
                 )}
                 {dialog}
+                <ReportConcernDialog
+                    open={reporting}
+                    onClose={() => setReporting(false)}
+                    workspaceId={workspace.id}
+                    members={collaborators}
+                />
             </>
         ),
     };

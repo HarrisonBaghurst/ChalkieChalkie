@@ -53,11 +53,12 @@ export const USER_COLOUR_PALETTE = [
 
 export type ColourIdentity = {
     id: string;
-    email?: string | null;
 };
 
+export const UNNAMED_USER = "Unnamed user";
+
 export function getUserColour(person: ColourIdentity): string {
-    const key = (person.email ?? "").trim().toLowerCase() || person.id;
+    const key = person.id.replace(/^user_/, "");
     let hash = 0x811c9dc5 | 0;
     for (let i = 0; i < key.length; i++) {
         hash ^= key.charCodeAt(i);

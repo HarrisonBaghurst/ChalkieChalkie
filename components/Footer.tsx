@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import StepperFormDialog from "./forms/StepperFormDialog";
+import ReportConcernDialog from "./ReportConcernDialog";
 import { BETA_REQUEST } from "@/lib/forms/betaRequest";
 
 const linkClass = "w-fit hover:underline cursor-pointer";
 
 const Footer = () => {
     const [showSendMessage, setShowSendMessage] = useState(false);
+    const [reporting, setReporting] = useState(false);
 
     return (
         <div className="w-full min-h-[40svh] pb-8 radius-surface shrink-0 flex flex-col justify-between gap-10">
@@ -70,6 +72,13 @@ const Footer = () => {
                             >
                                 Contact
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setReporting(true)}
+                                className={`${linkClass} text-left`}
+                            >
+                                Report a concern
+                            </button>
                             <a
                                 href="https://github.com/HarrisonBaghurst/ChalkieChalkie"
                                 target="_blank"
@@ -87,7 +96,7 @@ const Footer = () => {
                 <p>|</p>
                 <p>v{process.env.NEXT_PUBLIC_VERSION}</p>
                 <p>|</p>
-                <p>Harrison Baghurst Digital</p>
+                <p>Harrison Baghurst, trading as Chalkie Chalkie</p>
             </div>
             {showSendMessage && (
                 <StepperFormDialog
@@ -95,6 +104,10 @@ const Footer = () => {
                     onClose={() => setShowSendMessage(false)}
                 />
             )}
+            <ReportConcernDialog
+                open={reporting}
+                onClose={() => setReporting(false)}
+            />
         </div>
     );
 };

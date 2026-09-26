@@ -21,9 +21,11 @@ const CollaboratorCard = ({ user }: CollaboratorCardProps) => {
                     <div className="text-body text-foreground">
                         {getFullName(user)}
                     </div>
-                    <div className="text-caption text-foreground-third">
-                        {user.email ? user.email : "Unknown email"}
-                    </div>
+                    {user.email && (
+                        <div className="text-caption text-foreground-third">
+                            {user.email}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

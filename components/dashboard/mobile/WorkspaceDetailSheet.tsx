@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import UserAvatar from "@/components/UserAvatar";
-import { getFullName } from "@/lib/userColour";
+import { getFullName, UNNAMED_USER } from "@/lib/userColour";
 import type { LifecycleStatus } from "@/lib/workspaceLifecycle";
 
 type WorkspaceDetailSheetProps = {
@@ -28,6 +28,7 @@ type WorkspaceDetailSheetProps = {
     canAddFeedback: boolean;
     onEdit: () => void;
     onAddFeedback: () => void;
+    onReport: () => void;
     onClose: () => void;
 };
 
@@ -55,6 +56,7 @@ const WorkspaceDetailSheet = ({
     canAddFeedback,
     onEdit,
     onAddFeedback,
+    onReport,
     onClose,
 }: WorkspaceDetailSheetProps) => {
     return (
@@ -126,7 +128,7 @@ const WorkspaceDetailSheet = ({
                                         />
                                         <span className="min-w-0 flex-1 truncate text-small text-foreground-second">
                                             {getFullName(person) ||
-                                                person.email}
+                                                UNNAMED_USER}
                                         </span>
                                         {/* Host marked with the same green
                                             dot PeopleStack uses. */}
@@ -146,6 +148,9 @@ const WorkspaceDetailSheet = ({
                             Edit workspace
                         </Button>
                     )}
+                    <Button variant="ghost" size="lg" onClick={onReport}>
+                        Report a concern
+                    </Button>
                     <p className="text-caption text-foreground-third text-center">
                         Open Chalkie Chalkie on a computer to join this
                         workspace.

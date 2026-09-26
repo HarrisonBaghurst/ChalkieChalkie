@@ -1,10 +1,10 @@
 {
     "title": "Cookie Policy",
-    "lastUpdated": "9 September 2026",
+    "lastUpdated": "27 September 2026",
     "intro": [
         {
             "type": "paragraph",
-            "text": "This Cookie Policy for Chalkie Chalkie ('we', 'us', or 'our') explains what cookies and similar technologies are, which ones are set when you use our website and application ('Services'), why we use them, and what choices you have. It should be read alongside our Privacy Notice, which explains how we handle your personal information more generally."
+            "text": "This Cookie Policy for Chalkie Chalkie ('we', 'us', or 'our') explains what cookies and similar technologies are, which ones are set when you use our website and application ('Services'), why we use them, and what choices you have. It should be read alongside our [Privacy Policy](/privacy-policy), which explains how we handle your personal information more generally."
         },
         {
             "type": "paragraph",
@@ -149,7 +149,7 @@
             "blocks": [
                 {
                     "type": "paragraph",
-                    "text": "We rely on a small number of service providers to run the Services. Only one of them results in cookies being stored on your device:"
+                    "text": "We rely on a small number of service providers to run the Services. Only Clerk results in cookies being stored on your device while you are on our website:"
                 },
                 {
                     "type": "definitions",
@@ -161,12 +161,16 @@
                         {
                             "term": "Supabase, Cloudflare, Upstash, Resend, and Vercel",
                             "description": "Provide our database, file storage and real-time whiteboard collaboration, rate limiting, contact emails, and website hosting respectively. These are used from our servers or authenticated with tokens held only in memory, and do not set cookies in your browser."
+                        },
+                        {
+                            "term": "Stripe and Link",
+                            "description": "Take payment when you buy a plan and let you manage your billing. Checkout and billing management happen on Stripe's and Link's own websites, not on ours, so any cookies set there are Stripe's and are covered by [Stripe's cookie policy](https://stripe.com/cookies-policy/legal). We do not load any Stripe scripts on our own pages."
                         }
                     ]
                 },
                 {
                     "type": "paragraph",
-                    "text": "Details of what personal information these providers process, and on what legal basis, are set out in our Privacy Notice."
+                    "text": "Details of what personal information these providers process, and on what legal basis, are set out in our [Privacy Policy](/privacy-policy)."
                 }
             ]
         },

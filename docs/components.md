@@ -65,6 +65,13 @@ components/
                             SendMessage.tsx, whose two modes were an if/else through
                             every step, field, validator and review list — add a form by
                             writing a config, never by adding a branch here
+  ReportConcernDialog     ← the one Report a concern form, posting to /api/report. Opened
+                            from the board roster's flag button, the workspace row menu
+                            and mobile detail sheet (all pass workspaceId + members), the
+                            Settings Help card (chooseWorkspace) and the Footer (signed
+                            out it asks for an email instead). Deliberately not a
+                            FormSpec: it needs the member and workspace pickers and must
+                            stay one short screen a 13-year-old can use
   home/                   ← Navbar (shared with dashboard/legal), hero CTAs
   policy/PolicyDocument   ← renders data/policies/*.json
   changelog/ChangelogDocument ← renders data/changelog.json

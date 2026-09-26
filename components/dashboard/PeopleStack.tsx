@@ -3,7 +3,7 @@
 import { userInfo } from "@/types/userTypes";
 import TapTooltip from "@/components/TapTooltip";
 import UserAvatar from "@/components/UserAvatar";
-import { getFullName } from "@/lib/userColour";
+import { getFullName, UNNAMED_USER } from "@/lib/userColour";
 
 type PeopleStackProps = {
     people: userInfo[]; // stacked avatars, viewer-relative
@@ -30,7 +30,7 @@ const PeopleStack = ({ people, participants, hostId }: PeopleStackProps) => {
                             key={person.id}
                             className="flex items-center gap-2"
                         >
-                            <span>{getFullName(person)}</span>
+                            <span>{getFullName(person) || UNNAMED_USER}</span>
                             {person.id === hostId && (
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             )}

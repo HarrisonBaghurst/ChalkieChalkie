@@ -25,7 +25,7 @@ const CollaboratorsPicker = ({
     const availableFriends = useMemo(
         () =>
             friends.filter(
-                (f) => !collaborators.some((c) => c.email === f.email),
+                (f) => !collaborators.some((c) => c.id === f.id),
             ),
         [friends, collaborators],
     );
@@ -39,7 +39,7 @@ const CollaboratorsPicker = ({
     };
 
     const removeCollaborator = (user: userInfo) =>
-        onChange(collaborators.filter((c) => c.email !== user.email));
+        onChange(collaborators.filter((c) => c.id !== user.id));
 
     // A column is a region, not a labelable control, so the caption is
     // associated with role="group" + aria-labelledby instead of htmlFor.
@@ -70,7 +70,7 @@ const CollaboratorsPicker = ({
                         if (isOwner) {
                             return (
                                 <div
-                                    key={collaborator.email}
+                                    key={collaborator.id}
                                     className="radius-control opacity-50 cursor-not-allowed"
                                     title="Owner cannot be removed"
                                 >
@@ -81,7 +81,7 @@ const CollaboratorsPicker = ({
 
                         return (
                             <button
-                                key={collaborator.email}
+                                key={collaborator.id}
                                 type="button"
                                 onClick={() => removeCollaborator(collaborator)}
                                 aria-label={`Remove ${name} from this workspace`}
@@ -126,7 +126,7 @@ const CollaboratorsPicker = ({
                     )}
                     {availableFriends.map((friend) => (
                         <button
-                            key={friend.email}
+                            key={friend.id}
                             type="button"
                             onClick={() => addCollaborator(friend)}
                             disabled={atCapacity}

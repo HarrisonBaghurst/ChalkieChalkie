@@ -4,8 +4,11 @@ import { useOthers, useSelf } from "@/hooks/realtime/hooks";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { FlagIcon } from "lucide-react";
+import ReportConcernDialog from "@/components/ReportConcernDialog";
+import { Button } from "@/components/ui/button";
 import UserAvatar from "@/components/UserAvatar";
-import { getFullName, getUserColour } from "@/lib/userColour";
+import { getFullName, getUserColour, UNNAMED_USER } from "@/lib/userColour";
 
 // Raw snake_case row from GET /api/workspaces/[id].
 type RoomRow = {
@@ -16,13 +19,13 @@ type Member = {
     id: string;
     firstName: string | null;
     lastName: string | null;
-    email: string | null;
 };
 
 const ParticipantRoster = () => {
     const { boardId: workspaceId } = useParams<{ boardId: string }>();
     const [members, setMembers] = useState<Member[]>([]);
     const [collapsed, setCollapsed] = useState(false);
+    const [reporting, setReporting] = useState(false);
 
     const others = useOthers();
     const self = useSelf();
@@ -87,27 +90,39 @@ const ParticipantRoster = () => {
 
     return (
         <div className="fixed top-4 right-4 z-50 w-64 bg-card-background radius-surface border border-foreground-third/15 overflow-hidden">
-            <button
-                onClick={() => setCollapsed((c) => !c)}
-                className="w-full flex justify-between items-center px-4 py-3 cursor-pointer"
-            >
-                <span className="text-small text-foreground">
-                    Participants
-                    <span className="text-foreground-third">
-                        {" · "}
-                        {onlineCount}/{members.length}
+            <div className="flex items-center pr-2">
+                <button
+                    onClick={() => setCollapsed((c) => !c)}
+                    className="flex-1 flex justify-between items-center pl-4 pr-2 py-3 cursor-pointer"
+                >
+                    <span className="text-small text-foreground">
+                        Participants
+                        <span className="text-foreground-third">
+                            {" · "}
+                            {onlineCount}/{members.length}
+                        </span>
                     </span>
-                </span>
-                <Image
-                    src="/icons/chevron-down.svg"
-                    alt={collapsed ? "Expand" : "Collapse"}
-                    width={16}
-                    height={16}
-                    className={`opacity-50 transition-transform ${
-                        collapsed ? "-rotate-90" : ""
-                    }`}
-                />
-            </button>
+                    <Image
+                        src="/icons/chevron-down.svg"
+                        alt={collapsed ? "Expand" : "Collapse"}
+                        width={16}
+                        height={16}
+                        className={`opacity-50 transition-transform ${
+                            collapsed ? "-rotate-90" : ""
+                        }`}
+                    />
+                </button>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Report a concern"
+                    title="Report a concern"
+                    onClick={() => setReporting(true)}
+                    className="text-foreground-third hover:text-foreground"
+                >
+                    <FlagIcon />
+                </Button>
+            </div>
 
             {!collapsed && (
                 <div className="flex flex-col gap-1 px-2 pb-2 max-h-[60vh] overflow-y-auto">
@@ -127,7 +142,7 @@ const ParticipantRoster = () => {
                                 />
                                 <div className="flex flex-col min-w-0">
                                     <div className="text-small text-foreground truncate">
-                                        {name || "Anonymous"}
+                                        {name || UNNAMED_USER}
                                     </div>
                                     <div className="text-caption text-foreground-third truncate">
                                         {online ? "Online" : "Offline"}
@@ -146,6 +161,12 @@ const ParticipantRoster = () => {
                     })}
                 </div>
             )}
+            <ReportConcernDialog
+                open={reporting}
+                onClose={() => setReporting(false)}
+                workspaceId={workspaceId}
+                members={members}
+            />
         </div>
     );
 };

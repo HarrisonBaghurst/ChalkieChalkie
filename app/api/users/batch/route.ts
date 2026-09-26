@@ -1,5 +1,6 @@
 import { fetchUserProfiles } from "@/lib/clerkUsers";
 import { errorResponse } from "@/lib/errorResponse";
+import { counterpartyIdOf, listLinksFor } from "@/lib/links";
 import { enforceRateLimit } from "@/lib/ratelimit";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auth } from "@clerk/nextjs/server";
@@ -71,7 +72,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ users: [] });
         }
 
-        const users = await fetchUserProfiles(filteredIds);
+        const linked = new Set(
+            (await listLinksFor(userId)).map((row) =>
+                counterpartyIdOf(row, userId),
+            ),
+        );
+        linked.add(userId);
+
+        const users = (await fetchUserProfiles(filteredIds)).map(
+            ({ email, ...user }) =>
+                linked.has(user.id) ? { ...user, email } : user,
+        );
 
         return new NextResponse(JSON.stringify({ users }), {
             headers: {

@@ -6,7 +6,7 @@ export type userInfo = {
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
 };
 
 export type WorkspaceEditData = {
