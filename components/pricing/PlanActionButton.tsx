@@ -257,7 +257,7 @@ const PlanActionButton = ({
                             <DialogTitle>{action}?</DialogTitle>
                             <DialogDescription>
                                 {downgrade
-                                    ? `You keep everything ${currentLabel} allows until the end of the period you have paid for. ${label} takes over from then, which lowers how many lessons, students and days of storage you have.`
+                                    ? `You keep everything ${currentLabel} allows ${renewal ? `until ${renewal}` : "until the end of the period you have paid for"}. ${label} takes over from then, which lowers how many lessons, students and days of storage you have.`
                                     : `Plans are never part-charged or part-refunded. ${label} is paid for a full month either way — choose when that month starts.`}
                             </DialogDescription>
                         </DialogHeader>
@@ -272,8 +272,11 @@ const PlanActionButton = ({
                                     for the billing period you have already
                                     bought, so there is no refund for the rest
                                     of it. Your next invoice is the first one at
-                                    the {label} price, on your usual billing
-                                    date.
+                                    the {label} price,{" "}
+                                    {renewal
+                                        ? `on ${renewal}`
+                                        : "on your usual billing date"}
+                                    .
                                 </p>
                             </div>
                         ) : (
