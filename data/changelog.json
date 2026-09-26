@@ -5,7 +5,7 @@
     "entries": [
         {
             "version": "0.3.0",
-            "date": "",
+            "date": "27 September 2026",
             "overview": "Plans can now be bought, changed and cancelled from inside the app. Payments are taken by Stripe, your card details and receipts are kept on Link, and the plan you are on is now what makes your account a tutor account.",
             "changes": [
                 {
@@ -59,6 +59,18 @@
                 {
                     "tag": "Changed",
                     "text": "Fewer people now fit in a lesson on the two larger plans. Plus allows you and three students rather than four, and Professional you and five students rather than nine. Basic stays one-to-one."
+                },
+                {
+                    "tag": "Added",
+                    "text": "You can now report a concern about someone's behaviour or something in a workspace. It is on the flag button beside the participant list on the whiteboard, in the menu on each workspace in your dashboard, in the workspace details on a phone, and in Settings under Help. Reporting from a workspace lets you pick the person it is about, and from Settings you can choose which lesson it concerns."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Report a concern is also at the bottom of every page outside the dashboard, so a parent or anyone else without an account can use it too - they are just asked for an email address so we can reply."
+                },
+                {
+                    "tag": "Added",
+                    "text": "Every report comes straight to us and is never shown to the person it is about. The report window also tells you to call 999 if someone is in immediate danger, and links to CEOP for reporting online sexual abuse or grooming."
                 }
             ]
         },
